@@ -5,7 +5,7 @@ export default function Navbar() {
 
   return (
     <nav className="relative flex items-center justify-between px-6 py-4 bg-white shadow-md">
-      {/* Logo - lo dejás si querés o sacás */}
+
       {/* <div className="text-xl font-bold">Tienda Barby</div> */}
 
       {/* Botón hamburguesa - sigue visible para abrir/cerrar */}

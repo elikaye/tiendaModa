@@ -7,7 +7,7 @@ import mercadopago from '../assets/mercado-pago.svg';
 
 const Footer = () => {
   return (
-    <footer className="bg-pink-300 py-10 px-5"> {/* Agregado <footer> */}
+    <footer className="bg-black py-10 px-5"> {/* Agregado <footer> */}
       <div className="container mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
         {/* Logo */}
         <div className="flex-shrink-0">
@@ -16,24 +16,24 @@ const Footer = () => {
 
         {/* Redes sociales */}
         <div className="flex space-x-5">
-          <a href="https://wa.me/+5491164283906" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp" className="hover:opacity-70 transition-opacity">
+          <a href="https://wa.me/+5491164283906" target="_pink" rel="noopener noreferrer" aria-label="WhatsApp" className="hover:opacity-70 transition-opacity">
             <img src={whatsapp} alt="WhatsApp" className="h-10 w-10" />
           </a>
-          <a href="https://www.instagram.com/barby_indu/" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="hover:opacity-70 transition-opacity">
+          <a href="https://www.instagram.com/barby_indu/" target="_pink" rel="noopener noreferrer" aria-label="Instagram" className="hover:opacity-70 transition-opacity">
             <img src={instagram} alt="Instagram" className="h-10 w-10" />
           </a>
-          <a href="https://www.facebook.com/barbara.andrada" target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="hover:opacity-70 transition-opacity">
+          <a href="https://www.facebook.com/barbara.andrada" target="_pink" rel="noopener noreferrer" aria-label="Facebook" className="hover:opacity-70 transition-opacity">
             <img src={facebook} alt="Facebook" className="h-10 w-10" />
           </a>
         </div>
 
         {/* Contacto */}
         <div className="text-center md:text-left space-y-1 text-sm">
-          <p className="text-black font-semibold ">
-            Contacto: <a href="mailto:barbytienda@example.com" className="text-black hover:text-pink-400 hover:underline">barbytienda@example.com</a>
+          <p className="text-white font-semibold ">
+            Contacto: <a href="mailto:barbytienda@example.com" className="text-white hover:text-pink-400 hover:underline">barbytienda@example.com</a>
           </p>
-          <p className="text-black font-semibold">
-            WhatsApp: <a href="https://wa.me/+5491164283906" target="_blank" rel="noopener noreferrer" className="text-black hover:text-pink-400 hover:underline">+54 9 11 6583-9090</a>
+          <p className="text-pink font-semibold">
+            WhatsApp: <a href="https://wa.me/+5491164283906" target="_blank" rel="noopener noreferrer" className="text-white hover:text-pink-400 hover:underline">+54 9 11 6583-9090</a>
           </p>
         </div>
 
@@ -46,7 +46,7 @@ const Footer = () => {
       </div>
 
       {/* Derechos y créditos */}
-      <div className="mt-8 text-center text-xs text-black space-y-1">
+      <div className="mt-8 text-center text-xs text-white space-y-1">
         <p>© {new Date().getFullYear()} Barby Indumentaria. Todos los derechos reservados.</p>
         <p>
   Diseñado por{" "}

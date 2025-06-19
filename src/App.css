@@ -91,10 +91,10 @@ p, a, li {
 
 /* Posicionamiento suave (opcional si se salen del carrusel) */
 .swiper-button-prev {
-  left: 5px;
+  left: 2px;
 }
 .swiper-button-next {
-  right: 5px;
+  right: 2px;
 }
 
 /* Bullets suaves */
@@ -115,11 +115,11 @@ p, a, li {
 .contact-info {
   font-size: 0.9rem;
   margin: 1rem 0;
-  color: #633b4c;
+  color: #0c0c0c;
 }
 
 .contact-info a {
-  color: #633b4c;
+  color: #e26498;
   text-decoration: none;
 }
 
@@ -128,22 +128,30 @@ p, a, li {
   text-decoration: underline;
 }
 
-footer p {
-  margin: 0.3rem 0;
+.footer {
+  background-color: var(--color-black);
+  color: var(--color-texto);
+  padding: 2rem;
+  text-align: center;
+  border-top: 2px solid var(--color-lila);
+}
+.footer p {
+  margin: 0.5rem 0;
 }
 
-footer a {
+.footer a {
   transition: color 0.3s ease;
 }
 
-footer a:hover {
-  color: #c94f7c;
+.footer a:hover {
+  color: #e733c9;
 }
 
-footer .copyright {
+.footer .copyright {
   font-size: 0.8rem;
   margin-top: 1rem;
-  color: #99677d;
+  color: #d34aaa;
+  
 }
 
 .shine-text {
