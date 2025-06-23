@@ -9,20 +9,25 @@
   --color-hover: #080808;
 }
 
-body {
-  margin: 0;
-  font-family: 'Quicksand', sans-serif;
-  background: linear-gradient(145deg, var(--color-rosa), var(--color-celeste), var(--color-lila));
-  background-size: 400% 400%;
-  animation: gradient 20s ease infinite;
-  color: var(--color-texto);
-}
+
 
 @keyframes gradient {
-  0% {background-position: 0% 50%;}
-  50% {background-position: 100% 50%;}
-  100% {background-position: 0% 50%;}
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }
+
+.animate-gradient {
+  animation: gradient 15s ease infinite;
+  background-size: 300% 300%;
+}
+
 
 h1, h2, h3 {
   font-family: 'Marck Script', cursive;
@@ -75,7 +80,29 @@ p, a, li {
   background-color: var(--color-hover);
   color: var(--color-lila);
 }
-/* Flechas pequeñas y discretas */
+.text-metal {
+  background: linear-gradient(135deg, #ccc, #999, #ccc);
+  background-size: 200% auto;
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  animation: shimmer 2s linear infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% center;
+  }
+  100% {
+    background-position: -200% center;
+  }
+}
+
+
+
+
+/* Flechas pequeñas y discretas 
 .swiper-button-next,
 .swiper-button-prev {
   color: #999 !important;
@@ -97,7 +124,7 @@ p, a, li {
   right: 2px;
 }
 
-/* Bullets suaves */
+/* Bullets suaves 
 .swiper-pagination-bullet {
   background-color: #ccc !important;
   opacity: 1;
@@ -105,12 +132,12 @@ p, a, li {
 .swiper-pagination-bullet-active {
   background-color: #999 !important;
 }
-/* Ajustar los íconos internos de las flechas */
+/* Ajustar los íconos internos de las flechas 
 .swiper-button-next::after,
 .swiper-button-prev::after {
-  font-size: 16px !important;  /* Esto controla el tamaño del ícono de flecha */
-  color: #999 !important;      /* Color más suave */
-}
+  font-size: 16px !important;  
+  color: #999 !important;      
+}*/
 
 .contact-info {
   font-size: 0.9rem;
@@ -129,49 +156,49 @@ p, a, li {
 }
 
 .footer {
-  background-color: var(--color-black);
-  color: var(--color-texto);
+  position: relative;
   padding: 2rem;
   text-align: center;
-  border-top: 2px solid var(--color-lila);
-}
-.footer p {
-  margin: 0.5rem 0;
-}
-
-.footer a {
-  transition: color 0.3s ease;
+  overflow: hidden;
+  color: white;
+  border-top: 2px solid violet;
 }
 
-.footer a:hover {
-  color: #e733c9;
+.footer::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    270deg,
+    #0a0a0a 0%,
+    #121212 25%,
+    #0a0a0a 50%,
+    #121212 75%,
+    #0a0a0a 100%
+  );
+  background-size: 400% 400%;
+  animation: wave 10s ease-in-out infinite;
+  opacity: 0.8;
+  z-index: 0;
+  pointer-events: none;
 }
 
-.footer .copyright {
-  font-size: 0.8rem;
-  margin-top: 1rem;
-  color: #d34aaa;
-  
+.footer > * {
+  position: relative;
+  z-index: 1;
 }
 
-.shine-text {
-  background: linear-gradient(90deg, #dcdcdc, #ffffff, #dcdcdc);
-  background-size: 200% auto;
-  color: transparent;
-  background-clip: text;
-  -webkit-background-clip: text;
-  animation: shimmer 3s linear infinite;
-}
-
-@keyframes shimmer {
+@keyframes wave {
   0% {
-    background-position: 200% center;
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
   }
   100% {
-    background-position: -200% center;
+    background-position: 0% 50%;
   }
 }
-
 
 
 

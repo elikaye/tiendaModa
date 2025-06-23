@@ -6,7 +6,8 @@ import App from './App.jsx'
 import 'swiper/css';
 import 'swiper/css/pagination';
 import 'swiper/css/navigation';
-import './index.css'; // <- tu CSS personalizado debe ir al final
+import './index.css'; 
+
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>

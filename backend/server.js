@@ -26,7 +26,9 @@ sequelize.authenticate()
 app.use(cors())
 app.use(express.json())
 
-// Usar rutas
+app.use('/images', express.static('public/images'));
+
+// Cambiamos la ruta base para que no se repita 'products' dos veces
 app.use('/api/products', productRoutes)
 
 const PORT = process.env.PORT || 5000
