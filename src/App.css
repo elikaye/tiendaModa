@@ -1,4 +1,4 @@
-/* styles.css o App.css */
+/* Variables de color */
 :root {
   --color-rosa: #f4cce2;
   --color-lila: #d7c3f2;
@@ -7,10 +7,38 @@
   --color-blanco: #ffffff;
   --color-texto: #080808;
   --color-hover: #080808;
+
+  --color-metal-gris-claro: #ccc;
+  --color-metal-gris-medio: #999;
 }
 
 
+/* Clase para texto metalizado animado */
 
+.text-metal {
+  background: linear-gradient(135deg, #ccc, #999, #ccc);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+  animation: gradient-move 4s ease-in-out infinite;
+}
+
+
+@keyframes gradient-move {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Animación de gradiente general para fondos */
 @keyframes gradient {
   0% {
     background-position: 0% 50%;
@@ -28,7 +56,7 @@
   background-size: 300% 300%;
 }
 
-
+/* Tipografías */
 h1, h2, h3 {
   font-family: 'Marck Script', cursive;
 }
@@ -37,14 +65,14 @@ p, a, li {
   font-family: 'Quicksand', sans-serif;
 }
 
+/* Contenedor principal */
 .container {
   max-width: 1200px;
   margin: 0 auto;
   padding: 1rem;
 }
 
-/* components/Navbar.css */
-
+/* Navbar */
 .navbar {
   display: flex;
   justify-content: space-between;
@@ -80,81 +108,8 @@ p, a, li {
   background-color: var(--color-hover);
   color: var(--color-lila);
 }
-.text-metal {
-  background: linear-gradient(135deg, #ccc, #999, #ccc);
-  background-size: 200% auto;
-  background-clip: text;
-  -webkit-background-clip: text;
-  color: transparent;
-  -webkit-text-fill-color: transparent;
-  animation: shimmer 2s linear infinite;
-}
 
-@keyframes shimmer {
-  0% {
-    background-position: 200% center;
-  }
-  100% {
-    background-position: -200% center;
-  }
-}
-
-
-
-
-/* Flechas pequeñas y discretas 
-.swiper-button-next,
-.swiper-button-prev {
-  color: #999 !important;
-  background: rgba(255, 255, 255, 0.6);
-  padding: 10px;
-  border-radius: 50%;
-  font-size: 12px !important;
-  width: 32px;
-  height: 32px;
-  top: 50%;
-  transform: translateY(-50%);
-}
-
-/* Posicionamiento suave (opcional si se salen del carrusel) */
-.swiper-button-prev {
-  left: 2px;
-}
-.swiper-button-next {
-  right: 2px;
-}
-
-/* Bullets suaves 
-.swiper-pagination-bullet {
-  background-color: #ccc !important;
-  opacity: 1;
-}
-.swiper-pagination-bullet-active {
-  background-color: #999 !important;
-}
-/* Ajustar los íconos internos de las flechas 
-.swiper-button-next::after,
-.swiper-button-prev::after {
-  font-size: 16px !important;  
-  color: #999 !important;      
-}*/
-
-.contact-info {
-  font-size: 0.9rem;
-  margin: 1rem 0;
-  color: #0c0c0c;
-}
-
-.contact-info a {
-  color: #e26498;
-  text-decoration: none;
-}
-
-.contact-info a:hover {
-  color: #c94f7c;
-  text-decoration: underline;
-}
-
+/* Footer */
 .footer {
   position: relative;
   padding: 2rem;
@@ -200,8 +155,7 @@ p, a, li {
   }
 }
 
-
-
+/* Media query para navbar responsive */
 @media (max-width: 768px) {
   .nav-links {
     flex-direction: column;
@@ -211,6 +165,6 @@ p, a, li {
     background: var(--color-blanco);
     padding: 1rem;
     border-radius: 10px;
-    display: none; /* para luego agregar toggle */
+    display: none; /* se puede mostrar con toggle en JS */
   }
-};
+}

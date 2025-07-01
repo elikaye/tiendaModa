@@ -1,27 +1,42 @@
+
 import React from 'react';
 import logo from '../assets/tienda-moda2.png';
+import { Link } from 'react-router-dom';
 
 export default function Hero() {
   return (
-    <section className="flex justify-center items-center min-h-[60vh] bg-black px-6 py-12">
-      <div className="backdrop-blur-md bg-white/10 border border-white/20 shadow-xl rounded-2xl p-10 flex flex-col sm:flex-row items-center gap-8 w-full max-w-5xl">
-        
-        {/* Logo */}
+    <section className="flex justify-center items-center bg-black px-6 py-16">
+      <div className="flex flex-col sm:flex-row items-center sm:items-start gap-10 w-full max-w-6xl">
+
+        {/* Logo a la izquierda */}
         <img
           src={logo}
           alt="Logo Tienda Barby"
-          className="w-40 sm:w-48 h-auto drop-shadow-lg"
+          className="w-36 sm:w-44 h-auto drop-shadow-xl"
         />
 
-        {/* Texto principal */}
-        <div className="text-center sm:text-left max-w-lg">
-          <h1 className="text-5xl font-extrabold bg-gradient-to-r from-zinc-200 via-white to-zinc-400 bg-clip-text text-transparent animate-shimmer font-poppins drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]">
-            ¡Bienvenidas a Tienda Barby!
+        {/* Texto a la derecha */}
+        <div className="text-center sm:text-left max-w-xl">
+          <h1 className="text-5xl font-title leading-tight mb-4
+            bg-shimmer-gradient bg-[length:200%_100%] bg-left
+            text-transparent bg-clip-text animate-shimmer"
+          >
+            Todo lo que buscás en un solo lugar
           </h1>
-          <p className="mt-4 text-gray-100 font-medium text-lg font-poppins">
-            
+
+          <p className="text-lg text-pink-100 font-body mb-6">
+            Moda, hogar, tecnología, belleza y mucho más. ¡Descubrí tu estilo!
           </p>
+
+          <Link
+            to="/"
+            className="inline-block bg-pink-500 text-white font-body px-6 py-3 rounded-sm text-base shadow-md 
+              hover:bg-black hover:shadow-lg transition-all duration-300"
+          >
+            Ver productos
+          </Link>
         </div>
+        
       </div>
     </section>
   );

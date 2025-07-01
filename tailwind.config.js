@@ -7,34 +7,29 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        poppins: ['Poppins', 'sans-serif'],
-        marck: ['Marck Script', 'cursive'],
+        title: ['Montserrat', 'sans-serif'],
+        body: ['Playfair Display', 'serif'],
       },
-    
-      extend: {
-  animation: {
-    shimmer: 'shimmer 3s linear infinite',
-  },
-  keyframes: {
-    shimmer: {
-      '0%': { backgroundPosition: '200% center' },
-      '100%': { backgroundPosition: '-200% center' },
-    },
-  },
-  backgroundImage: {
-    'shimmer-gradient': 'linear-gradient(90deg, #666, #fff, #666)', // gris plata brillante
-  },
-},
+
+      animation: {
+        shimmer: 'shimmer 3s linear infinite',
+        gradient: 'gradient 15s ease infinite',
+      },
+
       keyframes: {
+        shimmer: {
+          '0%': { backgroundPosition: '200% center' },
+          '100%': { backgroundPosition: '-200% center' },
+        },
         gradient: {
           '0%': { backgroundPosition: '0% 50%' },
           '50%': { backgroundPosition: '100% 50%' },
           '100%': { backgroundPosition: '0% 50%' },
         },
-        shimmer: {
-          '0%': { backgroundPosition: '200% center' },
-          '100%': { backgroundPosition: '-200% center' },
-        },
+      },
+
+      backgroundImage: {
+        'shimmer-gradient': 'linear-gradient(90deg, #ccc, #fff, #ccc)', // plateado más claro
       },
     },
   },
