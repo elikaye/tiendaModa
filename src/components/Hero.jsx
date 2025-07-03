@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 
 export default function Hero() {
   return (
-    <section className="flex justify-center items-center bg-black px-6 py-16">
+    <section className="flex justify-center items-center bg-black px-6 py-16 mt-24">
       <div className="flex flex-col sm:flex-row items-center sm:items-start gap-10 w-full max-w-6xl">
 
         {/* Logo a la izquierda */}
@@ -17,10 +17,9 @@ export default function Hero() {
 
         {/* Texto a la derecha */}
         <div className="text-center sm:text-left max-w-xl">
-          <h1 className="text-5xl font-title leading-tight mb-4
-            bg-shimmer-gradient bg-[length:200%_100%] bg-left
-            text-transparent bg-clip-text animate-shimmer"
-          >
+          <h1 className="text-5xl font-body leading-tight mb-4
+            bg-shimmer-gradient bg-[length:300%_100%] bg-left
+            text-transparent bg-clip-text animate-shimmer text-glow">
             Todo lo que buscás en un solo lugar
           </h1>
 

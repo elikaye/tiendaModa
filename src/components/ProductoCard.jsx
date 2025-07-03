@@ -1,19 +1,23 @@
 import React, { useState } from "react";
 import { FaHeart } from "react-icons/fa";
+import { Link } from "react-router-dom";
 
 const ProductoCard = ({ producto }) => {
   const [liked, setLiked] = useState(false);
 
   if (!producto || !producto.imageUrl || !producto.nombre) return null;
 
-  const toggleLike = () => setLiked(!liked);
+  const toggleLike = (e) => {
+    e.preventDefault(); // Evitar que el click en el corazón navegue al detalle
+    setLiked(!liked);
+  };
 
   return (
-    <div
-      className="relative bg-white rounded-xl shadow-lg
+    <Link
+      to={`/producto/${producto.id}`}
+      className="relative block bg-white rounded-xl shadow-lg
                  hover:shadow-2xl transition-shadow duration-300
-                 cursor-pointer p-4 flex flex-row items-center gap-6 max-w-3xl mx-auto"
-    >
+                 cursor-pointer p-4 flex flex-row items-center gap-6 max-w-3xl mx-auto" >
       <button
         onClick={toggleLike}
         aria-label="Agregar a favoritos"
@@ -51,7 +55,7 @@ const ProductoCard = ({ producto }) => {
           ${producto.precio?.toFixed(2) || "0.00"}
         </p>
       </div>
-    </div>
+    </Link>
   );
 };
 

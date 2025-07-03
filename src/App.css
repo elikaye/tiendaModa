@@ -25,6 +25,9 @@
   animation: gradient-move 4s ease-in-out infinite;
 }
 
+.text-glow {
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.4);
+}
 
 @keyframes gradient-move {
   0% {

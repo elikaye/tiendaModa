@@ -7,17 +7,18 @@ import whatsapp from '../assets/whatsapp-white.png';
 
 export default function Footer() {
   return (
-    <footer className="bg-black text-white py-10 px-6">
-      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8 items-center text-sm">
+    <footer className="bg-black text-white py-12 px-6 font-body">
+      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-10 items-center text-sm">
+
         {/* Logo */}
         <div className="flex flex-col items-center md:items-start">
-          <img src={logo} alt="Logo tienda" className="h-20 mb-2" />
+          <img src={logo} alt="Logo tienda" className="h-20 mb-3" />
         </div>
 
         {/* Redes sociales */}
-        <div className="flex flex-col items-center md:items-start gap-3">
-          <p className="font-semibold">Seguinos</p>
-          <div className="flex gap-4">
+        <div className="flex flex-col items-center md:items-start gap-4">
+          <p className="font-semibold text-pink-400 text-lg">Seguinos</p>
+          <div className="flex gap-5">
             {[{
               href: "https://wa.me/+5491164283906",
               alt: "WhatsApp",
@@ -51,15 +52,15 @@ export default function Footer() {
         </div>
 
         {/* Contacto */}
-        <div className="text-center md:text-left space-y-1">
-          <p className="font-semibold">Contacto:</p>
+        <div className="text-center md:text-left space-y-2">
+          <p className="font-semibold text-pink-400 text-lg">Contacto:</p>
           <a
-            href="mailto:barbytienda@example.com"
+            href=""
             className="text-gray-300 hover:text-pink-400 hover:underline transition duration-300"
           >
             barbytienda@example.com
           </a>
-          <p className="font-semibold mt-2">WhatsApp:</p>
+          <p className="font-semibold mt-4 text-pink-400 text-lg">WhatsApp:</p>
           <a
             href="https://wa.me/+5491164283906"
             target="_blank"
@@ -72,17 +73,17 @@ export default function Footer() {
 
         {/* Formas de pago */}
         <div className="flex flex-col items-center md:items-start">
-          <p className="font-semibold mb-2">Formas de pago:</p>
-          <span className="text-gray-300 mb-1">Transferencia / Mercado Pago</span>
+          <p className="font-semibold mb-3 text-pink-400 text-lg">Formas de pago:</p>
+          <span className="text-gray-300 mb-2">Transferencia / Mercado Pago</span>
           <img src={mercadopago} alt="Mercado Pago" className="h-10 w-auto" />
         </div>
       </div>
 
-      {/* Créditos con brillo más intenso */}
-      <div className="mt-10 text-center text-xs text-gray-400">
+      {/* Créditos con brillo y fuente destacada */}
+      <div className="mt-12 text-center text-xs text-gray-400">
         <p>© {new Date().getFullYear()} Barby Indumentaria. Todos los derechos reservados.</p>
         <p
-          className="mt-3 text-lg font-extrabold tracking-widest bg-gradient-to-r from-zinc-100 via-white to-zinc-300 bg-clip-text text-transparent drop-shadow-[0_0_10px_rgba(255,182,193,0.8)] animate-shimmer"
+          className="mt-4 text-xl font-extrabold tracking-widest font-title bg-gradient-to-r from-zinc-100 via-white to-zinc-300 bg-clip-text text-transparent drop-shadow-[0_0_12px_rgba(255,182,193,0.9)] animate-shimmer"
           style={{ filter: 'drop-shadow(0 0 15px #f72585)' }}
         >
           Diseñado por &lt;/CodeMoon🌙&gt;

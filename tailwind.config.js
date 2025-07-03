@@ -1,4 +1,4 @@
-/** @type {import('tailwindcss').Config} */
+// tailwind.config.js
 export default {
   content: [
     "./index.html",
@@ -7,15 +7,12 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        title: ['Montserrat', 'sans-serif'],
+        title: ['Cormorat Garamond', 'Abril Fatface'],
         body: ['Playfair Display', 'serif'],
       },
-
       animation: {
-        shimmer: 'shimmer 3s linear infinite',
-        gradient: 'gradient 15s ease infinite',
+        shimmer: 'shimmer 6s linear infinite',
       },
-
       keyframes: {
         shimmer: {
           '0%': { backgroundPosition: '200% center' },
@@ -27,9 +24,9 @@ export default {
           '100%': { backgroundPosition: '0% 50%' },
         },
       },
-
       backgroundImage: {
-        'shimmer-gradient': 'linear-gradient(90deg, #ccc, #fff, #ccc)', // plateado más claro
+         'shimmer-gradient': 'linear-gradient(90deg, #ffffff, #ec4899, #e5e5e5)', // más claro y metalizado
+
       },
     },
   },
