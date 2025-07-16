@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FaBars, FaTimes, FaUserCircle, FaShoppingCart } from 'react-icons/fa'; 
@@ -7,13 +8,19 @@ import whatsapp from '../assets/whatsapp-black.png';
 import facebook from '../assets/facebook-black.png';
 import instagram from '../assets/instagram-black.png';
 
-import { useCart } from '../context/CartContext'; // Importa el hook del carrito para usar la cantidad
+import { useCart } from '../context/CartContext';
+import { useSearch } from '../context/SearchContext';
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const toggleMenu = () => setMenuOpen(!menuOpen);
+  const [showSearch, setShowSearch] = useState(false);
+  const [localQuery, setLocalQuery] = useState('');
   const { carrito } = useCart();
+  const { setQuery } = useSearch();
   const navigate = useNavigate();
+
+  const toggleMenu = () => setMenuOpen(!menuOpen);
+  const toggleSearch = () => setShowSearch(!showSearch);
 
   const secciones = [
     ['Inicio', '/'],
@@ -23,16 +30,18 @@ export default function Navbar() {
     ['Electrónica', '/electronica'],
   ];
 
-  // Para cuando hacen click en el carrito
-  const handleCarritoClick = () => {
-    navigate('/carrito');
+  // Al hacer submit en el input buscar
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    setQuery(localQuery.trim());
     setMenuOpen(false);
+    setShowSearch(false);
+    navigate('/search');  // --> Necesitás crear esta ruta y componente SearchPage
   };
 
   return (
     <header className="fixed top-0 left-0 w-full z-50 backdrop-blur-md bg-white/40 border-b border-white/30 shadow-md">
       <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-3">
-
         {/* Logo */}
         <div className="flex items-center gap-3">
           <img src={logo} alt="Logo" className="h-10 w-auto drop-shadow" />
@@ -60,18 +69,32 @@ export default function Navbar() {
 
         {/* Íconos y login */}
         <div className="flex items-center gap-4 relative">
+          {/* Buscador */}
+          <form onSubmit={handleSearchSubmit} className="relative">
+            <img
+              src={lupa}
+              alt="Buscar"
+              onClick={() => setShowSearch((v) => !v)}
+              className="h-6 w-6 cursor-pointer transition-transform hover:scale-110 hover:brightness-125 hover:drop-shadow-[0_0_6px_#f472b6] duration-300"
+            />
+            {showSearch && (
+              <input
+                type="text"
+                placeholder="Buscar productos..."
+                value={localQuery}
+                onChange={(e) => setLocalQuery(e.target.value)}
+                autoFocus
+                className="absolute right-0 top-7 w-48 border rounded px-3 py-1 text-sm shadow-md focus:outline-none"
+              />
+            )}
+          </form>
 
-          {/* Ícono lupa */}
-          <img
-            src={lupa}
-            alt="Buscar"
-            className="h-6 w-6 cursor-pointer transition-transform hover:scale-110 hover:brightness-125 hover:drop-shadow-[0_0_6px_#f472b6] duration-300"
-            // Aquí podrías agregar funcionalidad para buscar
-          />
-
-          {/* Ícono carrito con badge */}
+          {/* Carrito */}
           <button
-            onClick={handleCarritoClick}
+            onClick={() => {
+              navigate('/carrito');
+              setMenuOpen(false);
+            }}
             aria-label="Carrito de compras"
             className="relative focus:outline-none"
           >
@@ -101,15 +124,12 @@ export default function Navbar() {
             </a>
           ))}
 
-          <div className="flex items-center gap-2">
-            <Link
-              to="/auth"
-              aria-label="Login y Registro"
-              className="text-black hover:text-pink-600 text-2xl transition-colors duration-300"
-            >
-              <FaUserCircle />
-            </Link>
-          </div>
+          <Link
+            to="/auth"
+            className="text-black hover:text-pink-600 text-2xl transition-colors duration-300"
+          >
+            <FaUserCircle />
+          </Link>
 
           <button
             className="text-black text-2xl md:hidden ml-2"
