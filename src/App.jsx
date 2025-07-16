@@ -1,4 +1,5 @@
-import React from "react";
+import React from 'react';
+import { CartProvider } from './context/CartContext';
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 
 import Navbar from "./components/Navbar";
@@ -6,20 +7,12 @@ import Hero from "./components/Hero";
 import Destacados from "./components/Destacados";
 import ProductosList from "./components/ProductosList";
 import AdminProducts from "./components/admin/AdminProductos";
-import LoginAdmin from "./components/admin/LoginAdmin";
+import Auth from "./components/admin/Auth";
 import Footer from "./components/Footer";
 import WhatsAppButton from "./components/WhatsAppButton";
 import DetalleProducto from "./components/DetalleProducto";
+import Carrito from "./components/Carrito"; // ✅ Asegurate que este archivo exista en components
 
-// ...
-
-<Routes>
-  {/* ... otras rutas */}
-  <Route path="/producto/:id" element={<DetalleProducto />} />
-</Routes>
-
-
-// 📄 Importamos las nuevas páginas
 import Ropa from "./pages/Ropa";
 import Zapatos from "./pages/Zapatos";
 import Hogar from "./pages/Hogar";
@@ -29,40 +22,52 @@ function App() {
   const isLoggedIn = localStorage.getItem("adminLoggedIn") === "true";
 
   return (
-    <Router>
-      <div className="font-sans text-black">
-        <div className="fixed inset-0 -z-10 bg-gradient-to-br from-pink-100 via-white to-pink-200 bg-[length:300%_300%] animate-gradient" />
+    <CartProvider>
+      <Router>
+        <div className="font-sans text-black">
+          {/* Fondo degradado */}
+          <div className="fixed inset-0 -z-10 bg-gradient-to-br from-pink-100 via-white to-pink-200 bg-[length:300%_300%] animate-gradient" />
 
-        <Navbar />
+          <Navbar />
 
-        <Routes>
-          <Route
-            path="/"
-            element={
-              <>
-                <Hero />
-                <Destacados />
-                <ProductosList />
-              </>
-            }
-          />
-          {/* Nuevas rutas de secciones */}
-          <Route path="/ropa" element={<Ropa />} />
-          <Route path="/zapatos" element={<Zapatos />} />
-          <Route path="/hogar" element={<Hogar />} />
-          <Route path="/electronica" element={<Electronica />} />
-          <Route path="/producto/:id" element={<DetalleProducto />} />
+          <Routes>
+            {/* Página principal */}
+            <Route
+              path="/"
+              element={
+                <>
+                  <Hero />
+                  <Destacados />
+                  <ProductosList />
+                </>
+              }
+            />
 
+            {/* Páginas de categorías */}
+            <Route path="/ropa" element={<Ropa />} />
+            <Route path="/zapatos" element={<Zapatos />} />
+            <Route path="/hogar" element={<Hogar />} />
+            <Route path="/electronica" element={<Electronica />} />
 
-          {/* Admin */}
-          <Route path="/admin" element={isLoggedIn ? <AdminProducts /> : <Navigate to="/login" />} />
-          <Route path="/login" element={<LoginAdmin />} />
-        </Routes>
+            {/* Detalle de producto */}
+            <Route path="/producto/:id" element={<DetalleProducto />} />
 
-        <Footer />
-        <WhatsAppButton />
-      </div>
-    </Router>
+            {/* Página del carrito */}
+            <Route path="/carrito" element={<Carrito />} />
+
+            {/* Autenticación y panel admin */}
+            <Route path="/auth" element={<Auth />} />
+            <Route
+              path="/admin"
+              element={isLoggedIn ? <AdminProducts /> : <Navigate to="/auth" />}
+            />
+          </Routes>
+
+          <Footer />
+          <WhatsAppButton />
+        </div>
+      </Router>
+    </CartProvider>
   );
 }
 

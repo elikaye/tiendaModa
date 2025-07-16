@@ -1,6 +1,6 @@
 import express from 'express';
 import { Product } from '../models/product.js';
-import { validationResult, body } from 'express-validator'; // Nueva dependencia
+import { validationResult, body } from 'express-validator';
 
 const router = express.Router();
 
@@ -9,6 +9,7 @@ const validateProduct = [
   body('nombre').trim().isLength({ min: 2 }).withMessage('Nombre inválido (mín 2 caracteres)'),
   body('precio').isFloat({ gt: 0 }).withMessage('Precio debe ser mayor a 0'),
   body('descripcion').optional().trim(),
+  body('subcategoria').optional().isLength({ min: 2, max: 50 }).withMessage('Subcategoría inválida'),
   (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -18,7 +19,7 @@ const validateProduct = [
   }
 ];
 
-// Middleware para cargar producto
+// Middleware para cargar producto por ID
 const loadProduct = async (req, res, next) => {
   try {
     const product = await Product.findByPk(req.params.id);
@@ -26,22 +27,37 @@ const loadProduct = async (req, res, next) => {
     req.product = product;
     next();
   } catch (error) {
-   console.error('❌ Error detallado:', error);
-res.status(500).json({ message: 'Error al obtener productos', error: error.message });
-
+    console.error('❌ Error detallado:', error);
+    res.status(500).json({ message: 'Error al obtener productos', error: error.message });
   }
 };
 
-// Obtener productos paginados
+// Obtener productos con filtros opcionales: categoría, destacados, paginado
 router.get('/', async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const offset = (page - 1) * limit;
 
+    const whereClause = {};
+
+    if (req.query.categoria) {
+      whereClause.categoria = req.query.categoria;
+    }
+
+       if (req.query.subcategoria) {
+      whereClause.subcategoria = req.query.subcategoria;
+    }
+
+    if (req.query.destacados === 'true') {
+      whereClause.destacados = true;
+    }
+
     const { count, rows: products } = await Product.findAndCountAll({
+      where: whereClause,
       limit,
-      offset
+      offset,
+      order: [['createdAt', 'DESC']],
     });
 
     res.json({
@@ -51,7 +67,7 @@ router.get('/', async (req, res) => {
       products
     });
   } catch (error) {
-    console.error('🔥 Error en GET /api/v1/products:', error); // 👈 Agregado
+    console.error('🔥 Error en GET /api/v1/products:', error);
     res.status(500).json({ message: 'Error al obtener productos' });
   }
 });
@@ -75,7 +91,6 @@ router.post('/', validateProduct, async (req, res) => {
 // Actualizar producto
 router.put('/:id', loadProduct, validateProduct, async (req, res) => {
   try {
-    // Actualización directa sin segunda consulta
     await req.product.update(req.body);
     res.json(req.product);
   } catch (error) {

@@ -75,40 +75,52 @@ export const Product = sequelize.define('Product', {
     validate: {
       isIn: [['activo', 'inactivo', 'agotado']]
     }
+  },
+  categoria: {
+    type: DataTypes.STRING(50),
+    allowNull: false,
+    validate: {
+      notEmpty: {
+        msg: 'La categoría es obligatoria'
+      },
+      len: {
+        args: [2, 50],
+        msg: 'La categoría debe tener entre 2 y 50 caracteres'
+      }
+    }
+  },
+  subcategoria: {
+    type: DataTypes.STRING(50),
+    allowNull: true,
+    // Validación isIn removida para no bloquear valores
+  },
+  destacados: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false
   }
 }, {
   timestamps: true,
   tableName: 'products',
-  paranoid: true, // Habilita borrado suave (soft delete)
+  paranoid: true,
   defaultScope: {
     attributes: {
-      exclude: ['deletedAt'] // Excluye deletedAt por defecto
+      exclude: ['deletedAt']
     }
   },
   hooks: {
     beforeCreate: (product) => {
       if (product.nombre) product.nombre = product.nombre.trim();
       if (product.descripcion) product.descripcion = product.descripcion.trim();
+      if (product.categoria) product.categoria = product.categoria.trim();
     },
     beforeUpdate: (product) => {
       product.updatedAt = new Date();
     }
   },
   indexes: [
-    {
-      name: 'idx_product_nombre',
-      fields: ['nombre'],
-      using: 'BTREE'
-    },
-    {
-      name: 'idx_product_precio',
-      fields: ['precio'],
-      using: 'BTREE'
-    },
-    {
-      name: 'idx_product_estado',
-      fields: ['estado'],
-      using: 'BTREE'
-    }
+    { name: 'idx_product_nombre', fields: ['nombre'], using: 'BTREE' },
+    { name: 'idx_product_precio', fields: ['precio'], using: 'BTREE' },
+    { name: 'idx_product_estado', fields: ['estado'], using: 'BTREE' },
+    { name: 'idx_product_categoria', fields: ['categoria'], using: 'BTREE' },
   ]
 });

@@ -24,16 +24,16 @@ export default function Hero() {
           </h1>
 
           <p className="text-lg text-pink-100 font-body mb-6">
-            Moda, hogar, tecnología, belleza y mucho más. ¡Descubrí tu estilo!
+            Moda, hogar, tecnología, belleza y mucho más. 
           </p>
+        <a
+          href="#productos"
+          className="inline-block bg-pink-400 text-black font-body px-6 py-3 rounded-sm text-base shadow-md 
+         hover:bg-pink-200 hover:shadow-lg transition-all duration-300"
+       >
+         Ver productos
+       </a>
 
-          <Link
-            to="/"
-            className="inline-block bg-pink-500 text-white font-body px-6 py-3 rounded-sm text-base shadow-md 
-              hover:bg-black hover:shadow-lg transition-all duration-300"
-          >
-            Ver productos
-          </Link>
         </div>
         
       </div>

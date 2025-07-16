@@ -1,59 +1,77 @@
 import React, { useState } from "react";
-import { FaHeart } from "react-icons/fa";
-import { Link } from "react-router-dom";
+import { FaHeart, FaShoppingBag } from "react-icons/fa";
+import { useCart } from "../context/CartContext";
+import { Link, useNavigate } from "react-router-dom";
 
 const ProductoCard = ({ producto }) => {
   const [liked, setLiked] = useState(false);
+  const { agregarAlCarrito } = useCart();
+  const navigate = useNavigate();
 
-  if (!producto || !producto.imageUrl || !producto.nombre) return null;
+  if (!producto) return null;
 
   const toggleLike = (e) => {
-    e.preventDefault(); // Evitar que el click en el corazón navegue al detalle
+    e.preventDefault();
     setLiked(!liked);
+  };
+
+  const handleComprar = (e) => {
+    e.preventDefault();
+    agregarAlCarrito(producto);
+    navigate("/carrito"); // redirige al carrito
   };
 
   return (
     <Link
       to={`/producto/${producto.id}`}
-      className="relative block bg-white rounded-xl shadow-lg
-                 hover:shadow-2xl transition-shadow duration-300
-                 cursor-pointer p-4 flex flex-row items-center gap-6 max-w-3xl mx-auto" >
+      className="relative block bg-white rounded-xl shadow-lg hover:shadow-2xl transition-shadow duration-300 cursor-pointer p-4 flex flex-col justify-between h-full"
+    >
+      {/* Botón de favorito */}
       <button
         onClick={toggleLike}
         aria-label="Agregar a favoritos"
-        className={`absolute top-3 right-3 p-1 rounded-full
-          transition-colors duration-300
-          ${liked ? "text-pink-600 bg-white" : "text-black bg-white hover:text-pink-600"}`}
+        className={`absolute top-3 right-3 p-1 rounded-full transition-colors duration-300 ${
+          liked ? "text-pink-600 bg-white" : "text-black bg-white hover:text-pink-600"
+        }`}
         style={{ zIndex: 10 }}
       >
         <FaHeart size={22} />
       </button>
 
+      {/* Imagen del producto */}
       <img
-        src={producto.imageUrl}
-        alt={producto.nombre}
-        className="rounded-md transition-transform duration-300 hover:scale-105"
+        src={producto.imageUrl || "/placeholder.png"}
+        alt={producto.nombre || "Producto"}
+        className="rounded-md transition-transform duration-300 hover:scale-105 mb-4"
         style={{
-          width: "160px",
-          height: "auto",
+          width: "100%",
+          height: "180px",
           objectFit: "contain",
-          flexShrink: 0,
         }}
         onError={(e) => {
-          e.target.src = "/placeholder.png"; // imagen alternativa si falla
+          e.target.src = "/placeholder.png";
         }}
       />
 
+      {/* Info */}
       <div className="flex flex-col flex-grow">
         <h3 className="font-title text-black font-semibold text-xl mb-1">
-          {producto.nombre}
+          {producto.nombre || "Sin nombre"}
         </h3>
         <p className="font-body text-gray-700 text-sm flex-grow line-clamp-3">
           {producto.descripcion || "Sin descripción disponible"}
         </p>
-        <p className="text-pink-600 font-bold text-xl mt-3">
+        <p className="text-pink-600 font-bold text-xl mt-2">
           ${producto.precio?.toFixed(2) || "0.00"}
         </p>
+
+        {/* Botón comprar */}
+        <button
+          onClick={handleComprar}
+          className="mt-4 self-start bg-pink-500 text-white px-4 py-2 rounded-full hover:bg-black transition duration-300 flex items-center gap-2 text-sm shadow-lg"
+        >
+          <FaShoppingBag size={14} /> Comprar
+        </button>
       </div>
     </Link>
   );

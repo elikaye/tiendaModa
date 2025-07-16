@@ -1,10 +1,12 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import ProductForm from './ProductForm';
 
 export default function AdminProducts() {
   const [productos, setProductos] = useState([]);
   const [productoEditando, setProductoEditando] = useState(null);
   const [formVisible, setFormVisible] = useState(false);
+  const [productoAEliminar, setProductoAEliminar] = useState(null);
+  const [modalVisible, setModalVisible] = useState(false);
 
   const fetchProductos = async () => {
     try {
@@ -20,14 +22,19 @@ export default function AdminProducts() {
     fetchProductos();
   }, []);
 
-  const eliminarProducto = async (id) => {
-    if (!window.confirm('¿Seguro que querés eliminar este producto?')) return;
+  const confirmarEliminar = (producto) => {
+    setProductoAEliminar(producto);
+    setModalVisible(true);
+  };
 
+  const eliminarProducto = async () => {
     try {
-      await fetch(`http://localhost:5000/api/v1/products/${id}`, {
+      await fetch(`http://localhost:5000/api/v1/products/${productoAEliminar.id}`, {
         method: 'DELETE',
       });
-      fetchProductos(); // Recargar lista
+      setModalVisible(false);
+      setProductoAEliminar(null);
+      fetchProductos(); // Refrescar lista
     } catch (err) {
       console.error('❌ Error al eliminar producto', err);
     }
@@ -42,7 +49,7 @@ export default function AdminProducts() {
           setProductoEditando(null);
           setFormVisible(true);
         }}
-        className="bg-pink-600 text-white px-4 py-2 rounded-lg mb-4"
+        className="bg-pink-500 text-white px-4 py-2 rounded-lg mb-4"
       >
         ➕ Agregar Producto
       </button>
@@ -70,6 +77,7 @@ export default function AdminProducts() {
               <th className="p-3">Nombre</th>
               <th className="p-3">Precio</th>
               <th className="p-3">Estado</th>
+              <th className="p-3">Destacado</th>
               <th className="p-3">Acciones</th>
             </tr>
           </thead>
@@ -86,19 +94,26 @@ export default function AdminProducts() {
                 <td className="p-3">{producto.nombre}</td>
                 <td className="p-3">${producto.precio}</td>
                 <td className="p-3 capitalize">{producto.estado}</td>
+                <td className="p-3">
+                  <input
+                    type="checkbox"
+                    checked={producto.destacados}
+                    readOnly
+                  />
+                </td>
                 <td className="p-3 flex gap-2">
                   <button
                     onClick={() => {
                       setProductoEditando(producto);
                       setFormVisible(true);
                     }}
-                    className="bg-blue-500 text-white px-3 py-1 rounded"
+                    className="bg-gray-800 text-white px-3 py-1 rounded"
                   >
                     Editar
                   </button>
                   <button
-                    onClick={() => eliminarProducto(producto.id)}
-                    className="bg-red-500 text-white px-3 py-1 rounded"
+                    onClick={() => confirmarEliminar(producto)}
+                    className="bg-pink-500 text-white px-3 py-1 rounded"
                   >
                     Eliminar
                   </button>
@@ -108,6 +123,35 @@ export default function AdminProducts() {
           </tbody>
         </table>
       </div>
+
+      {modalVisible && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded shadow-md max-w-sm w-full">
+            <h3 className="text-lg font-semibold mb-4">Confirmar eliminación</h3>
+            <p className="mb-6">
+              ¿Estás seguro que querés eliminar el producto{' '}
+              <strong>{productoAEliminar?.nombre}</strong>?
+            </p>
+            <div className="flex justify-end gap-4">
+              <button
+                onClick={() => {
+                  setModalVisible(false);
+                  setProductoAEliminar(null);
+                }}
+                className="px-4 py-2 rounded border border-gray-300"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={eliminarProducto}
+                className="px-4 py-2 rounded bg-pink-500 text-white"
+              >
+                Eliminar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }

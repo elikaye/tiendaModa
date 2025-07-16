@@ -2,22 +2,24 @@ import { useEffect, useState } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay } from 'swiper/modules';
 import { FaShoppingBag } from 'react-icons/fa';
+import { Link } from 'react-router-dom';
+import { useCart } from '../context/CartContext';  // Importar el contexto carrito
 import 'swiper/css';
 
-export default function Destacados() {
+function Destacados() {
   const [productos, setProductos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const { agregarAlCarrito } = useCart();  // Hook para agregar al carrito
+
   useEffect(() => {
     const fetchProductos = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/v1/products');
+        const response = await fetch('http://localhost:5000/api/v1/products?destacado=true&limit=6');
         if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
         const data = await response.json();
-        const destacados = (Array.isArray(data.products) ? data.products : [])
-          .filter(prod => prod.imageUrl)
-          .slice(0, 6);
+        const destacados = Array.isArray(data.products) ? data.products : [];
         setProductos(destacados);
       } catch (err) {
         console.error('❌ Error al cargar productos:', err);
@@ -31,6 +33,12 @@ export default function Destacados() {
   }, []);
 
   if (loading || error || !productos.length) return null;
+
+  const handleComprar = (e, producto) => {
+    e.preventDefault();  // Para evitar que el Link navegue
+    agregarAlCarrito(producto);
+    alert(`Agregaste ${producto.nombre} al carrito!`);
+  };
 
   return (
     <section className="bg-pink-200 py-16">
@@ -52,35 +60,38 @@ export default function Destacados() {
         >
           {productos.map(prod => (
             <SwiperSlide key={prod.id}>
-              <div className="bg-white rounded-3xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden h-full flex flex-col">
-                <div className="h-60 bg-white flex items-center justify-center relative overflow-hidden">
-                  <img
-                    src={prod.imageUrl}
-                    alt={prod.nombre}
-                    className="object-contain w-full h-full p-6 transition-transform duration-500 hover:scale-105"
-                    loading="lazy"
-                    onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.src = '/static/products/producto1.jpeg';
-                    }}
-                  />
-                </div>
-                <div className="p-5 flex-grow flex flex-col justify-between">
-                  <h3 className="text-lg font-title font-semibold text-gray-900 mb-2 line-clamp-2">
-                    {prod.nombre}
-                  </h3>
-                  <div className="flex justify-between items-center mt-auto">
-                    <p className="text-pink-600 text-xl font-bold">
-                      ${prod.precio.toFixed(2)}
-                    </p>
-                    <button
-                      className="flex items-center gap-2 bg-black text-white px-4 py-2 rounded-full hover:bg-pink-600 transition-all duration-300 text-sm shadow-lg"
-                    >
-                      <FaShoppingBag size={14} /> Comprar
-                    </button>
+              <Link to={`/producto/${prod.id}`}>
+                <div className="bg-white rounded-3xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden h-full flex flex-col">
+                  <div className="h-60 bg-white flex items-center justify-center relative overflow-hidden">
+                    <img
+                      src={prod.imageUrl}
+                      alt={prod.nombre}
+                      className="object-contain w-full h-full p-6 transition-transform duration-500 hover:scale-105"
+                      loading="lazy"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = '/static/products/producto1.jpeg';
+                      }}
+                    />
+                  </div>
+                  <div className="p-5 flex-grow flex flex-col justify-between">
+                    <h3 className="text-lg font-title font-semibold text-gray-900 mb-2 line-clamp-2">
+                      {prod.nombre}
+                    </h3>
+                    <div className="flex justify-between items-center mt-auto">
+                      <p className="text-pink-600 text-xl font-bold">
+                        ${prod.precio.toFixed(2)}
+                      </p>
+                      <button
+                        onClick={(e) => handleComprar(e, prod)}
+                        className="flex items-center gap-2 bg-black text-white px-4 py-2 rounded-full hover:bg-pink-600 transition-all duration-300 text-sm shadow-lg"
+                      >
+                        <FaShoppingBag size={14} /> Comprar
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
+              </Link>
             </SwiperSlide>
           ))}
         </Swiper>
@@ -88,3 +99,5 @@ export default function Destacados() {
     </section>
   );
 }
+
+export default Destacados;

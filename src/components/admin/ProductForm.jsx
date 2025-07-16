@@ -7,6 +7,8 @@ export default function ProductForm({ producto, onCancel, onSave }) {
     precio: '',
     imageUrl: '',
     estado: 'activo',
+    categoria: '',
+    destacados: false, // ✅ CORRECTO (plural)
   });
 
   useEffect(() => {
@@ -17,6 +19,8 @@ export default function ProductForm({ producto, onCancel, onSave }) {
         precio: producto.precio || '',
         imageUrl: producto.imageUrl || '',
         estado: producto.estado || 'activo',
+        categoria: producto.categoria || '',
+        destacados: producto.destacados || false, // ✅ CORRECTO
       });
     } else {
       setFormData({
@@ -25,13 +29,19 @@ export default function ProductForm({ producto, onCancel, onSave }) {
         precio: '',
         imageUrl: '',
         estado: 'activo',
+        categoria: '',
+    
+        destacados: false,
       });
     }
   }, [producto]);
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    const { name, value, type, checked } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value
+    }));
   };
 
   const handleSubmit = async (e) => {
@@ -99,7 +109,7 @@ export default function ProductForm({ producto, onCancel, onSave }) {
             name="imageUrl"
             value={formData.imageUrl}
             onChange={handleChange}
-            placeholder="/product/productoX.jpeg"
+            placeholder="/product/productoX.jpg"
             className="w-full border px-3 py-2 rounded"
           />
           {formData.imageUrl && (
@@ -123,6 +133,32 @@ export default function ProductForm({ producto, onCancel, onSave }) {
             <option value="inactivo">Inactivo</option>
             <option value="agotado">Agotado</option>
           </select>
+        </div>
+        <div>
+          <label className="block mb-1 font-semibold">Categoría</label>
+          <select
+            name="categoria"
+            value={formData.categoria}
+            onChange={handleChange}
+            className="w-full border px-3 py-2 rounded"
+            required
+          >
+            <option value="">-- Seleccioná una categoría --</option>
+            <option value="ropa">Ropa</option>
+            <option value="zapatos">Zapatos</option>
+            <option value="hogar">Hogar</option>
+            <option value="electronica">Electrónica</option>
+          </select>
+        </div>
+        <div className="flex items-center gap-2 mt-2">
+          <input
+            type="checkbox"
+            name="destacados"
+            checked={formData.destacados}
+            onChange={handleChange}
+            className="accent-pink-600 w-5 h-5"
+          />
+          <label className="text-sm font-semibold">¿Producto destacado?</label>
         </div>
       </div>
 

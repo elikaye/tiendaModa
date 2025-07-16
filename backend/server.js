@@ -8,6 +8,7 @@ import path from 'path';
 import fs from 'fs';
 import { Sequelize } from 'sequelize';
 import productRoutes from './routes/productRoutes.js';
+import userRoutes from './routes/userRoutes.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -37,13 +38,16 @@ const initializeDB = async () => {
 
 app.use(helmet());
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || '*',
-  methods: ['GET', 'POST', 'PUT', 'DELETE']
+  origin: ['http://localhost:5173', 'http://localhost:5174'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: true
 }));
 app.use(express.json({ limit: '10mb' }));
 
 // Ruta estática para imágenes con path absoluto
 app.use('/product', express.static(path.join(process.cwd(), '/public/product')));
+
+app.use('/api/v1/users', userRoutes);
 
 // Diagnóstico: Verificar que la imagen exista
 const testImagePath = path.join(process.cwd(), 'public/product/producto1.jpeg');

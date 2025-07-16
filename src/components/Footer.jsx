@@ -58,7 +58,6 @@ export default function Footer() {
             href=""
             className="text-gray-300 hover:text-pink-400 hover:underline transition duration-300"
           >
-            barbytienda@example.com
           </a>
           <p className="font-semibold mt-4 text-pink-400 text-lg">WhatsApp:</p>
           <a
