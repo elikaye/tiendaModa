@@ -16,7 +16,8 @@ const PORT = process.env.PORT || 5000;
 const sequelize = new Sequelize(
   process.env.DB_NAME,
   process.env.DB_USER,
-  process.env.DB_PASSWORD, {
+  process.env.DB_PASSWORD,
+  {
     host: process.env.DB_HOST,
     dialect: 'mysql',
     port: process.env.DB_PORT || 3306,
@@ -28,6 +29,7 @@ const initializeDB = async () => {
   try {
     await sequelize.authenticate();
     console.log('DB connected ✅');
+    // Sync solo en desarrollo para evitar alteraciones en producción
     await sequelize.sync({ alter: process.env.NODE_ENV === 'development' });
     console.log('Models synced ✅');
   } catch (err) {
@@ -37,19 +39,30 @@ const initializeDB = async () => {
 };
 
 app.use(helmet());
+
+// Actualiza el origen CORS con la URL de tu frontend deployado cuando la tengas
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://localhost:5174',
+  process.env.CORS_ORIGIN // la definís en .env con tu URL de frontend en producción
+].filter(Boolean);
+
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:5174'],
+  origin: allowedOrigins,
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: true
 }));
+
 app.use(express.json({ limit: '10mb' }));
 
-// Ruta estática para imágenes con path absoluto
-app.use('/product', express.static(path.join(process.cwd(), '/public/product')));
+// Sirve imágenes desde la carpeta pública con path absoluto
+app.use('/product', express.static(path.join(process.cwd(), 'public/product')));
 
+// Rutas para usuarios y productos
 app.use('/api/v1/users', userRoutes);
+app.use('/api/v1/products', productRoutes);
 
-// Diagnóstico: Verificar que la imagen exista
+// Diagnóstico: verifica si la imagen existe (opcional, para debugging)
 const testImagePath = path.join(process.cwd(), 'public/product/producto1.jpeg');
 fs.access(testImagePath, fs.constants.F_OK, (err) => {
   if (err) {
@@ -59,10 +72,7 @@ fs.access(testImagePath, fs.constants.F_OK, (err) => {
   }
 });
 
-// Rutas API
-app.use('/api/v1/products', productRoutes);
-
-// Middleware manejo de errores
+// Middleware para manejo de errores global
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ error: 'Error interno del servidor' });

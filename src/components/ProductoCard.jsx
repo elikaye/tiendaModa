@@ -8,6 +8,9 @@ const ProductoCard = ({ producto }) => {
   const { agregarAlCarrito } = useCart();
   const navigate = useNavigate();
 
+  // Cambia esta URL por la de tu backend deployado en Railway
+  const baseUrlBackend = "https://tu-backend.railway.app/product/";
+
   if (!producto) return null;
 
   const toggleLike = (e) => {
@@ -40,7 +43,7 @@ const ProductoCard = ({ producto }) => {
 
       {/* Imagen del producto */}
       <img
-        src={producto.imageUrl || "/placeholder.png"}
+        src={producto.imageUrl ? `${baseUrlBackend}${producto.imageUrl}` : "/placeholder.png"}
         alt={producto.nombre || "Producto"}
         className="rounded-md transition-transform duration-300 hover:scale-105 mb-4"
         style={{

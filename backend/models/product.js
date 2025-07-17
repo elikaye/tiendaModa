@@ -59,11 +59,11 @@ export const Product = sequelize.define('Product', {
     }
   },
   imageUrl: {
-    type: DataTypes.STRING(512),
+    type: DataTypes.STRING(255),
     allowNull: true,
     validate: {
       isValidUrlOrPath(value) {
-        if (value && !value.match(/^\/|https?:\/\//)) {
+        if (value && !value.match(/^(\/|https?:\/\/|[a-zA-Z0-9-_]+\.[a-zA-Z]{2,})/)) {
           throw new Error('Debe ser una ruta relativa (ej: /static/products/imagen.jpeg) o una URL válida (http://...)');
         }
       }
@@ -92,7 +92,6 @@ export const Product = sequelize.define('Product', {
   subcategoria: {
     type: DataTypes.STRING(50),
     allowNull: true,
-    // Validación isIn removida para no bloquear valores
   },
   destacados: {
     type: DataTypes.BOOLEAN,
