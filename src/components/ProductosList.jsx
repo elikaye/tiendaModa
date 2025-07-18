@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import ProductoCard from "./ProductoCard";
 import { useSearch } from "../context/SearchContext";
-import API_BASE_URL from "../config"; // ✅ Importa la URL base desde config.js
+import {API_BASE_URL} from "../config"; // ✅ Importa la URL base desde config.js
 
 const ProductosList = () => {
   const [productos, setProductos] = useState([]);
