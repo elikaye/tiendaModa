@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
-import { API_BASE_URL } from "../config"; // Ajusta la ruta si es necesario
+import { API_BASE_URL } from "../../config";
 
 const ProductForm = () => {
   const [nombre, setNombre] = useState("");
@@ -11,7 +11,6 @@ const ProductForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Convierte precio a número
     const nuevoProducto = {
       nombre,
       descripcion,
@@ -69,7 +68,10 @@ const ProductForm = () => {
         required
         className="border p-2 rounded"
       />
-      <button type="submit" className="bg-pink-600 text-white py-2 rounded hover:bg-pink-700 transition">
+      <button
+        type="submit"
+        className="bg-pink-600 text-white py-2 rounded hover:bg-pink-700 transition"
+      >
         Crear Producto
       </button>
     </form>
