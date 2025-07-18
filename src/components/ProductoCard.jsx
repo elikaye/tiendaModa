@@ -2,14 +2,14 @@ import React, { useState } from "react";
 import { FaHeart, FaShoppingBag } from "react-icons/fa";
 import { useCart } from "../context/CartContext";
 import { Link, useNavigate } from "react-router-dom";
+import { API_BASE_URL } from "../config";
 
 const ProductoCard = ({ producto }) => {
   const [liked, setLiked] = useState(false);
   const { agregarAlCarrito } = useCart();
   const navigate = useNavigate();
 
-  // Cambia esta URL por la de tu backend deployado en Railway
-  const baseUrlBackend = "https://tu-backend.railway.app/product/";
+  const baseUrlBackend = API_BASE_URL.split("/api/v1")[0];
 
   if (!producto) return null;
 
@@ -21,15 +21,22 @@ const ProductoCard = ({ producto }) => {
   const handleComprar = (e) => {
     e.preventDefault();
     agregarAlCarrito(producto);
-    navigate("/carrito"); // redirige al carrito
+    navigate("/carrito");
   };
+
+  const imagePath = producto.imageUrl?.startsWith("/")
+    ? producto.imageUrl.substring(1)
+    : producto.imageUrl;
+
+  const imgSrc = producto.imageUrl
+    ? `${baseUrlBackend}/${imagePath}`
+    : "/placeholder.png";
 
   return (
     <Link
-      to={`/producto/${producto.id}`}
+      to={`/producto/${producto.id || producto._id}`}
       className="relative block bg-white rounded-xl shadow-lg hover:shadow-2xl transition-shadow duration-300 cursor-pointer p-4 flex flex-col justify-between h-full"
     >
-      {/* Botón de favorito */}
       <button
         onClick={toggleLike}
         aria-label="Agregar a favoritos"
@@ -41,9 +48,8 @@ const ProductoCard = ({ producto }) => {
         <FaHeart size={22} />
       </button>
 
-      {/* Imagen del producto */}
       <img
-        src={producto.imageUrl ? `${baseUrlBackend}${producto.imageUrl}` : "/placeholder.png"}
+        src={imgSrc}
         alt={producto.nombre || "Producto"}
         className="rounded-md transition-transform duration-300 hover:scale-105 mb-4"
         style={{
@@ -56,7 +62,6 @@ const ProductoCard = ({ producto }) => {
         }}
       />
 
-      {/* Info */}
       <div className="flex flex-col flex-grow">
         <h3 className="font-title text-black font-semibold text-xl mb-1">
           {producto.nombre || "Sin nombre"}
@@ -68,7 +73,6 @@ const ProductoCard = ({ producto }) => {
           ${producto.precio?.toFixed(2) || "0.00"}
         </p>
 
-        {/* Botón comprar */}
         <button
           onClick={handleComprar}
           className="mt-4 self-start bg-pink-500 text-white px-4 py-2 rounded-full hover:bg-black transition duration-300 flex items-center gap-2 text-sm shadow-lg"

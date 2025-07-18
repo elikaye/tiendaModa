@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import ProductForm from './ProductForm';
 
+const API_BASE_URL = 'https://tiendamoda-production.up.railway.app/api/v1/products';
+
 export default function AdminProducts() {
   const [productos, setProductos] = useState([]);
   const [productoEditando, setProductoEditando] = useState(null);
@@ -10,7 +12,7 @@ export default function AdminProducts() {
 
   const fetchProductos = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/v1/products');
+      const res = await fetch(API_BASE_URL);
       const data = await res.json();
       setProductos(data.products || []);
     } catch (err) {
@@ -29,7 +31,7 @@ export default function AdminProducts() {
 
   const eliminarProducto = async () => {
     try {
-      await fetch(`http://localhost:5000/api/v1/products/${productoAEliminar.id}`, {
+      await fetch(`${API_BASE_URL}/${productoAEliminar.id}`, {
         method: 'DELETE',
       });
       setModalVisible(false);

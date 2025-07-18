@@ -1,17 +1,18 @@
 import React, { useEffect, useState } from "react";
 import ProductoCard from "./ProductoCard";
 import { useSearch } from "../context/SearchContext";
+import API_BASE_URL from "../config"; // ✅ Importa la URL base desde config.js
 
 const ProductosList = () => {
   const [productos, setProductos] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { query = "" } = useSearch(); // Aseguro query como string
+  const { query = "" } = useSearch();
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/v1/products")
+    fetch(`${API_BASE_URL}/products`) // ✅ Usamos la variable importada
       .then((res) => res.json())
       .then((data) => {
-        console.log("Productos recibidos:", data.products); // Debug para ver qué llega
+        console.log("Productos recibidos:", data.products);
         setProductos(data.products || []);
         setLoading(false);
       })

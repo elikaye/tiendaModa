@@ -6,7 +6,7 @@ export default function Ropa() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/v1/products?categoria=ropa")
+    fetch("https://tiendamoda-production.up.railway.app/api/v1/products?categoria=ropa")
       .then((res) => res.json())
       .then((data) => {
         setProductos(data.products || []);
@@ -21,7 +21,9 @@ export default function Ropa() {
   return (
     <section className="min-h-screen py-20 px-6 bg-gradient-to-br from-pink-200 via-white to-pink-200 font-body">
       <div className="max-w-7xl mx-auto">
-        <h2 className="text-2xl font-extrabold mb-6 text-pink-600 drop-shadow-sm"></h2>
+        <h2 className="text-2xl font-extrabold mb-6 text-pink-600 drop-shadow-sm">
+          Ropa
+        </h2>
 
         {loading ? (
           <p className="text-center text-gray-600">Cargando productos...</p>
@@ -32,7 +34,9 @@ export default function Ropa() {
             ))}
           </div>
         ) : (
-          <p className="text-gray-600">No hay productos disponibles en esta sección.</p>
+          <p className="text-gray-600">
+            No hay productos disponibles en esta sección.
+          </p>
         )}
       </div>
     </section>

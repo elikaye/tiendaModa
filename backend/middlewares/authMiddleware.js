@@ -1,19 +1,16 @@
-import jwt from 'jsonwebtoken';
+import express from 'express';
+import { authMiddleware } from './middlewares/authMiddleware.js'; // ajustá ruta si hace falta
 
-export const authMiddleware = (req, res, next) => {
-  const authHeader = req.headers.authorization;
+const router = express.Router();
 
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ message: 'No autorizado, token faltante' });
-  }
+// Ruta pública
+router.get('/publica', (req, res) => {
+  res.json({ message: 'Esta ruta es pública' });
+});
 
-  const token = authHeader.split(' ')[1];
+// Ruta protegida, solo accesible con token válido
+router.get('/privada', authMiddleware, (req, res) => {
+  res.json({ message: `Hola ${req.user.email}, esta ruta es protegida` });
+});
 
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secreto123');
-    req.user = decoded; // aquí está la info del usuario del token
-    next();
-  } catch (error) {
-    return res.status(401).json({ message: 'Token inválido' });
-  }
-};
+export default router;

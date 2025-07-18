@@ -1,9 +1,12 @@
+
+
 import { useEffect, useState } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay } from 'swiper/modules';
 import { FaShoppingBag } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
-import { useCart } from '../context/CartContext';  // Importar el contexto carrito
+import { useCart } from '../context/CartContext';
+import { API_BASE_URL } from '../config'; // ✅ Cambiado
 import 'swiper/css';
 
 function Destacados() {
@@ -11,12 +14,12 @@ function Destacados() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const { agregarAlCarrito } = useCart();  // Hook para agregar al carrito
+  const { agregarAlCarrito } = useCart();
 
   useEffect(() => {
     const fetchProductos = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/v1/products?destacado=true&limit=6');
+        const response = await fetch(`${API_BASE_URL}/products?destacado=true&limit=6`);
         if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
         const data = await response.json();
         const destacados = Array.isArray(data.products) ? data.products : [];
@@ -35,7 +38,7 @@ function Destacados() {
   if (loading || error || !productos.length) return null;
 
   const handleComprar = (e, producto) => {
-    e.preventDefault();  // Para evitar que el Link navegue
+    e.preventDefault();
     agregarAlCarrito(producto);
     alert(`Agregaste ${producto.nombre} al carrito!`);
   };

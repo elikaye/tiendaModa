@@ -8,7 +8,7 @@ export default function Zapatos() {
   useEffect(() => {
     const fetchProductos = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/v1/products?categoria=zapatos");
+        const response = await fetch("https://tiendamoda-production.up.railway.app/api/v1/products?categoria=zapatos");
         const data = await response.json();
         setProductosZapatos(data.products || []);
       } catch (error) {

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import ProductoCard from "../components/ProductoCard"; // Ajusta la ruta según dónde tengas ProductoCard
+import ProductoCard from "../components/ProductoCard";
+import API_BASE_URL from "../config"; // ✅ Importar desde config
 
 export default function Electronica() {
   const [productosElectronica, setProductosElectronica] = useState([]);
@@ -8,11 +9,9 @@ export default function Electronica() {
   useEffect(() => {
     const fetchProductos = async () => {
       try {
-        // Aquí llamamos al backend con filtro por categoría
-        const response = await fetch("http://localhost:5000/api/v1/products?categoria=electronica");
-        const data = await response.json();
+     const response = await fetch("https://tiendamoda-production.up.railway.app/api/v1/products?categoria=hogar");
 
-        // data.products viene filtrado desde el backend
+        const data = await response.json();
         setProductosElectronica(data.products || []);
       } catch (error) {
         console.error("Error al cargar productos de electrónica:", error);
@@ -27,14 +26,16 @@ export default function Electronica() {
   return (
     <section className="min-h-screen py-20 px-6 bg-gradient-to-br from-pink-200 via-white to-pink-300 font-body">
       <div className="max-w-7xl mx-auto">
-        <h2 className="text-2xl font-extrabold mb-6 text-pink-600 drop-shadow-sm"></h2>
+        <h2 className="text-2xl font-extrabold mb-6 text-pink-600 drop-shadow-sm">
+          Electrónica
+        </h2>
 
         {loading ? (
           <p className="text-center text-gray-600">Cargando productos...</p>
         ) : productosElectronica.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
             {productosElectronica.map((producto) => (
-              <ProductoCard key={producto.id} producto={producto} />
+              <ProductoCard key={producto._id} producto={producto} />
             ))}
           </div>
         ) : (

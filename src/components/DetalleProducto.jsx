@@ -1,33 +1,32 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import { API_BASE_URL } from "../config";
+import { useCart } from "../context/CartContext";
 
 export default function DetalleProducto() {
   const { id } = useParams();
   const [producto, setProducto] = useState(null);
   const [loading, setLoading] = useState(true);
+  const { agregarAlCarrito } = useCart();
 
-useEffect(() => {
-  const fetchProducto = async () => {
-    try {
-      const response = await fetch(`http://localhost:5000/api/v1/products/${id}`);
-      const data = await response.json();
-      setProducto(data);
+  useEffect(() => {
+    const fetchProducto = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/products/${id}`);
+        const data = await response.json();
+        setProducto(data);
 
-      // ✅ Centrar la vista en el producto al cargar
-      window.scrollTo({
-        top: 0,
-        behavior: 'smooth',
-      });
-
-    } catch (error) {
-      console.error("Error al cargar el producto:", error);
-      setProducto(null);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-
+        window.scrollTo({
+          top: 0,
+          behavior: 'smooth',
+        });
+      } catch (error) {
+        console.error("Error al cargar el producto:", error);
+        setProducto(null);
+      } finally {
+        setLoading(false);
+      }
+    };
     fetchProducto();
   }, [id]);
 
@@ -47,12 +46,16 @@ useEffect(() => {
     );
   }
 
+  const baseUrlBackend = API_BASE_URL.split("/api/v1")[0];
+  const imagePath = producto.imageUrl?.startsWith("/") ? producto.imageUrl.substring(1) : producto.imageUrl;
+  const imgSrc = producto.imageUrl ? `${baseUrlBackend}/${imagePath}` : "/placeholder.png";
+
   return (
     <section className="min-h-screen pt-28 pb-16 px-4 bg-gradient-to-br from-pink-200 via-white to-pink-300 font-body">
       <div className="max-w-5xl mx-auto bg-white rounded-2xl shadow-xl p-8 md:p-12">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
           <img
-            src={producto.imageUrl}
+            src={imgSrc}
             alt={producto.nombre}
             className="w-full max-h-[450px] object-contain rounded-lg shadow-md"
             onError={(e) => (e.target.src = "/placeholder.png")}
@@ -69,7 +72,10 @@ useEffect(() => {
               ${producto.precio?.toFixed(2) || "0.00"}
             </p>
 
-            <button className="w-full md:w-auto bg-pink-600 hover:bg-pink-700 text-white py-3 px-6 rounded-xl text-lg transition-all duration-300 shadow-lg">
+            <button
+              onClick={() => agregarAlCarrito(producto)}
+              className="w-full md:w-auto bg-pink-600 hover:bg-pink-700 text-white py-3 px-6 rounded-xl text-lg transition-all duration-300 shadow-lg"
+            >
               Agregar al carrito
             </button>
           </div>

@@ -8,7 +8,8 @@ export default function Hogar() {
   useEffect(() => {
     const fetchProductos = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/v1/products?categoria=hogar");
+       const response = await fetch("https://tiendamoda-production.up.railway.app/api/v1/products?categoria=hogar");
+
         const data = await response.json();
         setProductosHogar(data.products || []);
       } catch (error) {

@@ -1,6 +1,7 @@
 import express from 'express';
 import { Product } from '../models/product.js';
 import { validationResult, body } from 'express-validator';
+import { authMiddleware } from '../middleware/authMiddleware.js'; // Importa el middleware
 
 const router = express.Router();
 
@@ -45,7 +46,7 @@ router.get('/', async (req, res) => {
       whereClause.categoria = req.query.categoria;
     }
 
-       if (req.query.subcategoria) {
+    if (req.query.subcategoria) {
       whereClause.subcategoria = req.query.subcategoria;
     }
 
@@ -72,14 +73,13 @@ router.get('/', async (req, res) => {
   }
 });
 
-
 // Obtener producto por ID
 router.get('/:id', loadProduct, (req, res) => {
   res.json(req.product);
 });
 
-// Crear nuevo producto
-router.post('/', validateProduct, async (req, res) => {
+// Crear nuevo producto - PROTEGIDO
+router.post('/', authMiddleware, validateProduct, async (req, res) => {
   try {
     const newProduct = await Product.create(req.body);
     res.status(201).json(newProduct);
@@ -88,8 +88,8 @@ router.post('/', validateProduct, async (req, res) => {
   }
 });
 
-// Actualizar producto
-router.put('/:id', loadProduct, validateProduct, async (req, res) => {
+// Actualizar producto - PROTEGIDO
+router.put('/:id', authMiddleware, loadProduct, validateProduct, async (req, res) => {
   try {
     await req.product.update(req.body);
     res.json(req.product);
@@ -98,8 +98,8 @@ router.put('/:id', loadProduct, validateProduct, async (req, res) => {
   }
 });
 
-// Eliminar producto
-router.delete('/:id', loadProduct, async (req, res) => {
+// Eliminar producto - PROTEGIDO
+router.delete('/:id', authMiddleware, loadProduct, async (req, res) => {
   try {
     await req.product.destroy();
     res.json({ message: 'Producto eliminado correctamente' });
