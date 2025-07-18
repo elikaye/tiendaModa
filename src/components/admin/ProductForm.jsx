@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
-import { API_BASE_URL } from "../../config"; // Ajusta la ruta si es necesario
+import { API_BASE_URL } from "../config"; // Ajusta la ruta si es necesario
 
 const ProductForm = () => {
   const [nombre, setNombre] = useState("");
