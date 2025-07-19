@@ -27,7 +27,7 @@ app.use(cors({
 }));
 
 // Servir imágenes estáticas
-app.use('/product', express.static(path.join(__dirname, 'public/product')));
+app.use('/product', express.static(path.join(__dirname, '../public/product')));
 
 // Rutas
 const productRoutes = require('./routes/productRoutes');
