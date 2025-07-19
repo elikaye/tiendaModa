@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import ProductoCard from "../components/ProductoCard";
-import API_BASE_URL from "../config"; // ✅ Importar desde config
+
 
 export default function Electronica() {
   const [productosElectronica, setProductosElectronica] = useState([]);
