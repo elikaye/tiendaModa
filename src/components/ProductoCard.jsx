@@ -35,7 +35,7 @@ const ProductoCard = ({ producto }) => {
   return (
     <Link
       to={`/producto/${producto.id || producto._id}`}
-      className="relative block bg-white rounded-xl shadow-lg hover:shadow-2xl transition-shadow duration-300 cursor-pointer p-4 flex flex-col justify-between h-full"
+      className="relative text-black bg-white rounded-xl shadow-lg hover:shadow-2xl transition-shadow duration-300 cursor-pointer p-4 flex flex-col justify-between h-full"
     >
       <button
         onClick={toggleLike}
