@@ -1,7 +1,8 @@
-import express from 'express';
-import { Product } from '../models/product.js';
-import { validationResult, body } from 'express-validator';
-import { authMiddleware } from '../middleware/authMiddleware.js'; // Importa el middleware
+const express = require('express');
+const { Product } = require('../models/product');
+const { validationResult, body } = require('express-validator');
+const authMiddleware = require('../middleware/authMiddleware'); // 👈 corregido
+
 
 const router = express.Router();
 
@@ -108,4 +109,4 @@ router.delete('/:id', authMiddleware, loadProduct, async (req, res) => {
   }
 });
 
-export default router;
+module.exports = router;

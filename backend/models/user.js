@@ -1,8 +1,8 @@
-import { DataTypes } from 'sequelize';
-import { sequelize } from '../config/database.js';
-import bcrypt from 'bcryptjs';
+const { DataTypes } = require('sequelize');
+const { sequelize } = require('../config/database');
+const bcrypt = require('bcryptjs');
 
-export const User = sequelize.define('User', {
+const User = sequelize.define('User', {
   id: {
     type: DataTypes.INTEGER,
     autoIncrement: true,
@@ -74,3 +74,5 @@ export const User = sequelize.define('User', {
     }
   }
 });
+
+module.exports = { User };

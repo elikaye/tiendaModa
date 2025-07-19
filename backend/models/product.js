@@ -1,7 +1,7 @@
-import { DataTypes } from 'sequelize';
-import { sequelize } from '../config/database.js';
+const { DataTypes } = require('sequelize');
+const { sequelize } = require('../config/database');
 
-export const Product = sequelize.define('Product', {
+const Product = sequelize.define('Product', {
   id: {
     type: DataTypes.INTEGER,
     autoIncrement: true,
@@ -123,3 +123,5 @@ export const Product = sequelize.define('Product', {
     { name: 'idx_product_categoria', fields: ['categoria'], using: 'BTREE' },
   ]
 });
+
+module.exports = { Product };

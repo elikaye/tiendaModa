@@ -1,10 +1,12 @@
-import { sequelize } from './config/database.js';
+const { sequelize } = require('./config/database');
 
-try {
-  await sequelize.authenticate();
-  console.log('✅ Conexión a la base de datos establecida correctamente.');
-} catch (error) {
-  console.error('❌ Error al conectar con la base de datos:', error);
-} finally {
-  await sequelize.close();
+async function testConnection() {
+  try {
+    await sequelize.authenticate();
+    console.log('✅ Conexión a la base de datos establecida correctamente.');
+  } catch (error) {
+    console.error('❌ Error al conectar con la base de datos:', error);
+  }
 }
+
+testConnection();
