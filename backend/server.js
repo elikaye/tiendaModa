@@ -1,13 +1,13 @@
-
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
-const mysql = require('mysql2');
 const path = require('path');
+const { sequelize } = require('./config/db'); // <-- Importa la instancia de Sequelize
 
 dotenv.config();
 const app = express();
 
+// Middleware
 app.use(express.json());
 
 const allowedOrigins = [
@@ -36,30 +36,21 @@ const userRoutes = require('./routes/userRoutes');
 app.use('/api/v1/products', productRoutes);
 app.use('/api/v1/users', userRoutes);
 
+// Ruta raíz
 app.get('/', (req, res) => {
-  res.send('✅ API funcionando correctamente en Railway con MySQL 🚂');
+  res.send('✅ API funcionando con Sequelize y MySQL 🚀');
 });
 
-// Crear conexión con MySQL, incluyendo puerto
-const db = mysql.createConnection({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD || '',
-  database: process.env.DB_NAME,
-  port: process.env.DB_PORT || 3306
-});
-
-// Conectar y levantar servidor solo si la conexión es exitosa
-db.connect((err) => {
-  if (err) {
-    console.error('❌ Error al conectar a MySQL:', err.message);
-    console.error(err);
-    process.exit(1); // Cierra la app para que Railway detecte y reinicie si es necesario
-  } else {
-    console.log('✅ Conectado a MySQL');
+// Conexión con Sequelize
+sequelize.authenticate()
+  .then(() => {
+    console.log('✅ Conectado a MySQL con Sequelize');
     const PORT = process.env.PORT || 5000;
     app.listen(PORT, () => {
       console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
     });
-  }
-});
+  })
+  .catch((err) => {
+    console.error('❌ Error al conectar con Sequelize:', err.message);
+    process.exit(1);
+  });

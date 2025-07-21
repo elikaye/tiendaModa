@@ -63,8 +63,8 @@ const Product = sequelize.define('Product', {
     allowNull: true,
     validate: {
       isValidUrlOrPath(value) {
-        if (value && !value.match(/^(\/|https?:\/\/|[a-zA-Z0-9-_]+\.[a-zA-Z]{2,})/)) {
-          throw new Error('Debe ser una ruta relativa (ej: /static/products/imagen.jpeg) o una URL válida (http://...)');
+        if (value && !value.match(/^(\/|https?:\/\/)[^\s]+$/)) {
+          throw new Error('Debe ser una ruta relativa (ej: /static/products/imagen.jpeg) o una URL válida');
         }
       }
     }
@@ -91,7 +91,7 @@ const Product = sequelize.define('Product', {
   },
   subcategoria: {
     type: DataTypes.STRING(50),
-    allowNull: true,
+    allowNull: true
   },
   destacados: {
     type: DataTypes.BOOLEAN,
@@ -120,7 +120,7 @@ const Product = sequelize.define('Product', {
     { name: 'idx_product_nombre', fields: ['nombre'], using: 'BTREE' },
     { name: 'idx_product_precio', fields: ['precio'], using: 'BTREE' },
     { name: 'idx_product_estado', fields: ['estado'], using: 'BTREE' },
-    { name: 'idx_product_categoria', fields: ['categoria'], using: 'BTREE' },
+    { name: 'idx_product_categoria', fields: ['categoria'], using: 'BTREE' }
   ]
 });
 
