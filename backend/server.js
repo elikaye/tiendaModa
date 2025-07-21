@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const path = require('path');
-const { sequelize } = require('./config/db'); // <-- Importa la instancia de Sequelize
+const { sequelize } = require('./config/database'); // <-- Importa la instancia de Sequelize
 
 dotenv.config();
 const app = express();
