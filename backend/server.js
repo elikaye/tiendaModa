@@ -10,16 +10,18 @@ const app = express();
 // Middleware
 app.use(express.json());
 
+// CORS dinámico y seguro para desarrollo y producción
 const allowedOrigins = [
   'http://localhost:5173',
   'https://tiendamoda-production.up.railway.app'
 ];
 
 app.use(cors({
-  origin: function (origin, callback) {
+  origin: (origin, callback) => {
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
+      console.warn('❌ CORS bloqueado:', origin); // <-- Agregado para debug
       callback(new Error('No permitido por CORS: ' + origin));
     }
   },
@@ -45,6 +47,7 @@ app.get('/', (req, res) => {
 sequelize.authenticate()
   .then(() => {
     console.log('✅ Conectado a MySQL con Sequelize');
+
     const PORT = process.env.PORT || 5000;
     app.listen(PORT, () => {
       console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
@@ -52,5 +55,6 @@ sequelize.authenticate()
   })
   .catch((err) => {
     console.error('❌ Error al conectar con Sequelize:', err.message);
+    // Esto forzará a Railway a mostrar el error en logs y no seguir corriendo mal
     process.exit(1);
   });
