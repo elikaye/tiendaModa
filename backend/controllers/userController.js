@@ -1,80 +1,72 @@
-const { User } = require('../models/user');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const { User } = require('../models/user');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'tu_clave_secreta_super_segura_123';
-const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '4h';
-
-// Registro de usuario
-const registerUser = async (req, res) => {
+// Registrar nuevo usuario
+const registrarUsuario = async (req, res) => {
   try {
     const { nombre, email, password } = req.body;
 
     if (!nombre || !email || !password) {
-      return res.status(400).json({ message: 'Nombre, email y contraseña son obligatorios.' });
+      return res.status(400).json({ message: 'Todos los campos son obligatorios' });
     }
 
-    const existingUser = await User.findOne({ where: { email } });
-    if (existingUser) {
-      return res.status(409).json({ message: 'El email ya está registrado.' });
+    const existeUsuario = await User.findOne({ where: { email } });
+    if (existeUsuario) {
+      return res.status(400).json({ message: 'Este email ya está registrado' });
     }
 
-    const newUser = await User.create({ nombre, email, password });
+    const nuevoUsuario = await User.create({ nombre, email, password });
 
-    const userData = {
-      id: newUser.id,
-      nombre: newUser.nombre,
-      email: newUser.email,
-      rol: newUser.rol
-    };
-
-    res.status(201).json({ message: 'Usuario registrado con éxito.', user: userData });
+    return res.status(201).json({ message: 'Usuario registrado correctamente' });
   } catch (error) {
-    console.error('Error en registro:', error);
-    res.status(500).json({ message: 'Error interno del servidor.' });
+    console.error('❌ Error en registrarUsuario:', error);
+    return res.status(500).json({ message: 'Error en el servidor' });
   }
 };
 
 // Login de usuario
-const loginUser = async (req, res) => {
+const loginUsuario = async (req, res) => {
   try {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res.status(400).json({ message: 'Email y contraseña son obligatorios.' });
+      return res.status(400).json({ message: 'Email y contraseña requeridos' });
     }
 
-    const user = await User.scope('withPassword').findOne({ where: { email } });
-    if (!user) {
-      return res.status(401).json({ message: 'Credenciales inválidas.' });
+    const usuario = await User.scope('withPassword').findOne({ where: { email } });
+    if (!usuario) {
+      return res.status(401).json({ message: 'Credenciales inválidas' });
     }
 
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(401).json({ message: 'Credenciales inválidas.' });
+    const passwordOk = await bcrypt.compare(password, usuario.password);
+    if (!passwordOk) {
+      return res.status(401).json({ message: 'Credenciales inválidas' });
     }
 
     const token = jwt.sign(
-      { id: user.id, nombre: user.nombre, email: user.email, rol: user.rol },
-      JWT_SECRET,
-      { expiresIn: JWT_EXPIRES_IN }
+      { id: usuario.id, email: usuario.email, rol: usuario.rol },
+      process.env.JWT_SECRET || 'secreto123',
+      { expiresIn: '4h' }
     );
 
-    const userData = {
-      id: user.id,
-      nombre: user.nombre,
-      email: user.email,
-      rol: user.rol
-    };
-
-    res.json({ message: 'Login exitoso.', user: userData, token });
+    return res.json({
+      message: 'Login exitoso',
+      user: {
+        id: usuario.id,
+        nombre: usuario.nombre,
+        email: usuario.email,
+        rol: usuario.rol
+      },
+      token
+    });
   } catch (error) {
-    console.error('Error en login:', error);
-    res.status(500).json({ message: 'Error interno del servidor.' });
+    console.error('❌ Error en loginUsuario:', error);
+    return res.status(500).json({ message: 'Error en el servidor' });
   }
 };
 
 module.exports = {
-  registerUser,
-  loginUser
+  registrarUsuario,
+  loginUsuario
 };

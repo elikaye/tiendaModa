@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const path = require('path');
-const { sequelize } = require('./config/database'); // <-- Importa la instancia de Sequelize
+const { sequelize } = require('./config/database');
 
 dotenv.config();
 const app = express();
@@ -13,7 +13,9 @@ app.use(express.json());
 // CORS dinámico y seguro para desarrollo y producción
 const allowedOrigins = [
   'http://localhost:5173',
-  'https://tiendamoda-production.up.railway.app'
+  'https://tiendamoda-production.up.railway.app',
+  // Agrega aquí la URL de tu frontend en Netlify cuando la tengas deployada, por ejemplo:
+  // 'https://tu-frontend.netlify.app'
 ];
 
 app.use(cors({
@@ -21,7 +23,7 @@ app.use(cors({
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      console.warn('❌ CORS bloqueado:', origin); // <-- Agregado para debug
+      console.warn('❌ CORS bloqueado:', origin);
       callback(new Error('No permitido por CORS: ' + origin));
     }
   },
@@ -43,7 +45,13 @@ app.get('/', (req, res) => {
   res.send('✅ API funcionando con Sequelize y MySQL 🚀');
 });
 
-// Conexión con Sequelize
+// Middleware para manejo global de errores (opcional pero recomendable)
+app.use((err, req, res, next) => {
+  console.error('Error global:', err.message);
+  res.status(500).json({ message: 'Error interno del servidor' });
+});
+
+// Conexión con Sequelize y arranque del servidor
 sequelize.authenticate()
   .then(() => {
     console.log('✅ Conectado a MySQL con Sequelize');
@@ -55,6 +63,5 @@ sequelize.authenticate()
   })
   .catch((err) => {
     console.error('❌ Error al conectar con Sequelize:', err.message);
-    // Esto forzará a Railway a mostrar el error en logs y no seguir corriendo mal
     process.exit(1);
   });

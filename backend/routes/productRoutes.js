@@ -1,17 +1,20 @@
 const express = require('express');
 const { Product } = require('../models/product');
 const { validationResult, body } = require('express-validator');
-const authMiddleware = require('../middleware/authMiddleware'); // 👈 corregido
-
+const authMiddleware = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
-// Middleware de validación reusable
+// Middleware de validación completa para producto
 const validateProduct = [
   body('nombre').trim().isLength({ min: 2 }).withMessage('Nombre inválido (mín 2 caracteres)'),
   body('precio').isFloat({ gt: 0 }).withMessage('Precio debe ser mayor a 0'),
   body('descripcion').optional().trim(),
   body('subcategoria').optional().isLength({ min: 2, max: 50 }).withMessage('Subcategoría inválida'),
+  body('categoria').trim().isLength({ min: 2, max: 50 }).withMessage('Categoría inválida'),
+  body('imageUrl').optional().trim(),
+  body('estado').optional().isIn(['activo', 'inactivo', 'agotado']).withMessage('Estado inválido'),
+  body('destacados').optional().isBoolean().withMessage('Destacados debe ser booleano'),
   (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -30,7 +33,7 @@ const loadProduct = async (req, res, next) => {
     next();
   } catch (error) {
     console.error('❌ Error detallado:', error);
-    res.status(500).json({ message: 'Error al obtener productos', error: error.message });
+    res.status(500).json({ message: 'Error al obtener producto', error: error.message });
   }
 };
 
@@ -82,9 +85,31 @@ router.get('/:id', loadProduct, (req, res) => {
 // Crear nuevo producto - PROTEGIDO
 router.post('/', authMiddleware, validateProduct, async (req, res) => {
   try {
-    const newProduct = await Product.create(req.body);
+    const {
+      nombre,
+      precio,
+      descripcion,
+      subcategoria,
+      categoria,
+      imageUrl,
+      estado,
+      destacados
+    } = req.body;
+
+    const newProduct = await Product.create({
+      nombre,
+      precio,
+      descripcion,
+      subcategoria,
+      categoria,
+      imageUrl,
+      estado,
+      destacados
+    });
+
     res.status(201).json(newProduct);
   } catch (error) {
+    console.error('❌ Error al crear producto:', error);
     res.status(500).json({ message: 'Error al crear producto' });
   }
 });
@@ -92,9 +117,31 @@ router.post('/', authMiddleware, validateProduct, async (req, res) => {
 // Actualizar producto - PROTEGIDO
 router.put('/:id', authMiddleware, loadProduct, validateProduct, async (req, res) => {
   try {
-    await req.product.update(req.body);
+    const {
+      nombre,
+      precio,
+      descripcion,
+      subcategoria,
+      categoria,
+      imageUrl,
+      estado,
+      destacados
+    } = req.body;
+
+    await req.product.update({
+      nombre,
+      precio,
+      descripcion,
+      subcategoria,
+      categoria,
+      imageUrl,
+      estado,
+      destacados
+    });
+
     res.json(req.product);
   } catch (error) {
+    console.error('❌ Error al actualizar producto:', error);
     res.status(400).json({ message: 'Error al actualizar producto' });
   }
 });
@@ -105,6 +152,7 @@ router.delete('/:id', authMiddleware, loadProduct, async (req, res) => {
     await req.product.destroy();
     res.json({ message: 'Producto eliminado correctamente' });
   } catch (error) {
+    console.error('❌ Error al eliminar producto:', error);
     res.status(500).json({ message: 'Error al eliminar producto' });
   }
 });
