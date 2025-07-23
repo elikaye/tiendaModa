@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { useCart } from "../context/CartContext";
 import { FaTrashAlt } from "react-icons/fa";
 import { Link } from "react-router-dom";
-import placeholderImg from "../assets/placeholder.png"; // importa un placeholder local si tienes
+import placeholderImg from "../assets/carrito-de-compras.png"; // importa un placeholder local si tienes
 
 const Carrito = () => {
   const { carrito, vaciarCarrito, eliminarDelCarrito } = useCart();
