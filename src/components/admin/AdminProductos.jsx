@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import ProductForm from './ProductForm';
 
 const API_BASE_URL = 'https://tiendamoda-production.up.railway.app/api/v1/products';
+const IMAGE_BASE_URL = 'https://tiendamoda-production.up.railway.app/products';
 
 export default function AdminProducts() {
   const [productos, setProductos] = useState([]);
@@ -36,7 +37,7 @@ export default function AdminProducts() {
       });
       setModalVisible(false);
       setProductoAEliminar(null);
-      fetchProductos(); // Refrescar lista
+      fetchProductos();
     } catch (err) {
       console.error('❌ Error al eliminar producto', err);
     }
@@ -88,7 +89,7 @@ export default function AdminProducts() {
               <tr key={producto.id} className="border-t">
                 <td className="p-3">
                   <img
-                    src={producto.imageUrl}
+                    src={`${IMAGE_BASE_URL}/${producto.imageUrl}`}
                     alt={producto.nombre}
                     className="w-12 h-12 object-cover rounded"
                   />

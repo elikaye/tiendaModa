@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import ProductoCard from "../components/ProductoCard";
-
+import { API_BASE_URL } from "../config";
 
 export default function Electronica() {
   const [productosElectronica, setProductosElectronica] = useState([]);
@@ -9,8 +9,7 @@ export default function Electronica() {
   useEffect(() => {
     const fetchProductos = async () => {
       try {
-     const response = await fetch("https://tiendamoda-production.up.railway.app/api/v1/products?categoria=hogar");
-
+        const response = await fetch(`${API_BASE_URL}/products?categoria=electronica`);
         const data = await response.json();
         setProductosElectronica(data.products || []);
       } catch (error) {
@@ -39,7 +38,9 @@ export default function Electronica() {
             ))}
           </div>
         ) : (
-          <p className="text-gray-600">No hay productos disponibles en esta sección por el momento.</p>
+          <p className="text-gray-600">
+            No hay productos disponibles en esta sección por el momento.
+          </p>
         )}
       </div>
     </section>

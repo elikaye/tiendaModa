@@ -13,13 +13,10 @@ export default function DetalleProducto() {
     const fetchProducto = async () => {
       try {
         const response = await fetch(`${API_BASE_URL}/products/${id}`);
+        if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
         const data = await response.json();
-        setProducto(data);
-
-        window.scrollTo({
-          top: 0,
-          behavior: 'smooth',
-        });
+        setProducto(data.product || data); // Por si el backend devuelve { product: {...} }
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       } catch (error) {
         console.error("Error al cargar el producto:", error);
         setProducto(null);
@@ -46,6 +43,9 @@ export default function DetalleProducto() {
     );
   }
 
+  // Ajustamos la URL para la imagen según la estructura de tu backend y frontend
+  // Si la URL empieza con '/', la eliminamos para evitar doble slash
+  // Y armamos la URL completa con la base del backend (sin el /api/v1)
   const baseUrlBackend = API_BASE_URL.split("/api/v1")[0];
   const imagePath = producto.imageUrl?.startsWith("/") ? producto.imageUrl.substring(1) : producto.imageUrl;
   const imgSrc = producto.imageUrl ? `${baseUrlBackend}/${imagePath}` : "/placeholder.png";

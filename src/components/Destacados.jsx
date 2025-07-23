@@ -1,12 +1,10 @@
-
-
 import { useEffect, useState } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay } from 'swiper/modules';
 import { FaShoppingBag } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
-import { useCart } from '../context/CartContext';
-import { API_BASE_URL } from '../config'; // ✅ Cambiado
+import { useCart } from '../context/CartContext'; // Asumo que tu contexto se llama así
+import { API_BASE_URL } from '../config';
 import 'swiper/css';
 
 function Destacados() {
@@ -35,7 +33,11 @@ function Destacados() {
     return () => setProductos([]);
   }, []);
 
-  if (loading || error || !productos.length) return null;
+  if (loading) return <p className="text-center py-10">Cargando productos destacados...</p>;
+
+  if (error) return <p className="text-center py-10 text-red-600">{error}</p>;
+
+  if (!productos.length) return <p className="text-center py-10">No hay productos destacados disponibles.</p>;
 
   const handleComprar = (e, producto) => {
     e.preventDefault();
@@ -72,8 +74,8 @@ function Destacados() {
                       className="object-contain w-full h-full p-6 transition-transform duration-500 hover:scale-105"
                       loading="lazy"
                       onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.src = '/static/products/producto1.jpeg';
+                        e.target.onerror = null; // evita loop infinito
+                        e.target.src = '/placeholder.png'; // Cambia a tu placeholder local o ruta válida
                       }}
                     />
                   </div>

@@ -1,13 +1,12 @@
-
 import React, { useEffect } from "react";
 import { useCart } from "../context/CartContext";
 import { FaTrashAlt } from "react-icons/fa";
 import { Link } from "react-router-dom";
+import placeholderImg from "../assets/placeholder.png"; // importa un placeholder local si tienes
 
 const Carrito = () => {
-  const { carrito, vaciarCarrito } = useCart();
+  const { carrito, vaciarCarrito, eliminarDelCarrito } = useCart();
 
-  // Hace scroll suave al top cuando el componente se monta
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
@@ -30,14 +29,14 @@ const Carrito = () => {
         </div>
       ) : (
         <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-lg p-6 space-y-4">
-          {carrito.map((producto, index) => (
+          {carrito.map((producto) => (
             <div
-              key={index}
+              key={producto.id} // mejor usar id en vez de index
               className="flex items-center justify-between border-b pb-4"
             >
               <div className="flex items-center gap-4">
                 <img
-                  src={producto.imageUrl || "/placeholder.png"}
+                  src={producto.imageUrl || placeholderImg}
                   alt={producto.nombre}
                   className="w-20 h-20 object-contain rounded"
                 />
@@ -47,9 +46,9 @@ const Carrito = () => {
                 </div>
               </div>
               <button
-                onClick={vaciarCarrito}
+                onClick={() => eliminarDelCarrito(producto.id)} // vacía solo este producto
                 className="text-pink-500 hover:text-black transition"
-                title="Vaciar carrito"
+                title="Eliminar producto"
               >
                 <FaTrashAlt />
               </button>

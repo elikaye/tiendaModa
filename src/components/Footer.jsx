@@ -16,7 +16,7 @@ export default function Footer() {
         </div>
 
         {/* Redes sociales */}
-        <div className="flex flex-col items-center md:items-start gap-4">
+        <nav aria-label="Redes Sociales" className="flex flex-col items-center md:items-start gap-4">
           <p className="font-semibold text-pink-400 text-lg">Seguinos</p>
           <div className="flex gap-5">
             {[{
@@ -38,6 +38,7 @@ export default function Footer() {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label={alt}
+                title={alt}
                 className="hover:brightness-125 hover:text-pink-400 transition duration-300"
               >
                 <img
@@ -49,16 +50,13 @@ export default function Footer() {
               </a>
             ))}
           </div>
-        </div>
+        </nav>
 
         {/* Contacto */}
         <div className="text-center md:text-left space-y-2">
           <p className="font-semibold text-pink-400 text-lg">Contacto:</p>
-          <a
-            href=""
-            className="text-gray-300 hover:text-pink-400 hover:underline transition duration-300"
-          >
-          </a>
+          {/* Si no hay link específico, es mejor solo mostrar texto */}
+          <p className="text-gray-300">barby.indumentaria@email.com</p>
           <p className="font-semibold mt-4 text-pink-400 text-lg">WhatsApp:</p>
           <a
             href="https://wa.me/+5491164283906"

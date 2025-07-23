@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react";
 import ProductoCard from "../components/ProductoCard";
+import { API_BASE_URL } from "../config";
 
 export default function Ropa() {
   const [productos, setProductos] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("https://tiendamoda-production.up.railway.app/api/v1/products?categoria=ropa")
+    fetch(`${API_BASE_URL}/products?categoria=ropa`)
       .then((res) => res.json())
       .then((data) => {
         setProductos(data.products || []);
@@ -30,7 +31,7 @@ export default function Ropa() {
         ) : productos.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
             {productos.map((producto) => (
-              <ProductoCard key={producto.id} producto={producto} />
+              <ProductoCard key={producto._id} producto={producto} />
             ))}
           </div>
         ) : (
