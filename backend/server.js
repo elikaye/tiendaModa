@@ -7,50 +7,38 @@ const { sequelize } = require('./config/database');
 dotenv.config();
 const app = express();
 
-// Middleware
+// Middleware para parsear JSON
 app.use(express.json());
 
-// ✅ CORS dinámico y seguro
-const allowedOrigins = [
-  'http://localhost:5173', // desarrollo local
-  'https://tiendamoda-production.up.railway.app', // backend en Railway
-  'https://tu-frontend.netlify.app' // ⚠️ reemplazá con la URL real del frontend
-];
-
+// CORS habilitado solo para el frontend local en puerto 5173
 app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      console.warn('❌ CORS bloqueado:', origin);
-      callback(new Error('No permitido por CORS: ' + origin));
-    }
-  },
-  credentials: true
+  origin: 'http://localhost:5173',
+  credentials: true,
 }));
 
-// ✅ Servir imágenes estáticas de productos
-app.use('/product', express.static(path.join(__dirname, 'public', 'products')));
+// Servir imágenes estáticas desde la carpeta public/product
+app.use('/product', express.static(path.join(__dirname, 'public', 'product')));
 
-// Rutas
+// Importar rutas
 const productRoutes = require('./routes/productRoutes');
 const userRoutes = require('./routes/userRoutes');
 
+// Usar rutas
 app.use('/api/v1/products', productRoutes);
 app.use('/api/v1/users', userRoutes);
 
-// Ruta raíz para comprobar funcionamiento
+// Ruta raíz para comprobar que el servidor está funcionando
 app.get('/', (req, res) => {
   res.send('✅ API funcionando con Sequelize y MySQL 🚀');
 });
 
-// Middleware global de errores
+// Middleware global para manejo de errores
 app.use((err, req, res, next) => {
   console.error('🔴 Error global:', err.stack);
   res.status(500).json({ message: 'Error interno del servidor' });
 });
 
-// Conexión a la base de datos y arranque del servidor
+// Conexión a la base de datos y levantar servidor
 const PORT = process.env.PORT || 5000;
 
 sequelize.authenticate()
