@@ -8,13 +8,16 @@ function SeccionCategoria({ categoria, titulo }) {
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    if (!categoria) return;
+
     const fetchProductos = async () => {
+      setLoading(true);
+      setError(null);
       try {
         const res = await fetch(`${API_BASE_URL}/products?categoria=${categoria}&limit=3`);
         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
         const data = await res.json();
         setProductos(data.products || []);
-        setError(null);
       } catch (error) {
         console.error(`Error al cargar productos de ${categoria}:`, error);
         setError(`No se pudieron cargar los productos de ${titulo}.`);
@@ -22,6 +25,7 @@ function SeccionCategoria({ categoria, titulo }) {
         setLoading(false);
       }
     };
+
     fetchProductos();
   }, [categoria, titulo]);
 
@@ -34,7 +38,7 @@ function SeccionCategoria({ categoria, titulo }) {
       <h2 className="text-2xl font-bold mb-6">{titulo}</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
         {productos.map((p) => (
-          <ProductoCard key={p._id || p.id} producto={p} />
+          <ProductoCard key={p.id || p._id} producto={p} />
         ))}
       </div>
     </section>

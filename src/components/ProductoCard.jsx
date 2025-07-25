@@ -9,8 +9,6 @@ const ProductoCard = ({ producto }) => {
   const { agregarAlCarrito } = useCart();
   const navigate = useNavigate();
 
-  const baseUrlBackend = API_BASE_URL.split("/api/v1")[0];
-
   if (!producto) return null;
 
   const toggleLike = (e) => {
@@ -24,13 +22,20 @@ const ProductoCard = ({ producto }) => {
     navigate("/carrito");
   };
 
-  const imagePath = producto.imageUrl?.startsWith("/")
-    ? producto.imageUrl.substring(1)
-    : producto.imageUrl;
+  const baseUrlBackend = API_BASE_URL.split("/api/v1")[0];
 
+  const imagePath = producto.imageUrl
+    ? producto.imageUrl.startsWith("/")
+      ? producto.imageUrl.substring(1)
+      : producto.imageUrl
+    : "";
+
+  // Aseguramos que la URL incluya el segmento /product para apuntar bien al backend
   const imgSrc = producto.imageUrl
-    ? `${baseUrlBackend}/${imagePath}`
+    ? `${baseUrlBackend}/product/${imagePath}`
     : "/placeholder.png";
+
+  const precioFormateado = !isNaN(Number(producto.precio)) ? Number(producto.precio).toFixed(2) : "0.00";
 
   return (
     <Link
@@ -58,7 +63,8 @@ const ProductoCard = ({ producto }) => {
           objectFit: "contain",
         }}
         onError={(e) => {
-          e.target.src = "/placeholder.png";
+          e.currentTarget.onerror = null;
+          e.currentTarget.src = "/placeholder.png";
         }}
       />
 
@@ -70,7 +76,7 @@ const ProductoCard = ({ producto }) => {
           {producto.descripcion || "Sin descripción disponible"}
         </p>
         <p className="text-pink-600 font-bold text-xl mt-2">
-          ${producto.precio?.toFixed(2) || "0.00"}
+          ${precioFormateado}
         </p>
 
         <button

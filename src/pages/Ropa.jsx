@@ -5,39 +5,48 @@ import { API_BASE_URL } from "../config";
 export default function Ropa() {
   const [productos, setProductos] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetch(`${API_BASE_URL}/products?categoria=ropa`)
-      .then((res) => res.json())
-      .then((data) => {
+    const fetchProductos = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/products?categoria=ropa`);
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+        const data = await res.json();
         setProductos(data.products || []);
-        setLoading(false);
-      })
-      .catch((err) => {
+        setError(null);
+      } catch (err) {
         console.error("Error al cargar productos de ropa:", err);
+        setError("No se pudieron cargar los productos de ropa.");
+      } finally {
         setLoading(false);
-      });
+      }
+    };
+
+    fetchProductos();
   }, []);
+
+  if (loading) {
+    return <p className="text-center text-gray-600 py-10">Cargando productos...</p>;
+  }
+
+  if (error) {
+    return <p className="text-center text-red-600 py-10">{error}</p>;
+  }
 
   return (
     <section className="min-h-screen py-20 px-6 bg-gradient-to-br from-pink-200 via-white to-pink-200 font-body">
       <div className="max-w-7xl mx-auto">
-        <h2 className="text-2xl font-extrabold mb-6 text-pink-600 drop-shadow-sm">
-          Ropa
-        </h2>
+        <h2 className="text-2xl font-extrabold mb-6 text-pink-600 drop-shadow-sm">Ropa</h2>
 
-        {loading ? (
-          <p className="text-center text-gray-600">Cargando productos...</p>
-        ) : productos.length > 0 ? (
+        {productos.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
             {productos.map((producto) => (
-              <ProductoCard key={producto._id} producto={producto} />
+              <ProductoCard key={producto.id || producto._id} producto={producto} />
             ))}
           </div>
         ) : (
-          <p className="text-gray-600">
-            No hay productos disponibles en esta sección.
-          </p>
+          <p className="text-gray-600">No hay productos disponibles en esta sección.</p>
         )}
       </div>
     </section>

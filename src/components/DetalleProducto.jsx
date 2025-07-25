@@ -1,86 +1,58 @@
-import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import { API_BASE_URL } from "../config";
-import { useCart } from "../context/CartContext";
+// src/components/DetalleProducto.jsx
+import React from "react";
 
-export default function DetalleProducto() {
-  const { id } = useParams();
-  const [producto, setProducto] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const { agregarAlCarrito } = useCart();
-
-  useEffect(() => {
-    const fetchProducto = async () => {
-      try {
-        const response = await fetch(`${API_BASE_URL}/products/${id}`);
-        if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
-        const data = await response.json();
-        setProducto(data.product || data); // Por si el backend devuelve { product: {...} }
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      } catch (error) {
-        console.error("Error al cargar el producto:", error);
-        setProducto(null);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchProducto();
-  }, [id]);
-
-  if (loading) {
+const DetalleProducto = ({ producto, onAgregarAlCarrito }) => {
+  if (!producto) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-gray-500 font-body">
+      <div className="text-center py-10 text-gray-600">
         Cargando producto...
       </div>
     );
   }
 
-  if (!producto) {
-    return (
-      <div className="min-h-screen flex items-center justify-center text-gray-600 font-body">
-        Producto no encontrado.
-      </div>
-    );
-  }
-
-  // Ajustamos la URL para la imagen según la estructura de tu backend y frontend
-  // Si la URL empieza con '/', la eliminamos para evitar doble slash
-  // Y armamos la URL completa con la base del backend (sin el /api/v1)
-  const baseUrlBackend = API_BASE_URL.split("/api/v1")[0];
-  const imagePath = producto.imageUrl?.startsWith("/") ? producto.imageUrl.substring(1) : producto.imageUrl;
-  const imgSrc = producto.imageUrl ? `${baseUrlBackend}/${imagePath}` : "/placeholder.png";
+  // Normalización del path de imagen
+  const imageUrl = producto.imageUrl
+    ? `/product/${producto.imageUrl.replace(/^\/?product\/?/, "")}`
+    : "/placeholder.png";
 
   return (
-    <section className="min-h-screen pt-28 pb-16 px-4 bg-gradient-to-br from-pink-200 via-white to-pink-300 font-body">
-      <div className="max-w-5xl mx-auto bg-white rounded-2xl shadow-xl p-8 md:p-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
-          <img
-            src={imgSrc}
-            alt={producto.nombre}
-            className="w-full max-h-[450px] object-contain rounded-lg shadow-md"
-            onError={(e) => (e.target.src = "/placeholder.png")}
-          />
+    <div className="min-h-screen py-8 px-4 md:px-20 bg-white text-black">
+      <div className="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-lg">
+        <h2 className="text-3xl font-semibold mb-6 text-center">
+          {producto.nombre}
+        </h2>
 
-          <div>
-            <h2 className="text-3xl font-title font-bold text-pink-600 mb-4">
-              {producto.nombre}
-            </h2>
-            <p className="text-gray-700 text-base mb-6">
-              {producto.descripcion || "Sin descripción disponible."}
-            </p>
-            <p className="text-2xl text-pink-600 font-extrabold mb-6">
-              ${producto.precio?.toFixed(2) || "0.00"}
+        <div className="flex flex-col md:flex-row gap-8 items-center">
+          <div className="flex-shrink-0">
+            <img
+              src={imageUrl}
+              alt={producto.nombre}
+              className="w-80 h-80 object-cover rounded-lg shadow-md"
+              onError={(e) => {
+                e.currentTarget.onerror = null; // Evita loop infinito si falla el placeholder
+                e.currentTarget.src = "/placeholder.png";
+              }}
+            />
+          </div>
+
+          <div className="flex flex-col justify-between h-full gap-6">
+            <p className="text-lg">{producto.descripcion}</p>
+
+            <p className="text-xl font-bold text-pink-600">
+              ${parseFloat(producto.precio).toFixed(2)}
             </p>
 
             <button
-              onClick={() => agregarAlCarrito(producto)}
-              className="w-full md:w-auto bg-pink-600 hover:bg-pink-700 text-white py-3 px-6 rounded-xl text-lg transition-all duration-300 shadow-lg"
+              onClick={() => onAgregarAlCarrito(producto)}
+              className="bg-pink-500 text-white px-6 py-2 rounded-lg hover:bg-pink-600 transition"
             >
               Agregar al carrito
             </button>
           </div>
         </div>
       </div>
-    </section>
+    </div>
   );
-}
+};
+
+export default DetalleProducto;
