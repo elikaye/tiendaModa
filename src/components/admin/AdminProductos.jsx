@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import ProductForm from './ProductForm';
 
-const API_BASE_URL = 'https://tiendamoda-production.up.railway.app/api/v1/products';
-const IMAGE_BASE_URL = 'https://tiendamoda-production.up.railway.app/products';
+const API_BASE_URL = 'https://splendid-motivation-production.up.railway.app/api/v1/products';
+const IMAGE_BASE_URL = 'https://splendid-motivation-production.up.railway.app/product';
 
 export default function AdminProducts() {
   const [productos, setProductos] = useState([]);

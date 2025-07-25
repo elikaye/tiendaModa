@@ -64,7 +64,7 @@ const Product = sequelize.define('Product', {
     validate: {
       isValidUrlOrPath(value) {
         if (value && !value.match(/^(\/|https?:\/\/)[^\s]+$/)) {
-          throw new Error('Debe ser una ruta relativa (ej: /static/products/imagen.jpeg) o una URL válida');
+          throw new Error('Debe ser una ruta relativa (ej: /static/product/producto1.jpeg) o una URL válida');
         }
       }
     }
