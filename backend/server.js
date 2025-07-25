@@ -1,46 +1,52 @@
+// Importaciones necesarias
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const path = require('path');
-const { sequelize } = require('./config/database');
 
+// Configuración de variables de entorno
 dotenv.config();
+
+// Importación de la conexión con Sequelize (sin destructuring)
+const sequelize = require('./config/database');
+
+// Crear instancia de la app de Express
 const app = express();
 
 // Middleware para parsear JSON
 app.use(express.json());
 
-// CORS habilitado solo para el frontend local en puerto 5173
 app.use(cors({
-  origin: 'http://localhost:5173',
+  origin: process.env.CORS_ORIGIN,
   credentials: true,
 }));
 
-// Servir imágenes estáticas desde la carpeta public/product
+// Servir archivos estáticos (imágenes de productos)
 app.use('/product', express.static(path.join(__dirname, 'public', 'product')));
 
 // Importar rutas
 const productRoutes = require('./routes/productRoutes');
 const userRoutes = require('./routes/userRoutes');
 
-// Usar rutas
+// Usar las rutas
 app.use('/api/v1/products', productRoutes);
 app.use('/api/v1/users', userRoutes);
 
-// Ruta raíz para comprobar que el servidor está funcionando
+// Ruta de prueba para comprobar que el servidor responde
 app.get('/', (req, res) => {
   res.send('✅ API funcionando con Sequelize y MySQL 🚀');
 });
 
-// Middleware global para manejo de errores
+// Middleware global de manejo de errores
 app.use((err, req, res, next) => {
   console.error('🔴 Error global:', err.stack);
   res.status(500).json({ message: 'Error interno del servidor' });
 });
 
-// Conexión a la base de datos y levantar servidor
+// Configurar el puerto desde .env o usar 5000 por defecto
 const PORT = process.env.PORT || 5000;
 
+// Iniciar la conexión a la base de datos y levantar el servidor
 sequelize.authenticate()
   .then(() => {
     console.log('✅ Conectado a MySQL con Sequelize');
@@ -50,5 +56,5 @@ sequelize.authenticate()
   })
   .catch((err) => {
     console.error('❌ Error al conectar con Sequelize:', err.message);
-    process.exit(1);
+    process.exit(1); // Salir si no se puede conectar
   });

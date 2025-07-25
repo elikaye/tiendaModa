@@ -5,10 +5,10 @@ const authMiddleware = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
-// Middleware de validación completa para producto
+// Validación del producto
 const validateProduct = [
   body('nombre').trim().isLength({ min: 2 }).withMessage('Nombre inválido (mín 2 caracteres)'),
-  body('precio').isFloat({ gt: 0 }).withMessage('Precio debe ser mayor a 0'),
+  body('precio').isFloat({ gt: 0 }).withMessage('El precio debe ser mayor a 0'),
   body('descripcion').optional().trim(),
   body('subcategoria').optional().isLength({ min: 2, max: 50 }).withMessage('Subcategoría inválida'),
   body('categoria').trim().isLength({ min: 2, max: 50 }).withMessage('Categoría inválida'),
@@ -17,9 +17,7 @@ const validateProduct = [
   body('destacados').optional().isBoolean().withMessage('Destacados debe ser booleano'),
   (req, res, next) => {
     const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
+    if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
     next();
   }
 ];
@@ -32,12 +30,12 @@ const loadProduct = async (req, res, next) => {
     req.product = product;
     next();
   } catch (error) {
-    console.error('❌ Error detallado:', error);
-    res.status(500).json({ message: 'Error al obtener producto', error: error.message });
+    console.error('❌ Error al buscar producto por ID:', error);
+    res.status(500).json({ message: 'Error interno' });
   }
 };
 
-// Obtener productos con filtros opcionales: categoría, destacados, paginado
+// Obtener productos (filtros opcionales)
 router.get('/', async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
@@ -46,17 +44,9 @@ router.get('/', async (req, res) => {
 
     const whereClause = {};
 
-    if (req.query.categoria) {
-      whereClause.categoria = req.query.categoria;
-    }
-
-    if (req.query.subcategoria) {
-      whereClause.subcategoria = req.query.subcategoria;
-    }
-
-    if (req.query.destacados === 'true') {
-      whereClause.destacados = true;
-    }
+    if (req.query.categoria) whereClause.categoria = req.query.categoria;
+    if (req.query.subcategoria) whereClause.subcategoria = req.query.subcategoria;
+    if (req.query.destacados === 'true') whereClause.destacados = true;
 
     const { count, rows: products } = await Product.findAndCountAll({
       where: whereClause,
@@ -72,7 +62,7 @@ router.get('/', async (req, res) => {
       products
     });
   } catch (error) {
-    console.error('🔥 Error en GET /api/v1/products:', error);
+    console.error('🔥 Error al obtener productos:', error);
     res.status(500).json({ message: 'Error al obtener productos' });
   }
 });
@@ -82,7 +72,7 @@ router.get('/:id', loadProduct, (req, res) => {
   res.json(req.product);
 });
 
-// Crear nuevo producto - PROTEGIDO
+// Crear producto - PROTEGIDO
 router.post('/', authMiddleware, validateProduct, async (req, res) => {
   try {
     const {

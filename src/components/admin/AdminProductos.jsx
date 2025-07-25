@@ -2,15 +2,15 @@
 
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { API_BASE_URL } from '../../config';  // Ajustá la ruta según dónde esté el config
+import { API_BASE_URL } from '../../config';
 
 const AdminProductos = () => {
   const [productos, setProductos] = useState([]);
   const [nuevoProducto, setNuevoProducto] = useState({
-    nombre: '',
-    descripcion: '',
-    precio: '',
-    imageUrl: '',  // Si tu backend usa imageUrl, aquí también
+    name: '',
+    description: '',
+    price: '',
+    imageUrl: '',
   });
 
   useEffect(() => {
@@ -20,7 +20,7 @@ const AdminProductos = () => {
   const obtenerProductos = async () => {
     try {
       const respuesta = await axios.get(`${API_BASE_URL}/products`);
-      setProductos(respuesta.data.products || respuesta.data); // si te devuelve un objeto con products
+      setProductos(respuesta.data.products || respuesta.data);
     } catch (error) {
       console.error('Error al obtener los productos:', error);
     }
@@ -30,7 +30,7 @@ const AdminProductos = () => {
     try {
       const respuesta = await axios.post(`${API_BASE_URL}/products`, nuevoProducto);
       setProductos([...productos, respuesta.data]);
-      setNuevoProducto({ nombre: '', descripcion: '', precio: '', imageUrl: '' });
+      setNuevoProducto({ name: '', description: '', price: '', imageUrl: '' });
     } catch (error) {
       console.error('Error al crear el producto:', error);
     }
@@ -52,20 +52,20 @@ const AdminProductos = () => {
         <input
           type="text"
           placeholder="Nombre"
-          value={nuevoProducto.nombre}
-          onChange={(e) => setNuevoProducto({ ...nuevoProducto, nombre: e.target.value })}
+          value={nuevoProducto.name}
+          onChange={(e) => setNuevoProducto({ ...nuevoProducto, name: e.target.value })}
         />
         <input
           type="text"
           placeholder="Descripción"
-          value={nuevoProducto.descripcion}
-          onChange={(e) => setNuevoProducto({ ...nuevoProducto, descripcion: e.target.value })}
+          value={nuevoProducto.description}
+          onChange={(e) => setNuevoProducto({ ...nuevoProducto, description: e.target.value })}
         />
         <input
           type="number"
           placeholder="Precio"
-          value={nuevoProducto.precio}
-          onChange={(e) => setNuevoProducto({ ...nuevoProducto, precio: e.target.value })}
+          value={nuevoProducto.price}
+          onChange={(e) => setNuevoProducto({ ...nuevoProducto, price: e.target.value })}
         />
         <input
           type="text"
@@ -79,10 +79,10 @@ const AdminProductos = () => {
       <ul>
         {productos.map((producto) => (
           <li key={producto.id}>
-            <h3>{producto.nombre}</h3>
-            <p>{producto.descripcion}</p>
-            <p>${producto.precio}</p>
-            <img src={producto.imageUrl} alt={producto.nombre} width="100" />
+            <h3>{producto.name}</h3>
+            <p>{producto.description}</p>
+            <p>${producto.price}</p>
+            <img src={producto.imageUrl} alt={producto.name} width="100" />
             <button onClick={() => eliminarProducto(producto.id)}>Eliminar</button>
           </li>
         ))}

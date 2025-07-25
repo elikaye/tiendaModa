@@ -1,5 +1,6 @@
 const { DataTypes } = require('sequelize');
-const { sequelize } = require('../config/database');
+// Cambiar esta línea:
+const sequelize = require('../config/database');  // sin llaves {}, porque exportás la instancia directa
 const bcrypt = require('bcryptjs');
 
 const User = sequelize.define('User', {
@@ -75,4 +76,4 @@ const User = sequelize.define('User', {
   }
 });
 
-module.exports = { User };
+module.exports = User;  // exportá solo User, no en objeto {}
