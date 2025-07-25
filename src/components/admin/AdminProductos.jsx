@@ -1,8 +1,8 @@
-// src/pages/AdminProductos.jsx
+// src/components/Admin/AdminProductos.jsx
 
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { API_BASE_URL } from '../config';
+import { API_BASE_URL } from '../../config';  // Ajustá la ruta según dónde esté el config
 
 const AdminProductos = () => {
   const [productos, setProductos] = useState([]);
@@ -10,7 +10,7 @@ const AdminProductos = () => {
     nombre: '',
     descripcion: '',
     precio: '',
-    imagen: '',
+    imageUrl: '',  // Si tu backend usa imageUrl, aquí también
   });
 
   useEffect(() => {
@@ -20,7 +20,7 @@ const AdminProductos = () => {
   const obtenerProductos = async () => {
     try {
       const respuesta = await axios.get(`${API_BASE_URL}/products`);
-      setProductos(respuesta.data);
+      setProductos(respuesta.data.products || respuesta.data); // si te devuelve un objeto con products
     } catch (error) {
       console.error('Error al obtener los productos:', error);
     }
@@ -30,7 +30,7 @@ const AdminProductos = () => {
     try {
       const respuesta = await axios.post(`${API_BASE_URL}/products`, nuevoProducto);
       setProductos([...productos, respuesta.data]);
-      setNuevoProducto({ nombre: '', descripcion: '', precio: '', imagen: '' });
+      setNuevoProducto({ nombre: '', descripcion: '', precio: '', imageUrl: '' });
     } catch (error) {
       console.error('Error al crear el producto:', error);
     }
@@ -70,8 +70,8 @@ const AdminProductos = () => {
         <input
           type="text"
           placeholder="URL de imagen"
-          value={nuevoProducto.imagen}
-          onChange={(e) => setNuevoProducto({ ...nuevoProducto, imagen: e.target.value })}
+          value={nuevoProducto.imageUrl}
+          onChange={(e) => setNuevoProducto({ ...nuevoProducto, imageUrl: e.target.value })}
         />
         <button onClick={crearProducto}>Crear Producto</button>
       </div>
@@ -82,7 +82,7 @@ const AdminProductos = () => {
             <h3>{producto.nombre}</h3>
             <p>{producto.descripcion}</p>
             <p>${producto.precio}</p>
-            <img src={producto.imagen} alt={producto.nombre} width="100" />
+            <img src={producto.imageUrl} alt={producto.nombre} width="100" />
             <button onClick={() => eliminarProducto(producto.id)}>Eliminar</button>
           </li>
         ))}
