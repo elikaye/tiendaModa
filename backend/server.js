@@ -14,6 +14,7 @@ const sequelize = require ('./config/database');
 const app = express();
       
 
+
 // Middleware para parsear JSON
 app.use(express.json());
 
