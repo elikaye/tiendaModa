@@ -12,6 +12,7 @@ const sequelize = require ('./config/database');
 
 // Crear instancia de la app de Express
 const app = express();
+      
 
 // Middleware para parsear JSON
 app.use(express.json());
