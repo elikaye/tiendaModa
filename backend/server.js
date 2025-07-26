@@ -37,6 +37,11 @@ app.get('/', (req, res) => {
   res.send('✅ API funcionando con Sequelize y MySQL 🚀');
 });
 
+// Middleware para rutas no encontradas (catch-all)
+app.use((req, res, next) => {
+  res.status(404).json({ message: 'Ruta no encontrada' });
+});
+
 // Middleware global de manejo de errores
 app.use((err, req, res, next) => {
   console.error('🔴 Error global:', err.stack);
