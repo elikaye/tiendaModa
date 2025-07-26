@@ -1,5 +1,6 @@
+
 const express = require('express');
-const { Product } = require('../models/product');
+const Product = require('../models/product');  // Importación CORRECTA sin destructuring
 const { validationResult, body } = require('express-validator');
 const authMiddleware = require('../middleware/authMiddleware');
 
@@ -7,9 +8,9 @@ const router = express.Router();
 
 // Validación del producto
 const validateProduct = [
-  body('nombre').trim().isLength({ min: 2 }).withMessage('Nombre inválido (mín 2 caracteres)'),
-  body('precio').isFloat({ gt: 0 }).withMessage('El precio debe ser mayor a 0'),
-  body('descripcion').optional().trim(),
+  body('name').trim().isLength({ min: 2 }).withMessage('Nombre inválido (mín 2 caracteres)'),
+  body('price').isFloat({ gt: 0 }).withMessage('El precio debe ser mayor a 0'),
+  body('description').optional().trim(),
   body('subcategoria').optional().isLength({ min: 2, max: 50 }).withMessage('Subcategoría inválida'),
   body('categoria').trim().isLength({ min: 2, max: 50 }).withMessage('Categoría inválida'),
   body('imageUrl').optional().trim(),
@@ -76,9 +77,9 @@ router.get('/:id', loadProduct, (req, res) => {
 router.post('/', authMiddleware, validateProduct, async (req, res) => {
   try {
     const {
-      nombre,
-      precio,
-      descripcion,
+      name,
+      price,
+      description,
       subcategoria,
       categoria,
       imageUrl,
@@ -87,9 +88,9 @@ router.post('/', authMiddleware, validateProduct, async (req, res) => {
     } = req.body;
 
     const newProduct = await Product.create({
-      nombre,
-      precio,
-      descripcion,
+      name,
+      price,
+      description,
       subcategoria,
       categoria,
       imageUrl,
@@ -108,9 +109,9 @@ router.post('/', authMiddleware, validateProduct, async (req, res) => {
 router.put('/:id', authMiddleware, loadProduct, validateProduct, async (req, res) => {
   try {
     const {
-      nombre,
-      precio,
-      descripcion,
+      name,
+      price,
+      description,
       subcategoria,
       categoria,
       imageUrl,
@@ -119,9 +120,9 @@ router.put('/:id', authMiddleware, loadProduct, validateProduct, async (req, res
     } = req.body;
 
     await req.product.update({
-      nombre,
-      precio,
-      descripcion,
+      name,
+      price,
+      description,
       subcategoria,
       categoria,
       imageUrl,
