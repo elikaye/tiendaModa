@@ -8,7 +8,7 @@ const path = require('path');
 dotenv.config();
 
 // Importación de la conexión con Sequelize (sin destructuring)
-const sequelize = require('./config/database');
+const sequelize = require ('./config/database');
 
 // Crear instancia de la app de Express
 const app = express();
