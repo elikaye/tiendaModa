@@ -11,7 +11,18 @@ const sequelize = new Sequelize(
     dialect: 'mysql',
     port: Number(process.env.DB_PORT) || 3306,
     logging: process.env.NODE_ENV === 'development' ? console.log : false,
+    define: {
+      // Para que no cree columnas con timestamps si no las definís explícitamente
+      timestamps: true, // si querés timestamps por defecto, sino poner false
+      paranoid: true,   // activa el borrado suave si querés
+    },
+    pool: {
+      max: 5,
+      min: 0,
+      acquire: 30000,
+      idle: 10000,
+    },
   }
 );
 
-module.exports = sequelize;  // Exporta la instancia directamente sin destructurar
+module.exports = sequelize;

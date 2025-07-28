@@ -56,6 +56,8 @@ router.get('/', async (req, res) => {
       order: [['createdAt', 'DESC']],
     });
 
+      console.log('✅ Productos encontrados:', products);
+
     res.json({
       total: count,
       totalPages: Math.ceil(count / limit),
