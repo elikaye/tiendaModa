@@ -28,36 +28,41 @@ function App() {
       <SearchProvider>
         <Router>
           <ScrollToTop />
-          <div className="font-sans text-black">
+          <div className="font-sans text-black min-h-screen flex flex-col relative">
             {/* Fondo animado */}
             <div className="fixed inset-0 -z-10 bg-gradient-to-br from-pink-100 via-white to-pink-200 bg-[length:300%_300%] animate-gradient" />
 
+            {/* Header/Nav */}
             <Navbar />
 
-            <Routes>
-              <Route
-                path="/"
-                element={
-                  <>
-                    <Hero />
-                    <Destacados />
-                    <ProductosList />
-                  </>
-                }
-              />
-              <Route path="/ropa" element={<Ropa />} />
-              <Route path="/zapatos" element={<Zapatos />} />
-              <Route path="/hogar" element={<Hogar />} />
-              <Route path="/electronica" element={<Electronica />} />
-              <Route path="/producto/:id" element={<DetalleProducto />} />
-              <Route path="/carrito" element={<Carrito />} />
-              <Route path="/auth" element={<Auth />} />
-              <Route
-                path="/admin"
-                element={isLoggedIn ? <AdminProducts /> : <Navigate to="/auth" />}
-              />
-            </Routes>
+            {/* Contenido principal con flex-grow para empujar el footer abajo */}
+            <main className="flex-grow">
+              <Routes>
+                <Route
+                  path="/"
+                  element={
+                    <>
+                      <Hero />
+                      <Destacados />
+                      <ProductosList />
+                    </>
+                  }
+                />
+                <Route path="/ropa" element={<Ropa />} />
+                <Route path="/zapatos" element={<Zapatos />} />
+                <Route path="/hogar" element={<Hogar />} />
+                <Route path="/electronica" element={<Electronica />} />
+                <Route path="/producto/:id" element={<DetalleProducto />} />
+                <Route path="/carrito" element={<Carrito />} />
+                <Route path="/auth" element={<Auth />} />
+                <Route
+                  path="/admin"
+                  element={isLoggedIn ? <AdminProducts /> : <Navigate to="/auth" />}
+                />
+              </Routes>
+            </main>
 
+            {/* Footer siempre al final */}
             <Footer />
             <WhatsAppButton />
           </div>

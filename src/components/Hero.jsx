@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 
 export default function Hero() {
   return (
-    <section className="flex justify-center items-center bg-black px-6 py-16 mt-24">
+    <section className="flex justify-center items-center bg-gray-600 px-6 py-16 mt-24">
       <div className="flex flex-col sm:flex-row items-center sm:items-start gap-10 w-full max-w-6xl">
 
         {/* Logo a la izquierda */}
