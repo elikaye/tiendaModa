@@ -17,7 +17,7 @@ function Destacados() {
   useEffect(() => {
     const fetchProductos = async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/product?destacado=true&limit=6`);
+        const response = await fetch(`${API_BASE_URL}/products?destacado=true&limit=6`);
         if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
         const data = await response.json();
         const destacados = Array.isArray(data.products) ? data.products : [];
