@@ -1,9 +1,10 @@
+
 import { useEffect, useState } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay } from 'swiper/modules';
 import { FaShoppingBag } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
-import { useCart } from '../context/CartContext'; 
+import { useCart } from '../context/cartContext'; 
 import { API_BASE_URL } from '../config';
 import 'swiper/css';
 
@@ -17,7 +18,7 @@ function Destacados() {
   useEffect(() => {
     const fetchProductos = async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/products?destacado=true&limit=6`);
+        const response = await fetch(`${API_BASE_URL}/products?destacados=true&limit=6`);
         if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
         const data = await response.json();
         const destacados = Array.isArray(data.products) ? data.products : [];
@@ -45,7 +46,6 @@ function Destacados() {
     alert(`Agregaste ${producto.nombre} al carrito!`);
   };
 
-  // Base URL para imágenes: quitamos la parte '/api/v1' para obtener solo backend base
   const baseUrlBackend = API_BASE_URL.split('/api/v1')[0];
 
   return (
@@ -67,9 +67,8 @@ function Destacados() {
           }}
         >
           {productos.map(prod => {
-            // Aseguramos que la ruta de la imagen no contenga "product" repetido
             const imagePath = prod.imageUrl?.startsWith('/product/')
-              ? prod.imageUrl.substring(9) // elimina '/product/' (9 caracteres)
+              ? prod.imageUrl.substring(9)
               : prod.imageUrl;
 
             const imgSrc = prod.imageUrl
@@ -98,7 +97,7 @@ function Destacados() {
                       </h3>
                       <div className="flex justify-between items-center mt-auto">
                         <p className="text-pink-600 text-xl font-bold">
-                          ${prod.precio.toFixed(2)}
+                          ${typeof prod.precio === 'number' ? prod.precio.toFixed(2) : '0.00'}
                         </p>
                         <button
                           onClick={(e) => handleComprar(e, prod)}
@@ -120,4 +119,3 @@ function Destacados() {
 }
 
 export default Destacados;
-

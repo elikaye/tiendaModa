@@ -1,8 +1,9 @@
 import React, { useEffect } from "react";
-import { useCart } from "../context/CartContext";
+import { useCart } from "../context/cartContext";
 import { FaTrashAlt } from "react-icons/fa";
 import { Link } from "react-router-dom";
-import placeholderImg from "../assets/carrito-de-compras.png"; // importa un placeholder local si tienes
+import placeholderImg from "../assets/carrito-de-compras.png";
+import { API_BASE_URL } from "../config";
 
 const Carrito = () => {
   const { carrito, vaciarCarrito, eliminarDelCarrito } = useCart();
@@ -11,7 +12,13 @@ const Carrito = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
 
-  const total = carrito.reduce((acc, item) => acc + item.precio, 0);
+  const baseUrlBackend = API_BASE_URL.split("/api/v1")[0];
+
+  // Total suma los precios con seguridad
+  const total = carrito.reduce(
+    (acc, item) => acc + (Number(item.precio) || 0),
+    0
+  );
 
   return (
     <div className="min-h-screen pt-32 pb-20 px-4 bg-gradient-to-br from-pink-100 via-white to-pink-200">
@@ -29,31 +36,49 @@ const Carrito = () => {
         </div>
       ) : (
         <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-lg p-6 space-y-4">
-          {carrito.map((producto) => (
-            <div
-              key={producto.id} // mejor usar id en vez de index
-              className="flex items-center justify-between border-b pb-4"
-            >
-              <div className="flex items-center gap-4">
-                <img
-                  src={producto.imageUrl || placeholderImg}
-                  alt={producto.nombre}
-                  className="w-20 h-20 object-contain rounded"
-                />
-                <div>
-                  <h2 className="font-semibold text-lg">{producto.nombre}</h2>
-                  <p className="text-pink-600 font-bold">${producto.precio?.toFixed(2)}</p>
-                </div>
-              </div>
-              <button
-                onClick={() => eliminarDelCarrito(producto.id)} // vacía solo este producto
-                className="text-pink-500 hover:text-black transition"
-                title="Eliminar producto"
+          {carrito.map((producto) => {
+            const imagePath = producto.imageUrl?.startsWith("/product/")
+              ? producto.imageUrl.substring(9)
+              : producto.imageUrl;
+
+            const imgSrc = producto.imageUrl
+              ? `${baseUrlBackend}/product/${imagePath}`
+              : placeholderImg;
+
+            return (
+              <div
+                key={producto.id}
+                className="flex items-center justify-between border-b pb-4"
               >
-                <FaTrashAlt />
-              </button>
-            </div>
-          ))}
+                <div className="flex items-center gap-4">
+                  <img
+                    src={imgSrc}
+                    alt={producto.nombre}
+                    className="w-20 h-20 object-contain rounded"
+                    onError={(e) => {
+                      e.currentTarget.src = placeholderImg;
+                    }}
+                  />
+                  <div>
+                    <h2 className="font-semibold text-lg">{producto.nombre}</h2>
+                    <p className="text-pink-600 font-bold">
+                      $
+                      {isNaN(Number(producto.precio))
+                        ? "0.00"
+                        : Number(producto.precio).toFixed(2)}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => eliminarDelCarrito(producto.id)}
+                  className="text-pink-500 hover:text-black transition"
+                  title="Eliminar producto"
+                >
+                  <FaTrashAlt />
+                </button>
+              </div>
+            );
+          })}
 
           <div className="text-right font-semibold text-xl text-black">
             Total: ${total.toFixed(2)}
@@ -68,7 +93,9 @@ const Carrito = () => {
             </button>
 
             <button
-              onClick={() => alert("Compra confirmada! Gracias por tu compra.")}
+              onClick={() =>
+                alert("Compra confirmada! Gracias por tu compra.")
+              }
               className="bg-pink-600 text-white px-5 py-2 rounded-full hover:bg-black transition duration-300"
             >
               Confirmar Compra

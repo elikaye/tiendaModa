@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { FaHeart, FaShoppingBag } from "react-icons/fa";
-import { useCart } from "../context/CartContext";
+import { useCart } from "../context/cartContext";
 import { Link, useNavigate } from "react-router-dom";
 import { API_BASE_URL } from "../config";
 
@@ -22,15 +22,11 @@ const ProductoCard = ({ producto }) => {
     navigate("/carrito");
   };
 
+  // Corrección de URL para imagen
   const baseUrlBackend = API_BASE_URL.split("/api/v1")[0];
-
-  const imagePath = producto.imageUrl
-    ? producto.imageUrl.startsWith("/")
-      ? producto.imageUrl.substring(1)
-      : producto.imageUrl
-    : "";
-
-  // Aseguramos que la URL incluya el segmento /product para apuntar bien al backend
+  const imagePath = producto.imageUrl?.startsWith("/product/")
+    ? producto.imageUrl.substring(9)
+    : producto.imageUrl;
   const imgSrc = producto.imageUrl
     ? `${baseUrlBackend}/product/${imagePath}`
     : "/placeholder.png";
