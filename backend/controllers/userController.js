@@ -1,6 +1,6 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { User } = require('../models/user');
+const User = require('../models/user');
 
 // Registrar nuevo usuario
 const registrarUsuario = async (req, res) => {
@@ -16,12 +16,19 @@ const registrarUsuario = async (req, res) => {
       return res.status(400).json({ message: 'Este email ya está registrado' });
     }
 
-    const nuevoUsuario = await User.create({ nombre, email, password });
+    // 🔐 Hashear la contraseña antes de guardar
+    const passwordHash = await bcrypt.hash(password, 10);
+
+    const nuevoUsuario = await User.create({
+      nombre,
+      email,
+      password: passwordHash
+    });
 
     return res.status(201).json({ message: 'Usuario registrado correctamente' });
   } catch (error) {
     console.error('❌ Error en registrarUsuario:', error);
-    return res.status(500).json({ message: 'Error en el servidor' });
+    return res.status(500).json({ message: 'Error en el servidor', error: error.message });
   }
 };
 
@@ -62,7 +69,7 @@ const loginUsuario = async (req, res) => {
     });
   } catch (error) {
     console.error('❌ Error en loginUsuario:', error);
-    return res.status(500).json({ message: 'Error en el servidor' });
+    return res.status(500).json({ message: 'Error en el servidor', error: error.message });
   }
 };
 
