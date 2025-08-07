@@ -7,7 +7,7 @@ import whatsapp from '../assets/whatsapp-white.png';
 
 export default function Footer() {
   return (
-    <footer className="bg-gray-600 text-black py-12 px-6 font-body">
+    <footer className="bg-violet-400 text-black py-12 px-6 font-body">
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-10 items-center text-sm">
 
         {/* Logo */}
@@ -76,16 +76,21 @@ export default function Footer() {
         </div>
       </div>
 
-      {/* Créditos con brillo y fuente destacada */}
-      <div className="mt-12 text-center text-xs text-black">
-        <p>© {new Date().getFullYear()} Barby Indumentaria. Todos los derechos reservados.</p>
-        <p
-          className="mt-4 text-xl font-extrabold tracking-widest font-title bg-gradient-to-r from-zinc-200 via-withe to-zinc-400 bg-clip-text text-transparent drop-shadow-[0_0_15px_rgba(255,182,193,0.9)] animate-shimmer"
-          style={{ filter: 'drop-shadow(0 0 15px #f72585)' }}
-        >
-          Diseñado por &lt;/CodeMoon🌙&gt;
-        </p>
-      </div>
+{/* Créditos con brillo y fuente destacada */}
+<div className="mt-12 text-center text-xs text-pink-200">
+  <p>© {new Date().getFullYear()} Barby Indumentaria. Todos los derechos reservados.</p>
+  <p
+    className="mt-4 text-xl font-extrabold tracking-widest font-title bg-gradient-to-r from-pink-600 via-pink-700 to-pink-900 bg-clip-text text-transparent drop-shadow-[0_0_15px_rgba(247,37,133,0.9)] animate-shimmer"
+    style={{
+      filter: 'drop-shadow(0 0 15px rgba(247,37,133,0.9))',
+      backgroundImage: 'linear-gradient(135deg, #d1d5db 0%, #f9fafb 25%, #d1d5db 50%, #f9fafb 75%, #d1d5db 100%)',
+      backgroundSize: '200% 200%',
+      animation: 'shimmer 3s infinite',
+    }}
+  >
+    Diseñado por &lt;/CodeMoon🌙&gt;
+  </p>
+</div>
     </footer>
   );
 }
