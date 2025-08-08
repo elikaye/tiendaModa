@@ -1,6 +1,5 @@
 const { DataTypes } = require('sequelize');
-// Cambiar esta línea:
-const sequelize = require('../config/database');  // sin llaves {}, porque exportás la instancia directa
+const sequelize = require('../config/database');
 const bcrypt = require('bcryptjs');
 
 const User = sequelize.define('User', {
@@ -9,7 +8,6 @@ const User = sequelize.define('User', {
     autoIncrement: true,
     primaryKey: true
   },
-
   nombre: {
     type: DataTypes.STRING(100),
     allowNull: false,
@@ -21,7 +19,6 @@ const User = sequelize.define('User', {
       }
     }
   },
-
   email: {
     type: DataTypes.STRING(100),
     allowNull: false,
@@ -31,7 +28,6 @@ const User = sequelize.define('User', {
       isEmail: { msg: 'Debe ser un email válido' }
     }
   },
-
   password: {
     type: DataTypes.STRING,
     allowNull: false,
@@ -42,12 +38,10 @@ const User = sequelize.define('User', {
       }
     }
   },
-
   rol: {
     type: DataTypes.ENUM('cliente', 'admin'),
     defaultValue: 'cliente'
   }
-
 }, {
   timestamps: true,
   tableName: 'users',
@@ -76,4 +70,9 @@ const User = sequelize.define('User', {
   }
 });
 
-module.exports = User;  // exportá solo User, no en objeto {}
+// ¡MÉTODO CRÍTICO AÑADIDO!
+User.prototype.comparePassword = async function(candidatePassword) {
+  return await bcrypt.compare(candidatePassword, this.password);
+};
+
+module.exports = User;
