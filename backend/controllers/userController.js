@@ -2,12 +2,10 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 
-// Registrar nuevo usuario - CORREGIDO
 const registrarUsuario = async (req, res) => {
   try {
     const { nombre, email, password } = req.body;
 
-    // Validación mejorada
     if (!nombre || !email || !password) {
       return res.status(400).json({ 
         success: false,
@@ -15,7 +13,6 @@ const registrarUsuario = async (req, res) => {
       });
     }
 
-    // Validar formato de email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return res.status(400).json({ 
@@ -32,22 +29,17 @@ const registrarUsuario = async (req, res) => {
       });
     }
 
-    // 🔐 Hashear la contraseña antes de guardar
-    const salt = await bcrypt.genSalt(10);
-    const passwordHash = await bcrypt.hash(password, salt);
-
-    // Crear usuario usando el modelo - CORRECCIÓN IMPORTANTE
+    // Creación del usuario (el hook del modelo hace el hash)
     const nuevoUsuario = await User.create({
       nombre,
       email,
-      password: passwordHash,
-      rol: 'cliente' // Asegurar el rol por defecto
+      password, // lo hashea el hook
+      rol: 'cliente'
     });
 
-    // Generar token para registro exitoso
     const token = jwt.sign(
       { id: nuevoUsuario.id, email: nuevoUsuario.email, rol: nuevoUsuario.rol },
-      process.env.JWT_SECRET, // Sin valor por defecto - seguridad
+      process.env.JWT_SECRET,
       { expiresIn: '4h' }
     );
 
@@ -62,7 +54,7 @@ const registrarUsuario = async (req, res) => {
       },
       token
     });
-    
+
   } catch (error) {
     console.error('❌ Error en registrarUsuario:', error);
     return res.status(500).json({ 
@@ -73,7 +65,6 @@ const registrarUsuario = async (req, res) => {
   }
 };
 
-// Login de usuario - CORREGIDO
 const loginUsuario = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -85,11 +76,9 @@ const loginUsuario = async (req, res) => {
       });
     }
 
-    // Usar scope conPassword para obtener hash
-    const usuario = await User.scope('withPassword').findOne({ 
-      where: { email } 
-    });
-    
+    // Usamos el scope para traer el password también
+    const usuario = await User.scope('withPassword').findOne({ where: { email } });
+
     if (!usuario) {
       return res.status(401).json({ 
         success: false,
@@ -97,8 +86,8 @@ const loginUsuario = async (req, res) => {
       });
     }
 
-    // Comparar contraseñas
-    const passwordOk = await bcrypt.compare(password, usuario.password);
+    const passwordOk = await usuario.comparePassword(password);
+
     if (!passwordOk) {
       return res.status(401).json({ 
         success: false,
@@ -106,17 +95,13 @@ const loginUsuario = async (req, res) => {
       });
     }
 
-    // Generar token con datos seguros
     const token = jwt.sign(
-      { 
-        id: usuario.id, 
-        rol: usuario.rol 
-      }, // No incluir email por seguridad
-      process.env.JWT_SECRET, // Sin valor por defecto
+      { id: usuario.id, rol: usuario.rol },
+      process.env.JWT_SECRET,
       { expiresIn: '4h' }
     );
 
-    // Obtener datos de usuario sin contraseña
+    // Devolver datos sin password
     const usuarioSinPassword = usuario.get();
     delete usuarioSinPassword.password;
 
@@ -126,13 +111,13 @@ const loginUsuario = async (req, res) => {
       user: usuarioSinPassword,
       token
     });
-    
+
   } catch (error) {
     console.error('❌ Error en loginUsuario:', error);
-    return res.status(500).json({ 
+    return res.status(500).json({
       success: false,
-      message: 'Error en el servidor', 
-      error: error.message 
+      message: 'Error en el servidor',
+      error: error.message
     });
   }
 };
