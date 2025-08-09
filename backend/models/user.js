@@ -1,78 +1,126 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const User = require('../models/user');
 
-const User = sequelize.define('User', {
-  id: {
-    type: DataTypes.INTEGER,
-    autoIncrement: true,
-    primaryKey: true
-  },
-  nombre: {
-    type: DataTypes.STRING(100),
-    allowNull: false,
-    validate: {
-      notEmpty: { msg: 'El nombre es obligatorio' },
-      len: {
-        args: [2, 100],
-        msg: 'El nombre debe tener entre 2 y 100 caracteres'
-      }
-    }
-  },
-  email: {
-    type: DataTypes.STRING(100),
-    allowNull: false,
-    unique: true,
-    validate: {
-      notEmpty: { msg: 'El email es obligatorio' },
-      isEmail: { msg: 'Debe ser un email válido' }
-    }
-  },
-  password: {
-    type: DataTypes.STRING,
-    allowNull: false,
-    validate: {
-      len: {
-        args: [6, 100],
-        msg: 'La contraseña debe tener al menos 6 caracteres'
-      }
-    }
-  },
-  rol: {
-    type: DataTypes.ENUM('cliente', 'admin'),
-    defaultValue: 'cliente'
-  }
-}, {
-  timestamps: true,
-  tableName: 'users',
-  paranoid: true,
-  defaultScope: {
-    attributes: { exclude: ['password', 'deletedAt'] }
-  },
-  scopes: {
-    withPassword: {
-      attributes: { include: ['password'] }
-    }
-  },
-  hooks: {
-    beforeCreate: async (user) => {
-      if (user.password) {
-        const salt = await bcrypt.genSalt(10);
-        user.password = await bcrypt.hash(user.password, salt);
-      }
-    },
-    beforeUpdate: async (user) => {
-      if (user.changed('password')) {
-        const salt = await bcrypt.genSalt(10);
-        user.password = await bcrypt.hash(user.password, salt);
-      }
-    }
-  }
-});
+const registrarUsuario = async (req, res) => {
+  try {
+    const { nombre, email, password } = req.body;
 
-// ¡MÉTODO CRÍTICO AÑADIDO!
-User.prototype.comparePassword = async function(candidatePassword) {
-  return await bcrypt.compare(candidatePassword, this.password);
+    if (!nombre || !email || !password) {
+      return res.status(400).json({ 
+        success: false,
+        message: 'Todos los campos son obligatorios' 
+      });
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ 
+        success: false,
+        message: 'El formato del email es inválido' 
+      });
+    }
+
+    const existeUsuario = await User.findOne({ where: { email } });
+    if (existeUsuario) {
+      return res.status(400).json({ 
+        success: false,
+        message: 'Este email ya está registrado' 
+      });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const passwordHash = await bcrypt.hash(password, salt);
+
+    const nuevoUsuario = await User.create({
+      nombre,
+      email,
+      password: passwordHash,
+      rol: 'cliente'
+    });
+
+    const token = jwt.sign(
+      { id: nuevoUsuario.id, email: nuevoUsuario.email, rol: nuevoUsuario.rol },
+      process.env.JWT_SECRET,
+      { expiresIn: '4h' }
+    );
+
+    return res.status(201).json({ 
+      success: true,
+      message: 'Usuario registrado correctamente',
+      user: {
+        id: nuevoUsuario.id,
+        nombre: nuevoUsuario.nombre,
+        email: nuevoUsuario.email,
+        rol: nuevoUsuario.rol
+      },
+      token
+    });
+    
+  } catch (error) {
+    console.error('❌ Error en registrarUsuario:', error);
+    return res.status(500).json({ 
+      success: false,
+      message: 'Error en el servidor', 
+      error: error.message 
+    });
+  }
 };
 
-module.exports = User;
+const loginUsuario = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ 
+        success: false,
+        message: 'Email y contraseña requeridos' 
+      });
+    }
+
+    const usuario = await User.scope('withPassword').findOne({ where: { email } });
+    if (!usuario) {
+      return res.status(401).json({ 
+        success: false,
+        message: 'Credenciales inválidas' 
+      });
+    }
+
+    const passwordOk = await usuario.comparePassword(password);
+    if (!passwordOk) {
+      return res.status(401).json({ 
+        success: false,
+        message: 'Credenciales inválidas' 
+      });
+    }
+
+    const token = jwt.sign(
+      { id: usuario.id, rol: usuario.rol },
+      process.env.JWT_SECRET,
+      { expiresIn: '4h' }
+    );
+
+    const usuarioSinPassword = usuario.get();
+    delete usuarioSinPassword.password;
+
+    return res.json({
+      success: true,
+      message: 'Login exitoso',
+      user: usuarioSinPassword,
+      token
+    });
+    
+  } catch (error) {
+    console.error('❌ Error en loginUsuario:', error);
+    return res.status(500).json({ 
+      success: false,
+      message: 'Error en el servidor', 
+      error: error.message 
+    });
+  }
+};
+
+module.exports = {
+  registrarUsuario,
+  loginUsuario
+};
