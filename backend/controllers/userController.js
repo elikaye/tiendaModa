@@ -89,6 +89,10 @@ const loginUsuario = async (req, res) => {
       });
     }
 
+    console.log("Contraseña recibida (texto plano):", password);
+    console.log("Hash almacenado en DB:", usuario.password);
+
+
     const passwordOk = await usuario.comparePassword(password);
 
     console.log("¿Contraseña válida?:", passwordOk);
