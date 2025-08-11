@@ -9,7 +9,8 @@ async function crearUsuarioAdmin() {
 
     const nombre = 'Nombre Cliente';  // poné el nombre real de la clienta
     const email = 'barbytienda30@gmail.com'; // el mail que creaste
-    const passwordPlain = 'indumentariabarby'; // la contraseña que le pusiste
+    const passwordPlain = 'InduBarbie#2025'; // nueva contraseña segura
+
     const rol = 'admin'; // o 'cliente' según quieras
 
     // Verificar si el usuario ya existe
@@ -32,6 +33,7 @@ async function crearUsuarioAdmin() {
     });
 
     console.log('Usuario creado correctamente:', nuevoUsuario.email);
+    console.log('Contraseña usada:', passwordPlain);
     process.exit(0);
   } catch (error) {
     console.error('Error creando usuario:', error);
