@@ -79,6 +79,9 @@ const loginUsuario = async (req, res) => {
     // Usamos el scope para traer el password también
     const usuario = await User.scope('withPassword').findOne({ where: { email } });
 
+    console.log("Usuario encontrado para login:", usuario ? usuario.email : "No existe usuario");
+    console.log("Password hash del usuario:", usuario ? usuario.password : "No password");
+
     if (!usuario) {
       return res.status(401).json({ 
         success: false,
@@ -87,6 +90,8 @@ const loginUsuario = async (req, res) => {
     }
 
     const passwordOk = await usuario.comparePassword(password);
+
+    console.log("¿Contraseña válida?:", passwordOk);
 
     if (!passwordOk) {
       return res.status(401).json({ 
