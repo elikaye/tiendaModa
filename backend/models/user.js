@@ -1,3 +1,4 @@
+
 const { DataTypes, Model } = require('sequelize');
 const bcrypt = require('bcryptjs');
 const sequelize = require('../config/database'); // ajustá esta ruta a tu config
@@ -38,7 +39,7 @@ User.init({
   },
   scopes: {
     withPassword: {
-      attributes: { },
+      attributes: { include: ['password'] },  // CORRECCIÓN: incluir password en scope
     },
   },
   hooks: {
