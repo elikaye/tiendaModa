@@ -1,8 +1,9 @@
 
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import { API_BASE_URL } from "../../config";
+import { RiEyeLine, RiEyeOffLine } from "react-icons/ri";
 
 const Auth = () => {
   const [email, setEmail] = useState("");
@@ -10,11 +11,12 @@ const Auth = () => {
   const [mostrarPassword, setMostrarPassword] = useState(false);
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [errorMsg, setErrorMsg] = useState(""); // para mostrar errores
+  const [errorMsg, setErrorMsg] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg("");
+
     if (!email || !password) {
       setErrorMsg("Por favor, completá email y contraseña.");
       return;
@@ -22,28 +24,45 @@ const Auth = () => {
 
     setLoading(true);
     try {
-      console.log("Enviando login con:", { email, password });
-
       const respuesta = await axios.post(`${API_BASE_URL}/users/login`, {
         email,
         password,
       });
 
-      const token = respuesta.data.token;
+      const { token, user } = respuesta.data;
 
-      if (token) {
+      if (token && user) {
         localStorage.setItem("token", token);
-        localStorage.setItem("adminLoggedIn", "true");
-        navigate("/admin");
+
+        if (user.rol === "admin") {
+          localStorage.setItem("adminLoggedIn", "true");
+          navigate("/admin");
+        } else {
+          localStorage.setItem("userLoggedIn", "true");
+          navigate("/");
+        }
       } else {
-        setErrorMsg("No se recibió token de autenticación.");
+        setErrorMsg("No se recibieron datos de autenticación válidos.");
       }
     } catch (error) {
-      console.error("Error en login:", error);
-      if (error.response?.status === 401) {
-        setErrorMsg("Credenciales incorrectas. Revisá email y contraseña.");
+      if (error.response) {
+        switch (error.response.status) {
+          case 401:
+            setErrorMsg("Credenciales incorrectas. Revisá email y contraseña.");
+            break;
+          case 400:
+            setErrorMsg("Datos inválidos. Verificá la información ingresada.");
+            break;
+          case 500:
+            setErrorMsg("Error en el servidor. Intentá más tarde.");
+            break;
+          default:
+            setErrorMsg("Error desconocido. Intentá nuevamente.");
+        }
+      } else if (error.request) {
+        setErrorMsg("No se recibió respuesta del servidor.");
       } else {
-        setErrorMsg("Error en el servidor. Intentá más tarde.");
+        setErrorMsg("Error al configurar la solicitud.");
       }
     } finally {
       setLoading(false);
@@ -64,72 +83,103 @@ const Auth = () => {
           </div>
         )}
 
-        <input
-          type="email"
-          placeholder="Correo electrónico"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-pink-400"
-          required
-        />
-
-        <div className="relative">
-          <input
-            type={mostrarPassword ? "text" : "password"}
-            placeholder="Contraseña"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-pink-400 pr-10"
-            required
-          />
-          <button
-            type="button"
-            onClick={() => setMostrarPassword(!mostrarPassword)}
-            className="absolute right-2 top-2 text-gray-600 hover:text-pink-600 focus:outline-none"
-            aria-label={mostrarPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+        <div>
+          <label
+            htmlFor="email"
+            className="block text-sm font-medium text-gray-700 mb-1"
           >
-            {mostrarPassword ? (
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M13.875 18.825A10.05 10.05 0 0112 19c-5 0-9-4-9-9 0-1.04.193-2.04.55-2.955M3 3l18 18M9.879 9.879a3 3 0 014.242 4.242M15 15l3 3m-9-9l3 3"
-                />
-              </svg>
-            ) : (
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                />
-              </svg>
-            )}
-          </button>
+            Correo electrónico
+          </label>
+          <input
+            id="email"
+            type="email"
+            placeholder="tucorreo@ejemplo.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-pink-400"
+            required
+            autoComplete="email"
+          />
+        </div>
+
+        <div>
+          <label
+            htmlFor="password"
+            className="block text-sm font-medium text-gray-700 mb-1"
+          >
+            Contraseña
+          </label>
+          <div className="relative">
+            <input
+              id="password"
+              type={mostrarPassword ? "text" : "password"}
+              placeholder="Ingresá tu contraseña"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-pink-400 pr-10"
+              required
+              autoComplete="current-password"
+            />
+            <button
+              type="button"
+              onClick={() => setMostrarPassword(!mostrarPassword)}
+              className="absolute right-2 top-2 text-pink-600 hover:text-pink-700 focus:outline-none"
+              aria-label={mostrarPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+            >
+              {mostrarPassword ? <RiEyeOffLine size={24} /> : <RiEyeLine size={24} />}
+            </button>
+          </div>
+        </div>
+
+        <div className="text-right text-sm">
+          <Link to="/forgot-password" className="text-purple-600 hover:underline">
+            ¿Olvidaste tu contraseña?
+          </Link>
         </div>
 
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-black text-black py-2 rounded-full hover:bg-pink-600 transition duration-300 disabled:opacity-50"
+          className="w-full bg-purple-600 text-white py-2 rounded-full hover:bg-purple-700 transition duration-300 disabled:opacity-50 flex items-center justify-center"
         >
-          {loading ? "Cargando..." : "Iniciar sesión"}
+          {loading ? (
+            <>
+              <svg
+                className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
+              </svg>
+              Cargando...
+            </>
+          ) : (
+            "Iniciar sesión"
+          )}
         </button>
+
+        <div className="text-center mt-4 text-sm pt-2 border-t border-gray-200">
+          ¿No tenés cuenta?{" "}
+          <Link
+            to="/register"
+            className="text-purple-600 hover:underline font-semibold"
+          >
+            Registrate
+          </Link>
+        </div>
       </form>
     </div>
   );

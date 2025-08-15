@@ -9,6 +9,7 @@ import Destacados from './components/Destacados';
 import ProductosList from './components/ProductosList';
 import AdminProducts from './components/admin/AdminProductos';
 import Auth from './components/admin/Auth';
+import Register from './components/admin/Register'; // <-- Importado Register
 import Footer from './components/Footer';
 import WhatsAppButton from './components/WhatsAppButton';
 import DetalleProducto from './components/DetalleProducto';
@@ -54,7 +55,15 @@ function App() {
                 <Route path="/electronica" element={<Electronica />} />
                 <Route path="/producto/:id" element={<DetalleProducto />} />
                 <Route path="/carrito" element={<Carrito />} />
+
+                {/* Login (auth) */}
                 <Route path="/auth" element={<Auth />} />
+
+                {/* Registro (ahora es público) */}
+                <Route path="/register" element={<Register />} />
+                <Route path="/admin/register" element={<Register />} />
+
+                {/* Panel de administración protegido */}
                 <Route
                   path="/admin"
                   element={isLoggedIn ? <AdminProducts /> : <Navigate to="/auth" />}
