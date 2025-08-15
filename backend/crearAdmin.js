@@ -13,7 +13,6 @@ async function crearUsuarioAdmin() {
     const rol = 'admin';
 
     let user = await User.scope('withPassword').findOne({ where: { email } });
-
     if (!user) {
       console.log('> No existe, creando admin...');
       user = await User.create({
