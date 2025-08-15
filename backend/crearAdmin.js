@@ -1,44 +1,43 @@
-const bcrypt = require('bcryptjs');
-const User = require('./models/user'); // ajustá la ruta según tu proyecto
-const sequelize = require('./config/database'); // para conexión
+require('dotenv').config();
+const sequelize = require('./config/database'); // ajustá la ruta
+const User = require('./models/user'); // ajustá la ruta
 
 async function crearUsuarioAdmin() {
   try {
     await sequelize.authenticate();
-    console.log('Conectado a la base de datos');
+    console.log('✔ Conectado a la base de datos');
 
-    const nombre = 'Nombre Cliente';  // poné el nombre real de la clienta
-    const email = 'barbytienda30@gmail.com'; // el mail que creaste
-    const passwordPlain = 'InduBarbie#2025'; // nueva contraseña segura
+    const nombre = 'Nombre Cliente';
+    const email = 'barbytienda30@gmail.com';
+    const passwordPlain = 'InduBarbie#2025'; // texto plano
+    const rol = 'admin';
 
-    const rol = 'admin'; // o 'cliente' según quieras
+    let user = await User.scope('withPassword').findOne({ where: { email } });
 
-    // Verificar si el usuario ya existe
-    const existeUsuario = await User.findOne({ where: { email } });
-    if (existeUsuario) {
-      console.log('El usuario ya existe. No se creará uno nuevo.');
-      process.exit(0);
+    if (!user) {
+      console.log('> No existe, creando admin...');
+      user = await User.create({
+        nombre,
+        email,
+        password: passwordPlain, // TEXTO PLANO
+        rol,
+      });
+      console.log(`✔ Admin creado: ${user.email}`);
+    } else {
+      console.log('> Usuario ya existe, actualizando...');
+      await user.update({
+        nombre,
+        password: passwordPlain, // TEXTO PLANO
+        rol,
+      });
+      console.log(`✔ Admin actualizado: ${user.email}`);
     }
 
-    // Hashear la contraseña
-    const salt = await bcrypt.genSalt(10);
-    const passwordHasheada = await bcrypt.hash(passwordPlain, salt);
-
-    // Crear el usuario
-    const nuevoUsuario = await User.create({
-      nombre,
-      email,
-      password: passwordHasheada,
-      rol,
-    });
-
-    console.log('Usuario creado correctamente:', nuevoUsuario.email);
-    console.log('Contraseña usada:', passwordPlain);
+    console.log(`Contraseña usada: ${passwordPlain}`);
     process.exit(0);
+
   } catch (error) {
-    console.error('Error creando usuario:', error);
-    process.exit(1);
+    console.error('❌ Error creando usuario:', error);
+    process.exit(1); 
   }
 }
-
-crearUsuarioAdmin();
