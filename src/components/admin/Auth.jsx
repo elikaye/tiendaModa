@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
@@ -15,7 +14,7 @@ const Auth = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setErrorMsg("");
+    setErrorMsg(""); // reset de error
 
     if (!email || !password) {
       setErrorMsg("Por favor, completá email y contraseña.");
@@ -77,17 +76,15 @@ const Auth = () => {
       >
         <h2 className="text-2xl font-bold text-center text-black">Iniciar sesión</h2>
 
-        {errorMsg && (
+        {/* Mensaje de error con fallback seguro */}
+        {errorMsg && typeof errorMsg === "string" && errorMsg.trim() !== "" && (
           <div className="bg-red-100 text-red-700 p-2 rounded mb-2 text-center">
             {errorMsg}
           </div>
         )}
 
         <div>
-          <label
-            htmlFor="email"
-            className="block text-sm font-medium text-gray-700 mb-1"
-          >
+          <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
             Correo electrónico
           </label>
           <input
@@ -103,10 +100,7 @@ const Auth = () => {
         </div>
 
         <div>
-          <label
-            htmlFor="password"
-            className="block text-sm font-medium text-gray-700 mb-1"
-          >
+          <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
             Contraseña
           </label>
           <div className="relative">
@@ -140,7 +134,9 @@ const Auth = () => {
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-purple-600 text-white py-2 rounded-full hover:bg-purple-700 transition duration-300 disabled:opacity-50 flex items-center justify-center"
+          className={`w-full bg-purple-600 text-white py-2 rounded-full hover:bg-purple-700 transition duration-300 flex items-center justify-center ${
+            loading ? "opacity-70 cursor-not-allowed" : ""
+          }`}
         >
           {loading ? (
             <>
@@ -150,14 +146,7 @@ const Auth = () => {
                 fill="none"
                 viewBox="0 0 24 24"
               >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                ></circle>
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                 <path
                   className="opacity-75"
                   fill="currentColor"
@@ -173,10 +162,7 @@ const Auth = () => {
 
         <div className="text-center mt-4 text-sm pt-2 border-t border-gray-200">
           ¿No tenés cuenta?{" "}
-          <Link
-            to="/register"
-            className="text-purple-600 hover:underline font-semibold"
-          >
+          <Link to="/register" className="text-purple-600 hover:underline font-semibold">
             Registrate
           </Link>
         </div>
