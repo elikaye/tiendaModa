@@ -1,6 +1,8 @@
+// scripts/crearAdmin.js
 require('dotenv').config();
-const sequelize = require('./config/database'); // ajustá la ruta
-const User = require('./models/user'); // ajustá la ruta
+const bcrypt = require('bcryptjs');
+const sequelize = require('./config/database'); // ajustá la ruta si hace falta
+const User = require('./models/user'); // ajustá la ruta si hace falta
 
 async function crearUsuarioAdmin() {
   try {
@@ -9,34 +11,37 @@ async function crearUsuarioAdmin() {
 
     const nombre = 'Nombre Cliente';
     const email = 'barbytienda30@gmail.com';
-    const passwordPlain = 'InduBarbie#2025'; // texto plano
+    const passwordPlain = 'InduBarbie#2025';
     const rol = 'admin';
 
-    let user = await User.scope('withPassword').findOne({ where: { email } });
-    if (!user) {
-      console.log('> No existe, creando admin...');
-      user = await User.create({
-        nombre,
-        email,
-        password: passwordPlain, // TEXTO PLANO
-        rol,
-      });
-      console.log(`✔ Admin creado: ${user.email}`);
-    } else {
-      console.log('> Usuario ya existe, actualizando...');
-      await user.update({
-        nombre,
-        password: passwordPlain, // TEXTO PLANO
-        rol,
-      });
-      console.log(`✔ Admin actualizado: ${user.email}`);
+    // Hash de la contraseña
+    const hashedPassword = await bcrypt.hash(passwordPlain, 10);
+
+    // Si ya existe un admin con ese email → lo borro
+    const existente = await User.scope('withPassword').findOne({ where: { email } });
+    if (existente) {
+      console.log(`> Admin existente encontrado (${email}), eliminando...`);
+      await existente.destroy();
     }
 
-    console.log(`Contraseña usada: ${passwordPlain}`);
+    // Crear admin de cero
+    const user = await User.create({
+      nombre,
+      email,
+      password: hashedPassword,
+      rol,
+    });
+
+    console.log(`✔ Admin creado correctamente: ${user.email}`);
+    console.log(`   Contraseña original (para login): ${passwordPlain}`);
+    console.log(`   Rol: ${user.rol}`);
+
     process.exit(0);
 
   } catch (error) {
-    console.error('❌ Error creando usuario:', error);
-    process.exit(1); 
+    console.error('❌ Error creando usuario admin:', error);
+    process.exit(1);
   }
 }
+
+crearUsuarioAdmin();
