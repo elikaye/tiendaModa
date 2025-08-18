@@ -1,6 +1,5 @@
-// scripts/crearAdmin.js
+// crearAdmin.js
 require('dotenv').config();
-const bcrypt = require('bcryptjs');
 const sequelize = require('./config/database'); // ajustá la ruta si hace falta
 const User = require('./models/user'); // ajustá la ruta si hace falta
 
@@ -14,21 +13,22 @@ async function crearUsuarioAdmin() {
     const passwordPlain = 'InduBarbie#2025';
     const rol = 'admin';
 
-    // Hash de la contraseña
-    const hashedPassword = await bcrypt.hash(passwordPlain, 10);
+    // Busco cualquier usuario con ese email, incluyendo los eliminados (soft delete)
+    const existente = await User.findOne({ 
+      where: { email }, 
+      paranoid: false
+    });
 
-    // Si ya existe un admin con ese email → lo borro
-    const existente = await User.scope('withPassword').findOne({ where: { email } });
     if (existente) {
-      console.log(`> Admin existente encontrado (${email}), eliminando...`);
-      await existente.destroy();
+      console.log(`> Admin existente encontrado (${email}), eliminando completamente...`);
+      await existente.destroy({ force: true }); // elimina completamente
     }
 
-    // Crear admin de cero
+    // Crear admin de cero con contraseña en texto plano (el hook del modelo hará el hash)
     const user = await User.create({
       nombre,
       email,
-      password: hashedPassword,
+      password: passwordPlain,
       rol,
     });
 
@@ -45,3 +45,4 @@ async function crearUsuarioAdmin() {
 }
 
 crearUsuarioAdmin();
+

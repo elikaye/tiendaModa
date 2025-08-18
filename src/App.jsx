@@ -17,7 +17,7 @@ import Carrito from './components/Carrito';
 import ScrollToTop from './components/ScrollToTop';
 
 import Ropa from './pages/Ropa';
-import Zapatos from './pages/Zapatos';
+import Calzados from './pages/Calzados';
 import Hogar from './pages/Hogar';
 import Electronica from './pages/Electronica';
 
@@ -50,7 +50,7 @@ function App() {
                   }
                 />
                 <Route path="/ropa" element={<Ropa />} />
-                <Route path="/zapatos" element={<Zapatos />} />
+                <Route path="/calzados" element={<Calzados />} />
                 <Route path="/hogar" element={<Hogar />} />
                 <Route path="/electronica" element={<Electronica />} />
                 <Route path="/producto/:id" element={<DetalleProducto />} />
