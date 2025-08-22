@@ -12,38 +12,47 @@ const userRoutes = require('./routes/userRoutes');
 const app = express();
 app.use(express.json());
 
+// ---- CORS ----
 const allowedOrigins = [
-  "http://localhost:5173", // frontend local
-  "https://tiendamoda-produccion-280c.up.railway.app" // frontend en Railway
+  "http://localhost:5173",
+  "https://tiendamoda-produccion-280c.up.railway.app"
 ];
 
 app.use(cors({
   origin: function(origin, callback) {
-    if(!origin) return callback(null, true); // permite Postman o requests sin origin
-    if(allowedOrigins.indexOf(origin) === -1) {
+    if (!origin) return callback(null, true); // permite Postman o requests sin origin
+    if (allowedOrigins.indexOf(origin) === -1) {
       return callback(new Error(`CORS para ${origin} no permitido`), false);
     }
     return callback(null, true);
   },
-  methods: ["GET","POST","PUT","DELETE"],
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   credentials: true
 }));
 
-// Rutas
+// Permitir preflight para todas las rutas
+app.options('*', cors({
+  origin: allowedOrigins,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  credentials: true
+}));
+
+// ---- Rutas ----
 app.use('/api/v1/products', productRoutes);
 app.use('/api/v1/users', userRoutes);
 
 app.get('/', (req, res) => res.send('✅ API funcionando con Sequelize, MySQL y Cloudinary 🚀'));
 
-// Manejo de rutas no encontradas
-app.use((req,res,next) => res.status(404).json({ message: 'Ruta no encontrada' }));
+// ---- Manejo de rutas no encontradas ----
+app.use((req, res, next) => res.status(404).json({ message: 'Ruta no encontrada' }));
 
-// Middleware global de errores
+// ---- Middleware global de errores ----
 app.use((err, req, res, next) => {
   console.error('🔴 Error global:', err.stack);
   res.status(500).json({ message: 'Error interno del servidor' });
 });
 
+// ---- Inicio del servidor ----
 const PORT = process.env.PORT || 5000;
 
 sequelize.authenticate()
