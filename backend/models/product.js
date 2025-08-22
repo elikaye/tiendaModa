@@ -1,3 +1,4 @@
+
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 
@@ -20,12 +21,13 @@ const Product = sequelize.define('products', {
     allowNull: false
   },
   imageUrl: {
-    type: DataTypes.STRING(255),
+    type: DataTypes.STRING(500), // Más largo para URLs de Cloudinary
     allowNull: true
   },
   estado: {
     type: DataTypes.STRING(50),
-    allowNull: false
+    allowNull: false,
+    defaultValue: 'activo'
   },
   categoria: {
     type: DataTypes.STRING(100),
@@ -39,23 +41,40 @@ const Product = sequelize.define('products', {
     type: DataTypes.BOOLEAN,
     defaultValue: false
   },
-  createdat: {
+  createdAt: {
     type: DataTypes.DATE,
-    allowNull: false
+    allowNull: false,
+    defaultValue: DataTypes.NOW
   },
   updatedAt: {
     type: DataTypes.DATE,
-    allowNull: false
+    allowNull: false,
+    defaultValue: DataTypes.NOW
   },
   deletedAt: {
     type: DataTypes.DATE,
     allowNull: true
-  }
+  },
+
+talles: {
+  type: DataTypes.STRING,
+  allowNull: true
+},
+colores: {
+  type: DataTypes.STRING,
+  allowNull: true
+},
+medidas: {
+  type: DataTypes.STRING,
+  allowNull: true
+},
+imagePublicId: {
+  type: DataTypes.STRING,
+  allowNull: true
+},  
 }, {
   tableName: 'products',
   timestamps: true,
-  createdAt: 'createdat',
-  updatedAt: 'updatedAt',
   paranoid: true,
   deletedAt: 'deletedAt'
 });

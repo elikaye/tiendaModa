@@ -1,4 +1,3 @@
-// Importaciones necesarias
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
@@ -7,53 +6,53 @@ const path = require('path');
 // Configuración de variables de entorno
 dotenv.config();
 
-// Importación de la conexión con Sequelize (sin destructuring)
-const sequelize = require ('./config/database');
-
-// Crear instancia de la app de Express
-const app = express();
-      
-
-
-// Middleware para parsear JSON
-app.use(express.json());
-
-app.use(cors({
-  origin: process.env.CORS_ORIGIN,
-  credentials: true,
-}));
-
-// Servir archivos estáticos (imágenes de productos)
-app.use('/product', express.static(path.join(__dirname, 'public', 'product')));
+// Conexión a la base de datos
+const sequelize = require('./config/database');
 
 // Importar rutas
 const productRoutes = require('./routes/productRoutes');
 const userRoutes = require('./routes/userRoutes');
 
-// Usar las rutas
+// Crear instancia de la app de Express
+const app = express();
+
+// Middleware para parsear JSON
+app.use(express.json());
+
+// 🔧 Configurar CORS para Railway (producción)
+app.use(cors({
+  origin: "https://tiendamoda-produccion-280c.up.railway.app",
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  credentials: true,
+}));
+
+// Servir archivos estáticos si tuvieras otros assets
+app.use('/static', express.static(path.join(__dirname, 'public')));
+
+// Usar rutas
 app.use('/api/v1/products', productRoutes);
 app.use('/api/v1/users', userRoutes);
 
-// Ruta de prueba para comprobar que el servidor responde
+// Ruta de prueba
 app.get('/', (req, res) => {
-  res.send('✅ API funcionando con Sequelize y MySQL 🚀');
+  res.send('✅ API funcionando con Sequelize, MySQL y Cloudinary 🚀');
 });
 
-// Middleware para rutas no encontradas (catch-all)
+// Middleware para rutas no encontradas
 app.use((req, res, next) => {
   res.status(404).json({ message: 'Ruta no encontrada' });
 });
 
-// Middleware global de manejo de errores
+// Middleware global de errores
 app.use((err, req, res, next) => {
   console.error('🔴 Error global:', err.stack);
   res.status(500).json({ message: 'Error interno del servidor' });
 });
 
-// Configurar el puerto desde .env o usar 5000 por defecto
+// Configurar puerto
 const PORT = process.env.PORT || 5000;
 
-// Iniciar la conexión a la base de datos y levantar el servidor
+// Conectar DB y levantar servidor
 sequelize.authenticate()
   .then(() => {
     console.log('✅ Conectado a MySQL con Sequelize');
@@ -63,5 +62,5 @@ sequelize.authenticate()
   })
   .catch((err) => {
     console.error('❌ Error al conectar con Sequelize:', err.message);
-    process.exit(1); // Salir si no se puede conectar
+    process.exit(1);
   });

@@ -1,10 +1,12 @@
-
 const express = require('express');
-const Product = require('../models/product');  // Importación CORRECTA sin destructuring
+const Product = require('../models/product'); 
 const { validationResult, body } = require('express-validator');
 const authMiddleware = require('../middleware/authMiddleware');
+const multer = require('multer');
+const cloudinary = require('../cloudinaryConfig'); // tu archivo config de Cloudinary
 
 const router = express.Router();
+const upload = multer({ dest: 'uploads/' }); // carpeta temporal para las imágenes
 
 // Validación del producto
 const validateProduct = [
@@ -13,7 +15,6 @@ const validateProduct = [
   body('description').optional().trim(),
   body('subcategoria').optional().isLength({ min: 2, max: 50 }).withMessage('Subcategoría inválida'),
   body('categoria').trim().isLength({ min: 2, max: 50 }).withMessage('Categoría inválida'),
-  body('imageUrl').optional().trim(),
   body('estado').optional().isIn(['activo', 'inactivo', 'agotado']).withMessage('Estado inválido'),
   body('destacados').optional().isBoolean().withMessage('Destacados debe ser booleano'),
   (req, res, next) => {
@@ -36,7 +37,7 @@ const loadProduct = async (req, res, next) => {
   }
 };
 
-// Obtener productos (filtros opcionales)
+// Obtener productos
 router.get('/', async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
@@ -44,7 +45,6 @@ router.get('/', async (req, res) => {
     const offset = (page - 1) * limit;
 
     const whereClause = {};
-
     if (req.query.categoria) whereClause.categoria = req.query.categoria;
     if (req.query.subcategoria) whereClause.subcategoria = req.query.subcategoria;
     if (req.query.destacados === 'true') whereClause.destacados = true;
@@ -55,8 +55,6 @@ router.get('/', async (req, res) => {
       offset,
       order: [['createdAt', 'DESC']],
     });
-
-      console.log('✅ Productos encontrados:', products);
 
     res.json({
       total: count,
@@ -75,19 +73,16 @@ router.get('/:id', loadProduct, (req, res) => {
   res.json(req.product);
 });
 
-// Crear producto - PROTEGIDO
-router.post('/', authMiddleware, validateProduct, async (req, res) => {
+// Crear producto con Cloudinary
+router.post('/', authMiddleware, upload.single('image'), validateProduct, async (req, res) => {
   try {
-    const {
-      name,
-      price,
-      description,
-      subcategoria,
-      categoria,
-      imageUrl,
-      estado,
-      destacados
-    } = req.body;
+    let imageUrl = req.body.imageUrl;
+    if (req.file) {
+      const result = await cloudinary.uploader.upload(req.file.path, { folder: 'productos' });
+      imageUrl = result.secure_url;
+    }
+
+    const { name, price, description, subcategoria, categoria, estado, destacados } = req.body;
 
     const newProduct = await Product.create({
       name,
@@ -107,31 +102,18 @@ router.post('/', authMiddleware, validateProduct, async (req, res) => {
   }
 });
 
-// Actualizar producto - PROTEGIDO
-router.put('/:id', authMiddleware, loadProduct, validateProduct, async (req, res) => {
+// Actualizar producto con Cloudinary
+router.put('/:id', authMiddleware, upload.single('image'), loadProduct, validateProduct, async (req, res) => {
   try {
-    const {
-      name,
-      price,
-      description,
-      subcategoria,
-      categoria,
-      imageUrl,
-      estado,
-      destacados
-    } = req.body;
+    let imageUrl = req.body.imageUrl;
+    if (req.file) {
+      const result = await cloudinary.uploader.upload(req.file.path, { folder: 'productos' });
+      imageUrl = result.secure_url;
+    }
 
-    await req.product.update({
-      name,
-      price,
-      description,
-      subcategoria,
-      categoria,
-      imageUrl,
-      estado,
-      destacados
-    });
+    const { name, price, description, subcategoria, categoria, estado, destacados } = req.body;
 
+    await req.product.update({ name, price, description, subcategoria, categoria, imageUrl, estado, destacados });
     res.json(req.product);
   } catch (error) {
     console.error('❌ Error al actualizar producto:', error);
@@ -139,7 +121,7 @@ router.put('/:id', authMiddleware, loadProduct, validateProduct, async (req, res
   }
 });
 
-// Eliminar producto - PROTEGIDO
+// Eliminar producto
 router.delete('/:id', authMiddleware, loadProduct, async (req, res) => {
   try {
     await req.product.destroy();
