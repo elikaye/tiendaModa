@@ -1,7 +1,6 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
-const path = require('path');
 
 dotenv.config();
 
@@ -20,22 +19,18 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: function(origin, callback) {
-    if (!origin) return callback(null, true); // permite Postman o requests sin origin
-    if (allowedOrigins.indexOf(origin) === -1) {
+    if (!origin) return callback(null, true);
+    if (!allowedOrigins.includes(origin)) {
       return callback(new Error(`CORS para ${origin} no permitido`), false);
     }
     return callback(null, true);
   },
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  methods: ["GET","POST","PUT","DELETE","OPTIONS"],
   credentials: true
 }));
 
-// Permitir preflight para todas las rutas
-app.options('*', cors({
-  origin: allowedOrigins,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  credentials: true
-}));
+// Permitir preflight
+app.options('*', cors());
 
 // ---- Rutas ----
 app.use('/api/v1/products', productRoutes);
