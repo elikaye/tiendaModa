@@ -1,3 +1,4 @@
+// server.js
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
@@ -19,11 +20,24 @@ const app = express();
 // Middleware para parsear JSON
 app.use(express.json());
 
-// 🔧 Configurar CORS para Railway (producción)
+// 🔧 Configurar CORS para desarrollo y producción
+const allowedOrigins = [
+  "http://localhost:5173", // frontend local
+  "https://tiendamoda-produccion-280c.up.railway.app" // frontend producción
+];
+
 app.use(cors({
-  origin: "https://tiendamoda-produccion-280c.up.railway.app",
+  origin: function(origin, callback){
+    // permitir requests sin origin (ej: Postman)
+    if(!origin) return callback(null, true);
+    if(allowedOrigins.indexOf(origin) === -1){
+      const msg = `El CORS para el origen ${origin} no está permitido`;
+      return callback(new Error(msg), false);
+    }
+    return callback(null, true);
+  },
   methods: ["GET", "POST", "PUT", "DELETE"],
-  credentials: true,
+  credentials: true
 }));
 
 // Servir archivos estáticos si tuvieras otros assets
