@@ -1,15 +1,20 @@
+// controllers/userController.js
+
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 
+// ====================
+// Registrar usuario
+// ====================
 const registrarUsuario = async (req, res) => {
   try {
     const { nombre, email, password } = req.body;
 
     if (!nombre || !email || !password) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         success: false,
-        message: 'Todos los campos son obligatorios' 
+        message: 'Todos los campos son obligatorios',
       });
     }
 
@@ -17,90 +22,81 @@ const registrarUsuario = async (req, res) => {
     if (!emailRegex.test(email)) {
       return res.status(400).json({
         success: false,
-        message: 'El formato del email es inválido' 
+        message: 'Formato de email inválido',
       });
     }
 
     const existeUsuario = await User.findOne({ where: { email } });
     if (existeUsuario) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         success: false,
-        message: 'Este email ya está registrado' 
+        message: 'Este email ya está registrado',
       });
     }
 
-    // Creación del usuario (el hook del modelo hace el hash)
+    // Crear usuario (hash del password en hook del modelo)
     const nuevoUsuario = await User.create({
       nombre,
       email,
-      password, // lo hashea el hook
-      rol: 'cliente'
+      password,
+      rol: 'cliente',
     });
 
+    // Generar token JWT
     const token = jwt.sign(
       { id: nuevoUsuario.id, email: nuevoUsuario.email, rol: nuevoUsuario.rol },
       process.env.JWT_SECRET,
       { expiresIn: '4h' }
     );
 
-    return res.status(201).json({ 
+    return res.status(201).json({
       success: true,
       message: 'Usuario registrado correctamente',
       user: {
         id: nuevoUsuario.id,
         nombre: nuevoUsuario.nombre,
         email: nuevoUsuario.email,
-        rol: nuevoUsuario.rol
+        rol: nuevoUsuario.rol,
       },
-      token
+      token,
     });
-
   } catch (error) {
-    console.error('❌ Error en registrarUsuario:', error);
-    return res.status(500).json({ 
+    console.error('❌ Error en registrarUsuario:', error.message);
+    return res.status(500).json({
       success: false,
-      message: 'Error en el servidor', 
-      error: error.message 
+      message: 'Error en el servidor',
     });
   }
 };
 
+// ====================
+// Login usuario
+// ====================
 const loginUsuario = async (req, res) => {
   try {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         success: false,
-        message: 'Email y contraseña requeridos' 
+        message: 'Email y contraseña requeridos',
       });
     }
 
-    // Usamos el scope para traer el password también
+    // Traer usuario con password
     const usuario = await User.scope('withPassword').findOne({ where: { email } });
-
-    console.log("Usuario encontrado para login:", usuario ? usuario.email : "No existe usuario");
-    console.log("Password hash del usuario:", usuario ? usuario.password : "No password");
-
     if (!usuario) {
-      return res.status(401).json({ 
+      return res.status(401).json({
         success: false,
-        message: 'Credenciales inválidas' 
+        message: 'Credenciales inválidas',
       });
     }
-
-    console.log("Contraseña recibida (texto plano):", password);
-    console.log("Hash almacenado en DB:", usuario.password);
-
 
     const passwordOk = await usuario.comparePassword(password);
-
-    console.log("¿Contraseña válida?:", passwordOk);
-
     if (!passwordOk) {
-      return res.status(401).json({ 
+      return res.status(401).json({
         success: false,
-        message: 'Credenciales inválidas' 
+        message: 'Credenciales inválidas',
       });
     }
 
@@ -118,20 +114,18 @@ const loginUsuario = async (req, res) => {
       success: true,
       message: 'Login exitoso',
       user: usuarioSinPassword,
-      token
+      token,
     });
-
   } catch (error) {
-    console.error('❌ Error en loginUsuario:', error);
+    console.error('❌ Error en loginUsuario:', error.message);
     return res.status(500).json({
       success: false,
       message: 'Error en el servidor',
-      error: error.message
     });
   }
 };
 
 module.exports = {
   registrarUsuario,
-  loginUsuario
+  loginUsuario,
 };
