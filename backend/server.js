@@ -1,4 +1,3 @@
-
 // server.js
 const express = require('express');
 const cors = require('cors');
@@ -19,25 +18,21 @@ const allowedOrigins = [
   "https://tiendamoda-produccion-280c.up.railway.app"
 ];
 
-app.use(cors({
-  origin: function(origin, callback) {
-    if (!origin) return callback(null, true); // solicitudes directas como Postman
-    if (allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    } else {
-      return callback(new Error(`CORS para ${origin} no permitido`));
-    }
-  },
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  credentials: true
-}));
+// Middleware CORS seguro
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  }
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
 
-// Preflight para todas las rutas
-app.options('*', cors({
-  origin: allowedOrigins,
-  methods: ["GET","POST","PUT","DELETE","OPTIONS"],
-  credentials: true
-}));
+  // Responder a preflight request
+  if (req.method === 'OPTIONS') return res.sendStatus(204);
+
+  next();
+});
 
 // ---- Rutas ----
 app.use('/api/v1/products', productRoutes);
@@ -46,7 +41,7 @@ app.use('/api/v1/users', userRoutes);
 app.get('/', (req, res) => res.send('✅ API funcionando con Sequelize, MySQL y Cloudinary 🚀'));
 
 // ---- Manejo de rutas no encontradas ----
-app.use((req, res, next) => res.status(404).json({ message: 'Ruta no encontrada' }));
+app.use((req, res) => res.status(404).json({ message: 'Ruta no encontrada' }));
 
 // ---- Middleware global de errores ----
 app.use((err, req, res, next) => {
