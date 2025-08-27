@@ -1,25 +1,25 @@
 // server.js
 const express = require('express');
-const cors = require('cors');
 const dotenv = require('dotenv');
-
-dotenv.config();
-
 const sequelize = require('./config/database');
 const productRoutes = require('./routes/productRoutes');
 const userRoutes = require('./routes/userRoutes');
 
+dotenv.config();
+
 const app = express();
 app.use(express.json());
 
-// ---- CORS ----
-app.use(cors({
-  origin: true, // temporalmente permite cualquier origen para desbloquear frontend
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  credentials: true
-}));
+// ---- CORS global para todas las rutas ----
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*"); // temporal: permite cualquier frontend
+  res.header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.header("Access-Control-Allow-Credentials", "true");
 
-app.options("*", cors()); // habilita preflight para todas las rutas
+  if (req.method === "OPTIONS") return res.sendStatus(204); // responder preflight
+  next();
+});
 
 // ---- Rutas ----
 app.use('/api/v1/products', productRoutes);
