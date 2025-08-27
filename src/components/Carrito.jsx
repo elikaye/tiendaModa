@@ -1,9 +1,9 @@
+
 import React, { useEffect } from "react";
 import { useCart } from "../context/cartContext";
 import { FaTrashAlt } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import placeholderImg from "../assets/carrito-de-compras.png";
-import { API_BASE_URL } from "../config";
 
 const Carrito = () => {
   const { carrito, vaciarCarrito, eliminarDelCarrito } = useCart();
@@ -11,8 +11,6 @@ const Carrito = () => {
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
-
-  const baseUrlBackend = API_BASE_URL.split("/api/v1")[0];
 
   // Total suma los precios con seguridad
   const total = carrito.reduce(
@@ -37,17 +35,12 @@ const Carrito = () => {
       ) : (
         <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-lg p-6 space-y-4">
           {carrito.map((producto) => {
-            const imagePath = producto.imageUrl?.startsWith("/product/")
-              ? producto.imageUrl.substring(9)
-              : producto.imageUrl;
-
-            const imgSrc = producto.imageUrl
-              ? `${baseUrlBackend}/product/${imagePath}`
-              : placeholderImg;
+            // Usar la URL de Cloudinary directamente
+            const imgSrc = producto.imageUrl || placeholderImg;
 
             return (
               <div
-                key={producto.id}
+                key={producto.id || producto._id}
                 className="flex items-center justify-between border-b pb-4"
               >
                 <div className="flex items-center gap-4">
@@ -70,7 +63,7 @@ const Carrito = () => {
                   </div>
                 </div>
                 <button
-                  onClick={() => eliminarDelCarrito(producto.id)}
+                  onClick={() => eliminarDelCarrito(producto.id || producto._id)}
                   className="text-pink-500 hover:text-black transition"
                   title="Eliminar producto"
                 >

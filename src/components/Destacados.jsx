@@ -1,11 +1,10 @@
-
 import { useEffect, useState } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay } from 'swiper/modules';
 import { FaShoppingBag } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import { useCart } from '../context/cartContext'; 
-import { API_BASE_URL } from '../config';
+import { CLOUDINARY_BASE_URL } from '../config';
 import 'swiper/css';
 
 function Destacados() {
@@ -18,7 +17,8 @@ function Destacados() {
   useEffect(() => {
     const fetchProductos = async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/products?destacados=true&limit=6`);
+        // Aquí asumimos que el backend ya devuelve las imágenes con la URL de Cloudinary
+        const response = await fetch(`/api/products?destacados=true&limit=6`);
         if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
         const data = await response.json();
         const destacados = Array.isArray(data.products) ? data.products : [];
@@ -35,9 +35,7 @@ function Destacados() {
   }, []);
 
   if (loading) return <p className="text-center py-10">Cargando productos destacados...</p>;
-
   if (error) return <p className="text-center py-10 text-red-600">{error}</p>;
-
   if (!productos.length) return <p className="text-center py-10">No hay productos destacados disponibles.</p>;
 
   const handleComprar = (e, producto) => {
@@ -45,8 +43,6 @@ function Destacados() {
     agregarAlCarrito(producto);
     alert(`Agregaste ${producto.nombre} al carrito!`);
   };
-
-  const baseUrlBackend = API_BASE_URL.split('/api/v1')[0];
 
   return (
     <section className="bg-pink-200 py-16">
@@ -67,17 +63,12 @@ function Destacados() {
           }}
         >
           {productos.map(prod => {
-            const imagePath = prod.imageUrl?.startsWith('/product/')
-              ? prod.imageUrl.substring(9)
-              : prod.imageUrl;
-
-            const imgSrc = prod.imageUrl
-              ? `${baseUrlBackend}/product/${imagePath}`
-              : '/placeholder.png';
+            // Si la URL ya viene de Cloudinary, la usamos directamente
+            const imgSrc = prod.imageUrl || '/placeholder.png';
 
             return (
-              <SwiperSlide key={prod.id}>
-                <Link to={`/producto/${prod.id}`}>
+              <SwiperSlide key={prod.id || prod._id}>
+                <Link to={`/producto/${prod.id || prod._id}`}>
                   <div className="bg-white rounded-3xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden h-full flex flex-col">
                     <div className="h-60 bg-white flex items-center justify-center relative overflow-hidden">
                       <img

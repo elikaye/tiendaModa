@@ -25,7 +25,7 @@ export default function Navbar() {
   const secciones = [
     ['Inicio', '/'],
     ['Ropa', '/ropa'],
-    ['Zapatos', '/zapatos'],
+    ['Calzados', '/calzados'],
     ['Hogar', '/hogar'],
     ['Electrónica', '/electronica'],
   ];

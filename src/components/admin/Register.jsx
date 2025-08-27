@@ -30,13 +30,15 @@ const Register = () => {
         nombre,
         email,
         password,
-      });
+      }, { withCredentials: true });
 
       setSuccessMsg("Registro exitoso. Ahora podés iniciar sesión.");
-      // Opcional: limpiar campos
       setNombre("");
       setEmail("");
       setPassword("");
+
+      // Redirigir al login después de 2s opcionalmente
+      setTimeout(() => navigate("/auth"), 2000);
     } catch (error) {
       if (error.response?.data?.message) {
         setErrorMsg(error.response.data.message);
@@ -56,17 +58,8 @@ const Register = () => {
       >
         <h2 className="text-2xl font-bold text-center text-black">Registrarse</h2>
 
-        {errorMsg && (
-          <div className="bg-red-100 text-red-700 p-2 rounded mb-2 text-center">
-            {errorMsg}
-          </div>
-        )}
-
-        {successMsg && (
-          <div className="bg-green-100 text-green-700 p-2 rounded mb-2 text-center">
-            {successMsg}
-          </div>
-        )}
+        {errorMsg && <div className="bg-red-100 text-red-700 p-2 rounded mb-2 text-center">{errorMsg}</div>}
+        {successMsg && <div className="bg-green-100 text-green-700 p-2 rounded mb-2 text-center">{successMsg}</div>}
 
         <input
           type="text"

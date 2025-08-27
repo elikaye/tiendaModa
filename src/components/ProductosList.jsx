@@ -1,7 +1,7 @@
+
 import React, { useEffect, useState } from "react";
 import ProductoCard from "./ProductoCard";
 import { useSearch } from "../context/SearchContext";
-import { API_BASE_URL } from "../config";
 
 const ProductosList = () => {
   const [productos, setProductos] = useState([]);
@@ -12,7 +12,7 @@ const ProductosList = () => {
   useEffect(() => {
     setLoading(true);
     setError(null);
-    fetch(`${API_BASE_URL}/products`)
+    fetch(`/api/products`) // Ya no usamos API_BASE_URL
       .then((res) => {
         if (!res.ok) throw new Error(`Error HTTP: ${res.status}`);
         return res.json();
@@ -36,9 +36,7 @@ const ProductosList = () => {
     : productos;
 
   if (loading) return <p className="text-center mt-10">Cargando productos...</p>;
-
   if (error) return <p className="text-center mt-10 text-red-600">{error}</p>;
-
   if (productosFiltrados.length === 0)
     return <p className="text-center mt-10">No hay productos que coincidan.</p>;
 

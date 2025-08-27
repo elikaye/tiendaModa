@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { FaHeart, FaShoppingBag } from "react-icons/fa";
 import { useCart } from "../context/cartContext";
 import { Link, useNavigate } from "react-router-dom";
-import { API_BASE_URL } from "../config";
+import { CLOUDINARY_BASE_URL } from "../config";
 
 const ProductoCard = ({ producto }) => {
   const [liked, setLiked] = useState(false);
@@ -22,16 +22,14 @@ const ProductoCard = ({ producto }) => {
     navigate("/carrito");
   };
 
-  // Corrección de URL para imagen
-  const baseUrlBackend = API_BASE_URL.split("/api/v1")[0];
-  const imagePath = producto.imageUrl?.startsWith("/product/")
-    ? producto.imageUrl.substring(9)
-    : producto.imageUrl;
+  // Construir la URL de la imagen usando Cloudinary
   const imgSrc = producto.imageUrl
-    ? `${baseUrlBackend}/product/${imagePath}`
-    : "/placeholder.png";
+    ? `${CLOUDINARY_BASE_URL}${producto.imageUrl}`
+    : "/placeholder.png"; // Si no hay imagen, mostramos placeholder
 
-  const precioFormateado = !isNaN(Number(producto.precio)) ? Number(producto.precio).toFixed(2) : "0.00";
+  const precioFormateado = !isNaN(Number(producto.precio))
+    ? Number(producto.precio).toFixed(2)
+    : "0.00";
 
   return (
     <Link

@@ -10,10 +10,8 @@ const DetalleProducto = ({ producto, onAgregarAlCarrito }) => {
     );
   }
 
-  // Normalización del path de imagen
-  const imageUrl = producto.imageUrl
-    ? `/product/${producto.imageUrl.replace(/^\/?product\/?/, "")}`
-    : "/placeholder.png";
+  // Usar la URL de Cloudinary directamente si existe
+  const imageUrl = producto.imageUrl || "/placeholder.png";
 
   return (
     <div className="min-h-screen py-8 px-4 md:px-20 bg-white text-black">

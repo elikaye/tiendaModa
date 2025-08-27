@@ -1,3 +1,7 @@
+
+
+// Auth.jsx
+
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
@@ -8,31 +12,31 @@ const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [mostrarPassword, setMostrarPassword] = useState(false);
-  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setErrorMsg(""); // reset de error
+    setErrorMsg("");
 
     if (!email || !password) {
-      setErrorMsg("Por favor, completá email y contraseña.");
+      setErrorMsg("Por favor completá email y contraseña.");
       return;
     }
 
     setLoading(true);
     try {
-      const respuesta = await axios.post(`${API_BASE_URL}/users/login`, {
+      // Quitar temporalmente withCredentials para evitar bloqueos de CORS
+      const response = await axios.post(`${API_BASE_URL}/users/login`, {
         email,
         password,
       });
 
-      const { token, user } = respuesta.data;
+      const { token, user } = response.data;
 
       if (token && user) {
         localStorage.setItem("token", token);
-
         if (user.rol === "admin") {
           localStorage.setItem("adminLoggedIn", "true");
           navigate("/admin");
@@ -41,16 +45,16 @@ const Auth = () => {
           navigate("/");
         }
       } else {
-        setErrorMsg("No se recibieron datos de autenticación válidos.");
+        setErrorMsg("No se recibieron datos válidos de autenticación.");
       }
     } catch (error) {
       if (error.response) {
         switch (error.response.status) {
           case 401:
-            setErrorMsg("Credenciales incorrectas. Revisá email y contraseña.");
+            setErrorMsg("Credenciales incorrectas.");
             break;
           case 400:
-            setErrorMsg("Datos inválidos. Verificá la información ingresada.");
+            setErrorMsg("Datos inválidos. Verificá la información.");
             break;
           case 500:
             setErrorMsg("Error en el servidor. Intentá más tarde.");
@@ -59,7 +63,7 @@ const Auth = () => {
             setErrorMsg("Error desconocido. Intentá nuevamente.");
         }
       } else if (error.request) {
-        setErrorMsg("No se recibió respuesta del servidor.");
+        setErrorMsg("No se recibió respuesta del servidor. Revisá que el backend esté levantado.");
       } else {
         setErrorMsg("Error al configurar la solicitud.");
       }
@@ -70,14 +74,10 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-100 via-white to-pink-200 px-4">
-      <form
-        onSubmit={handleSubmit}
-        className="bg-white p-8 rounded-lg shadow-md w-full max-w-md space-y-4"
-      >
+      <form onSubmit={handleSubmit} className="bg-white p-8 rounded-lg shadow-md w-full max-w-md space-y-4">
         <h2 className="text-2xl font-bold text-center text-black">Iniciar sesión</h2>
 
-        {/* Mensaje de error con fallback seguro */}
-        {errorMsg && typeof errorMsg === "string" && errorMsg.trim() !== "" && (
+        {errorMsg && (
           <div className="bg-red-100 text-red-700 p-2 rounded mb-2 text-center">
             {errorMsg}
           </div>
@@ -95,7 +95,6 @@ const Auth = () => {
             onChange={(e) => setEmail(e.target.value)}
             className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-pink-400"
             required
-            autoComplete="email"
           />
         </div>
 
@@ -112,7 +111,6 @@ const Auth = () => {
               onChange={(e) => setPassword(e.target.value)}
               className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-pink-400 pr-10"
               required
-              autoComplete="current-password"
             />
             <button
               type="button"
@@ -134,30 +132,9 @@ const Auth = () => {
         <button
           type="submit"
           disabled={loading}
-          className={`w-full bg-purple-600 text-black py-2 rounded-full hover:bg-purple-700 transition duration-300 flex items-center justify-center ${
-            loading ? "opacity-70 cursor-not-allowed" : ""
-          }`}
+          className={`w-full bg-purple-600 text-white py-2 rounded-full hover:bg-purple-700 transition duration-300 flex items-center justify-center ${loading ? "opacity-70 cursor-not-allowed" : ""}`}
         >
-          {loading ? (
-            <>
-              <svg
-                className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                ></path>
-              </svg>
-              Cargando...
-            </>
-          ) : (
-            "Iniciar sesión"
-          )}
+          {loading ? "Cargando..." : "Iniciar sesión"}
         </button>
 
         <div className="text-center mt-4 text-sm pt-2 border-t border-gray-200">

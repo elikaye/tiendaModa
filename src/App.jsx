@@ -7,7 +7,7 @@ import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import Destacados from './components/Destacados';
 import ProductosList from './components/ProductosList';
-import AdminProducts from './components/admin/AdminProductos';
+import AdminProductos from './components/admin/AdminProductos';
 import Auth from './components/admin/Auth';
 import Register from './components/admin/Register'; // <-- Importado Register
 import Footer from './components/Footer';
@@ -66,7 +66,7 @@ function App() {
                 {/* Panel de administración protegido */}
                 <Route
                   path="/admin"
-                  element={isLoggedIn ? <AdminProducts /> : <Navigate to="/auth" />}
+                  element={isLoggedIn ? <AdminProductos /> : <Navigate to="/auth" />}
                 />
               </Routes>
             </main>
