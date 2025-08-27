@@ -13,19 +13,13 @@ const app = express();
 app.use(express.json());
 
 // ---- CORS ----
-const allowedOrigins = [
-  "http://localhost:5173",
-  "https://tiendamoda-produccion-280c.up.railway.app"
-];
-
 app.use(cors({
-  origin: true,
+  origin: true, // temporalmente permite cualquier origen para desbloquear frontend
   methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true
 }));
 
-// Habilitar preflight para todas las rutas
-app.options("*", cors());
+app.options("*", cors()); // habilita preflight para todas las rutas
 
 // ---- Rutas ----
 app.use('/api/v1/products', productRoutes);
@@ -45,12 +39,13 @@ app.use((err, req, res, next) => {
 // ---- Inicio del servidor ----
 const PORT = process.env.PORT || 5000;
 
-sequelize.authenticate()
-  .then(() => {
+// Arranca el servidor primero, luego intenta conectar Sequelize
+app.listen(PORT, async () => {
+  console.log(`🚀 Servidor corriendo en el puerto ${PORT}`);
+  try {
+    await sequelize.authenticate();
     console.log('✅ Conectado a MySQL con Sequelize');
-    app.listen(PORT, () => console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`));
-  })
-  .catch(err => {
+  } catch (err) {
     console.error('❌ Error al conectar con Sequelize:', err.message);
-    process.exit(1);
-  });
+  }
+});
