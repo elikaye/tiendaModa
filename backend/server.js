@@ -18,22 +18,17 @@ const allowedOrigins = [
 ];
 
 app.use(cors({
-  origin: function(origin, callback) {
-    // Permitir requests sin origin (como Postman)
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    } else {
-      return callback(new Error("CORS no permitido por este origen"));
-    }
-  },
+  origin: allowedOrigins,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true
 }));
 
 // Habilitar preflight para todas las rutas
-app.options("*", cors());
+app.options("*", cors({
+  origin: allowedOrigins,
+  credentials: true
+}));
 
 // ---- Rutas ----
 app.use('/api/v1/products', productRoutes);
