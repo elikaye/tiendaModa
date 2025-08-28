@@ -4,22 +4,36 @@ const dotenv = require('dotenv');
 const sequelize = require('./config/database');
 const productRoutes = require('./routes/productRoutes');
 const userRoutes = require('./routes/userRoutes');
+const cors = require('cors');
 
 dotenv.config();
 
 const app = express();
 app.use(express.json());
 
-// ---- CORS global para todas las rutas ----
-app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "*"); // temporal: permite cualquier frontend
-  res.header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
-  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
-  res.header("Access-Control-Allow-Credentials", "true");
+// ---- CORS ----
+const allowedOrigins = [
+  "http://localhost:5173", // frontend local
+  "https://tiendamoda-produccion-280c.up.railway.app" // frontend deployado
+];
 
-  if (req.method === "OPTIONS") return res.sendStatus(204); // responder preflight
-  next();
-});
+app.use(cors({
+  origin: function(origin, callback) {
+    // Permitir requests sin origin (como Postman)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    } else {
+      return callback(new Error("CORS no permitido por este origen"));
+    }
+  },
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true
+}));
+
+// Habilitar preflight para todas las rutas
+app.options("*", cors());
 
 // ---- Rutas ----
 app.use('/api/v1/products', productRoutes);
@@ -39,13 +53,12 @@ app.use((err, req, res, next) => {
 // ---- Inicio del servidor ----
 const PORT = process.env.PORT || 5000;
 
-// Arranca el servidor primero, luego intenta conectar Sequelize
-app.listen(PORT, async () => {
-  console.log(`🚀 Servidor corriendo en el puerto ${PORT}`);
-  try {
-    await sequelize.authenticate();
+sequelize.authenticate()
+  .then(() => {
     console.log('✅ Conectado a MySQL con Sequelize');
-  } catch (err) {
+    app.listen(PORT, () => console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`));
+  })
+  .catch(err => {
     console.error('❌ Error al conectar con Sequelize:', err.message);
-  }
-});
+    process.exit(1);
+  });
