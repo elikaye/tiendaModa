@@ -13,21 +13,26 @@ app.use(express.json());
 
 // ---- CORS ----
 const allowedOrigins = [
-  "http://localhost:5173",
+  "http://localhost:5173", // frontend local
+  "https://tiendamoda-produccion-280c.up.railway.app" // frontend producción
 ];
 
 app.use(cors({
-  origin: allowedOrigins,
+  origin: function (origin, callback) {
+    // Permitir requests sin origin (Postman, etc.)
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("CORS no permitido por este origen"));
+    }
+  },
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true
 }));
 
 // Habilitar preflight para todas las rutas
-app.options("*", cors({
-  origin: allowedOrigins,
-  credentials: true
-}));
+app.options("*", cors());
 
 // ---- Rutas ----
 app.use('/api/v1/products', productRoutes);
