@@ -13,8 +13,7 @@ app.use(express.json());
 
 // ---- CORS ----
 const allowedOrigins = [
-  "http://localhost:5173", // frontend local
-  "https://tiendamoda-produccion-280c.up.railway.app" // frontend deployado
+  "http://localhost:5173",
 ];
 
 app.use(cors({
