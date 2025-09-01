@@ -17,28 +17,33 @@ const allowedOrigins = [
   "https://tiendamoda-produccion-280c.up.railway.app" // frontend producción
 ];
 
-app.use(cors({
+const corsOptions = {
   origin: function (origin, callback) {
     // Permitir requests sin origin (Postman, etc.)
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
+      console.warn(`❌ Bloqueado por CORS: ${origin}`);
       callback(new Error("CORS no permitido por este origen"));
     }
   },
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
-  credentials: true
-}));
+  credentials: true,
+};
 
-// Habilitar preflight para todas las rutas
-app.options("*", cors());
+app.use(cors(corsOptions));
+
+// Habilitar preflight (OPTIONS) para todas las rutas
+app.options("*", cors(corsOptions));
 
 // ---- Rutas ----
 app.use('/api/v1/products', productRoutes);
 app.use('/api/v1/users', userRoutes);
 
-app.get('/', (req, res) => res.send('✅ API funcionando con Sequelize, MySQL y Cloudinary 🚀'));
+app.get('/', (req, res) =>
+  res.send('✅ API funcionando con Sequelize, MySQL y Cloudinary 🚀')
+);
 
 // ---- Manejo de rutas no encontradas ----
 app.use((req, res) => res.status(404).json({ message: 'Ruta no encontrada' }));
