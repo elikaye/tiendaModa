@@ -9,9 +9,8 @@ const cors = require('cors');
 dotenv.config();
 
 const app = express();
-app.use(express.json());
 
-// ---- CORS ----
+// ---- CORS primero ----
 const allowedOrigins = [
   "http://localhost:5173", // frontend local
   "https://tiendamoda-produccion-280c.up.railway.app" // frontend producción
@@ -19,7 +18,6 @@ const allowedOrigins = [
 
 const corsOptions = {
   origin: function (origin, callback) {
-    // Permitir requests sin origin (Postman, etc.)
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
@@ -33,9 +31,11 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-
 // Habilitar preflight (OPTIONS) para todas las rutas
 app.options("*", cors(corsOptions));
+
+// ---- Middleware JSON ----
+app.use(express.json());
 
 // ---- Rutas ----
 app.use('/api/v1/products', productRoutes);
@@ -45,24 +45,18 @@ app.get('/', (req, res) =>
   res.send('✅ API funcionando con Sequelize, MySQL y Cloudinary 🚀')
 );
 
-// ---- Manejo de rutas no encontradas ----
+// ---- 404 ----
 app.use((req, res) => res.status(404).json({ message: 'Ruta no encontrada' }));
 
-// ---- Middleware global de errores ----
+// ---- Errores globales ----
 app.use((err, req, res, next) => {
-  console.error('🔴 Error global:', err.stack);
+  console.error('🔴 Error global:', err.message);
+  if (err.message.includes("CORS")) {
+    return res.status(403).json({ message: err.message });
+  }
   res.status(500).json({ message: 'Error interno del servidor' });
 });
 
-// ---- Inicio del servidor ----
+// ---- Puerto Railway ----
 const PORT = process.env.PORT || 5000;
-
-sequelize.authenticate()
-  .then(() => {
-    console.log('✅ Conectado a MySQL con Sequelize');
-    app.listen(PORT, () => console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`));
-  })
-  .catch(err => {
-    console.error('❌ Error al conectar con Sequelize:', err.message);
-    process.exit(1);
-  });
+app.listen(PORT, () => console.log(`🚀 Servidor corriendo en ${PORT}`));
