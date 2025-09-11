@@ -30,15 +30,13 @@ app.use(cors({
   credentials: true
 }));
 
-// Ruta de prueba CORS
-app.options('/test-cors', cors()); // responde OPTIONS preflight
-app.get('/test-cors', cors(), (req, res) => {
+// ---- Preflight OPTIONS para todas las rutas ----
+app.options('*', cors());
+
+// ---- Ruta de prueba CORS ----
+app.get('/test-cors', (req, res) => {
   res.json({ message: '✅ CORS funcionando!' });
 });
-
-
-// Preflight OPTIONS para todas las rutas
-app.options('*', cors());
 
 // ---- Middleware JSON ----
 app.use(express.json());
