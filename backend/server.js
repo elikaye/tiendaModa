@@ -12,8 +12,9 @@ const app = express();
 // ---- CORS ----
 const allowedOrigins = [
   "http://localhost:5173", // desarrollo local
+  null, // permite el origin nulo de Vite en desarrollo
   "https://tiendamoda-produccion-280c.up.railway.app", // backend Railway
-  "https://tudominio.netlify.app" // 🚀 reemplazar con la URL real de Netlify cuando hagas el deploy
+  "https://tudominio.netlify.app" // reemplazar con la URL real de Netlify
 ];
 
 app.use(cors({
