@@ -1,7 +1,7 @@
 // server.js
 const express = require('express');
 const dotenv = require('dotenv');
-const sequelize = require('./config/database');
+const sequelize = require('./config/database'); // asegúrate que tu config use process.env para host, user, pass, db
 const productRoutes = require('./routes/productRoutes');
 const userRoutes = require('./routes/userRoutes');
 const cors = require('cors');
@@ -11,10 +11,10 @@ const app = express();
 
 // ---- CORS ----
 const allowedOrigins = [
-  "http://localhost:5173", // desarrollo local
-  null, // permite el origin nulo de Vite en desarrollo
+  "http://localhost:5173", // frontend local
+  null, // para Vite en desarrollo local
   "https://tiendamoda-produccion-280c.up.railway.app", // backend Railway
-  "https://tudominio.netlify.app" // reemplazar con la URL real de Netlify
+  "https://tudominio.netlify.app" // reemplazar por URL real Netlify
 ];
 
 app.use(cors({
@@ -31,15 +31,10 @@ app.use(cors({
   credentials: true
 }));
 
-// ---- Preflight OPTIONS para todas las rutas ----
+// Preflight OPTIONS para todas las rutas
 app.options('*', cors());
 
-// ---- Ruta de prueba CORS ----
-app.get('/test-cors', (req, res) => {
-  res.json({ message: '✅ CORS funcionando!' });
-});
-
-// ---- Middleware JSON ----
+// Middleware JSON
 app.use(express.json());
 
 // ---- Rutas ----
@@ -50,10 +45,16 @@ app.get('/', (req, res) => {
   res.send('✅ API funcionando con Sequelize, MySQL y Cloudinary 🚀');
 });
 
-// ---- 404 ----
+// Ruta de prueba CORS
+app.get('/test-cors', (req, res) => {
+  console.log('💡 /test-cors llamada');
+  res.json({ message: '✅ CORS funcionando!' });
+});
+
+// 404
 app.use((req, res) => res.status(404).json({ message: 'Ruta no encontrada' }));
 
-// ---- Middleware global de errores ----
+// Middleware global de errores
 app.use((err, req, res, next) => {
   console.error('🔴 Error global:', err.message);
   if(err.message.includes('CORS')){
@@ -65,12 +66,21 @@ app.use((err, req, res, next) => {
 // ---- Inicio del servidor ----
 const PORT = process.env.PORT || 5000;
 
+// Verificación de variables de entorno críticas
+const requiredEnvs = ['DB_HOST', 'DB_USER', 'DB_PASS', 'DB_NAME', 'CLOUD_NAME', 'API_KEY', 'API_SECRET'];
+requiredEnvs.forEach(key => {
+  if(!process.env[key]){
+    console.warn(`⚠️ Variable de entorno faltante: ${key}`);
+  }
+});
+
+// Autenticación y levantado del servidor
 sequelize.authenticate()
   .then(() => {
     console.log('✅ Conectado a MySQL con Sequelize');
-    app.listen(PORT, () => console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`));
+    app.listen(PORT, () => console.log(`🚀 Servidor corriendo en Railway en el puerto ${PORT}`));
   })
   .catch(err => {
     console.error('❌ Error al conectar con Sequelize:', err.message);
-    process.exit(1);
+    process.exit(1); // Esto detendrá el contenedor si la DB no se conecta
   });
