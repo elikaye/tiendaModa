@@ -11,19 +11,19 @@ const app = express();
 
 // ---- CORS ----
 const allowedOrigins = [
-  "http://localhost:5173", // frontend local
-  null, // para Vite en desarrollo local
-  "https://tiendamoda-produccion-280c.up.railway.app", // backend Railway
-  "https://tudominio.netlify.app" // reemplazar por URL real Netlify
+  "http://localhost:5173",
+  "http://127.0.0.1:5173",
+  "https://tiendamoda-produccion-280c.up.railway.app",
+  "https://tudominio.netlify.app" // reemplazar por tu dominio real
 ];
 
 app.use(cors({
-  origin: function(origin, callback){
-    if(!origin || allowedOrigins.includes(origin)){
+  origin: function(origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
       console.warn(`❌ Bloqueado por CORS: ${origin}`);
-      callback(new Error('CORS no permitido'));
+      callback(null, false); // no bloquea preflight, evita que el navegador corte la petición
     }
   },
   methods: ['GET','POST','PUT','DELETE','OPTIONS'],
@@ -31,8 +31,13 @@ app.use(cors({
   credentials: true
 }));
 
-// Preflight OPTIONS para todas las rutas
-app.options('*', cors());
+// Middleware para responder correctamente a OPTIONS en todas las rutas
+app.options('*', cors({
+  origin: allowedOrigins,
+  methods: ['GET','POST','PUT','DELETE','OPTIONS'],
+  allowedHeaders: ['Content-Type','Authorization'],
+  credentials: true
+}));
 
 // Middleware JSON
 app.use(express.json());
