@@ -1,10 +1,10 @@
 // server.js
 const express = require('express');
 const dotenv = require('dotenv');
-const sequelize = require('./config/database'); 
+const cors = require('cors');
+const sequelize = require('./config/database'); // tu config usa process.env
 const productRoutes = require('./routes/productRoutes');
 const userRoutes = require('./routes/userRoutes');
-const cors = require('cors');
 
 dotenv.config();
 const app = express();
@@ -18,10 +18,9 @@ const allowedOrigins = [
 ];
 
 app.use(cors({
-  origin: function (origin, callback) {
+  origin: function(origin, callback) {
     if (!origin) return callback(null, true); // permite Postman/cURL
-
-    const cleanOrigin = origin.replace(/\/$/, ""); // quita barra final
+    const cleanOrigin = origin.replace(/\/$/, "");
     if (allowedOrigins.includes(cleanOrigin)) {
       callback(null, true);
     } else {
@@ -34,7 +33,6 @@ app.use(cors({
   credentials: true
 }));
 
-// Middleware para OPTIONS (preflight)
 app.options('*', cors({
   origin: allowedOrigins,
   methods: ['GET','POST','PUT','DELETE','OPTIONS'],
@@ -49,11 +47,11 @@ app.use(express.json());
 app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/products', productRoutes);
 
+// Test
 app.get('/', (req, res) => {
   res.send('✅ API funcionando con Sequelize, MySQL y Cloudinary 🚀');
 });
 
-// Ruta de prueba CORS
 app.get('/test-cors', (req, res) => {
   console.log('💡 /test-cors llamada');
   res.json({ message: '✅ CORS funcionando!' });
@@ -74,6 +72,7 @@ app.use((err, req, res, next) => {
 // ---- Inicio del servidor ----
 const PORT = process.env.PORT || 5000;
 
+// Verificación de variables críticas
 const requiredEnvs = [
   'DB_NAME',
   'DB_USER',
@@ -86,12 +85,11 @@ const requiredEnvs = [
 ];
 
 requiredEnvs.forEach(key => {
-  if (!process.env[key]) {
+  if(!process.env[key]){
     console.warn(`⚠️ Variable de entorno faltante: ${key}`);
   }
 });
 
-// Autenticación y levantado del servidor
 sequelize.authenticate()
   .then(() => {
     console.log('✅ Conectado a MySQL con Sequelize');
