@@ -1,7 +1,7 @@
 // server.js
 const express = require('express');
 const dotenv = require('dotenv');
-const sequelize = require('./config/database'); // asegúrate que tu config use process.env para host, user, pass, db
+const sequelize = require('./config/database'); 
 const productRoutes = require('./routes/productRoutes');
 const userRoutes = require('./routes/userRoutes');
 const cors = require('cors');
@@ -18,12 +18,15 @@ const allowedOrigins = [
 ];
 
 app.use(cors({
-  origin: function(origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true); // permite Postman/cURL
+
+    const cleanOrigin = origin.replace(/\/$/, ""); // quita barra final
+    if (allowedOrigins.includes(cleanOrigin)) {
       callback(null, true);
     } else {
-      console.warn(`❌ Bloqueado por CORS: ${origin}`);
-      callback(null, false); // no bloquea preflight, evita que el navegador corte la petición
+      console.warn(`❌ Bloqueado por CORS: ${cleanOrigin}`);
+      callback(new Error("CORS bloqueado: origen no permitido"));
     }
   },
   methods: ['GET','POST','PUT','DELETE','OPTIONS'],
@@ -31,7 +34,7 @@ app.use(cors({
   credentials: true
 }));
 
-// Middleware para responder correctamente a OPTIONS en todas las rutas
+// Middleware para OPTIONS (preflight)
 app.options('*', cors({
   origin: allowedOrigins,
   methods: ['GET','POST','PUT','DELETE','OPTIONS'],
@@ -71,10 +74,19 @@ app.use((err, req, res, next) => {
 // ---- Inicio del servidor ----
 const PORT = process.env.PORT || 5000;
 
-// Verificación de variables de entorno críticas
-const requiredEnvs = ['DB_HOST', 'DB_USER', 'DB_PASS', 'DB_NAME', 'CLOUD_NAME', 'API_KEY', 'API_SECRET'];
+const requiredEnvs = [
+  'DB_NAME',
+  'DB_USER',
+  'DB_PASSWORD',
+  'DB_HOST',
+  'DB_PORT',
+  'CLOUDINARY_CLOUD_NAME',
+  'CLOUDINARY_API_KEY',
+  'CLOUDINARY_API_SECRET'
+];
+
 requiredEnvs.forEach(key => {
-  if(!process.env[key]){
+  if (!process.env[key]) {
     console.warn(`⚠️ Variable de entorno faltante: ${key}`);
   }
 });
@@ -87,5 +99,5 @@ sequelize.authenticate()
   })
   .catch(err => {
     console.error('❌ Error al conectar con Sequelize:', err.message);
-    process.exit(1); // Esto detendrá el contenedor si la DB no se conecta
+    process.exit(1);
   });
