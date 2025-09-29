@@ -2,7 +2,7 @@
 const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors');
-const sequelize = require('./config/database'); // tu config usa process.env
+const sequelize = require('./config/database'); // usa process.env para host, user, pass, db
 const productRoutes = require('./routes/productRoutes');
 const userRoutes = require('./routes/userRoutes');
 
@@ -10,31 +10,17 @@ dotenv.config();
 const app = express();
 
 // ---- CORS ----
-const allowedOrigins = [
-  "http://localhost:5173",
-  "http://127.0.0.1:5173",
-  "https://tiendamoda-produccion-280c.up.railway.app",
-  "https://tudominio.netlify.app" // reemplazar por tu dominio real
-];
-
+// PARA DESARROLLO: permitir cualquier origen (solo temporal)
 app.use(cors({
-  origin: function(origin, callback) {
-    if (!origin) return callback(null, true); // permite Postman/cURL
-    const cleanOrigin = origin.replace(/\/$/, "");
-    if (allowedOrigins.includes(cleanOrigin)) {
-      callback(null, true);
-    } else {
-      console.warn(`❌ Bloqueado por CORS: ${cleanOrigin}`);
-      callback(new Error("CORS bloqueado: origen no permitido"));
-    }
-  },
+  origin: true, // permite cualquier origen
   methods: ['GET','POST','PUT','DELETE','OPTIONS'],
   allowedHeaders: ['Content-Type','Authorization'],
   credentials: true
 }));
 
+// Middleware para preflight (OPTIONS)
 app.options('*', cors({
-  origin: allowedOrigins,
+  origin: true,
   methods: ['GET','POST','PUT','DELETE','OPTIONS'],
   allowedHeaders: ['Content-Type','Authorization'],
   credentials: true
@@ -63,9 +49,6 @@ app.use((req, res) => res.status(404).json({ message: 'Ruta no encontrada' }));
 // Middleware global de errores
 app.use((err, req, res, next) => {
   console.error('🔴 Error global:', err.message);
-  if(err.message.includes('CORS')){
-    return res.status(403).json({ message: err.message });
-  }
   res.status(500).json({ message: 'Error interno del servidor' });
 });
 
@@ -85,11 +68,12 @@ const requiredEnvs = [
 ];
 
 requiredEnvs.forEach(key => {
-  if(!process.env[key]){
+  if (!process.env[key]) {
     console.warn(`⚠️ Variable de entorno faltante: ${key}`);
   }
 });
 
+// Conexión a la DB y levantado del servidor
 sequelize.authenticate()
   .then(() => {
     console.log('✅ Conectado a MySQL con Sequelize');

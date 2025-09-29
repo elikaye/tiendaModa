@@ -1,10 +1,10 @@
+
 import { useEffect, useState } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay } from 'swiper/modules';
 import { FaShoppingBag } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import { useCart } from '../context/cartContext'; 
-import { CLOUDINARY_BASE_URL } from '../config';
 import 'swiper/css';
 
 function Destacados() {
@@ -17,7 +17,6 @@ function Destacados() {
   useEffect(() => {
     const fetchProductos = async () => {
       try {
-        // Aquí asumimos que el backend ya devuelve las imágenes con la URL de Cloudinary
         const response = await fetch(`/api/products?destacados=true&limit=6`);
         if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
         const data = await response.json();
@@ -45,9 +44,9 @@ function Destacados() {
   };
 
   return (
-    <section className="bg-pink-200 py-16">
+    <section className="bg-pink-100 py-16">
       <div className="max-w-6xl mx-auto px-4">
-        <h2 className="text-4xl font-serif font-bold text-black mb-10 text-center tracking-wide">
+        <h2 className="text-4xl font-body font-bold text-black mb-10 text-center tracking-wide">
           Productos Destacados
         </h2>
 
@@ -63,8 +62,10 @@ function Destacados() {
           }}
         >
           {productos.map(prod => {
-            // Si la URL ya viene de Cloudinary, la usamos directamente
             const imgSrc = prod.imageUrl || '/placeholder.png';
+           const precioNumber = Number(prod.precio) || 0;
+           const precioFormateado = precioNumber.toLocaleString('es-AR', { minimumFractionDigits: 0 });
+
 
             return (
               <SwiperSlide key={prod.id || prod._id}>
@@ -76,10 +77,7 @@ function Destacados() {
                         alt={prod.nombre}
                         className="object-contain w-full h-full p-6 transition-transform duration-500 hover:scale-105"
                         loading="lazy"
-                        onError={(e) => {
-                          e.target.onerror = null;
-                          e.target.src = '/placeholder.png';
-                        }}
+                        onError={(e) => { e.target.onerror = null; e.target.src = '/placeholder.png'; }}
                       />
                     </div>
                     <div className="p-5 flex-grow flex flex-col justify-between">
@@ -88,7 +86,7 @@ function Destacados() {
                       </h3>
                       <div className="flex justify-between items-center mt-auto">
                         <p className="text-pink-600 text-xl font-bold">
-                          ${typeof prod.precio === 'number' ? prod.precio.toFixed(2) : '0.00'}
+                          ${precioFormateado}
                         </p>
                         <button
                           onClick={(e) => handleComprar(e, prod)}

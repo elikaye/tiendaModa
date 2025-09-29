@@ -3,7 +3,7 @@ import { useLocation } from "react-router-dom";
 import ProductoCard from "../components/ProductoCard";
 import { API_BASE_URL } from "../config";
 
-export default function Hogar() {
+export default function Maquillaje() {
   const [productos, setProductos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -13,14 +13,14 @@ export default function Hogar() {
     const fetchProductos = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`${API_BASE_URL}/products?categoria=hogar`);
+        const res = await fetch(`${API_BASE_URL}/products?categoria=maquillaje`);
         if (!res.ok) throw new Error(`Error ${res.status}: ${res.statusText}`);
         const data = await res.json();
         setProductos(data.products || []);
         setError(null);
       } catch (err) {
-        console.error("Error al obtener productos de hogar:", err);
-        setError("No se pudieron cargar los productos de hogar.");
+        console.error("Error al obtener productos:", err);
+        setError("No se pudieron cargar los productos de maquillaje.");
         setProductos([]);
       } finally {
         setLoading(false);
@@ -28,13 +28,13 @@ export default function Hogar() {
     };
 
     fetchProductos();
-  }, [location.pathname]);
+  }, [location]);
 
   return (
-    <section className="py-20 px-6 bg-gradient-to-br from-pink-100 via-white to-pink-200 font-body">
+    <section className="min-h-screen py-20 px-6 bg-gradient-to-br from-pink-100 via-white to-pink-200 font-body">
       <div className="max-w-7xl mx-auto">
         <h2 className="text-2xl font-extrabold mb-6 text-pink-600 drop-shadow-sm">
-        
+          Maquillajes
         </h2>
 
         {loading ? (
@@ -56,4 +56,3 @@ export default function Hogar() {
     </section>
   );
 }
-

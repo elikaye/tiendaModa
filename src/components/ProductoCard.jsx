@@ -22,14 +22,17 @@ const ProductoCard = ({ producto }) => {
     navigate("/carrito");
   };
 
-  // Construir la URL de la imagen usando Cloudinary
+  // Manejo de la URL de la imagen con Cloudinary
   const imgSrc = producto.imageUrl
-    ? `${CLOUDINARY_BASE_URL}${producto.imageUrl}`
-    : "/placeholder.png"; // Si no hay imagen, mostramos placeholder
+    ? producto.imageUrl.startsWith("http")
+      ? producto.imageUrl // ya es URL completa
+      : `${CLOUDINARY_BASE_URL}${producto.imageUrl}` // solo nombre de archivo
+    : "/placeholder.png";
 
+  // 🔹 Formateo de precio al estilo Argentina ($12.000 sin decimales)
   const precioFormateado = !isNaN(Number(producto.precio))
-    ? Number(producto.precio).toFixed(2)
-    : "0.00";
+    ? Number(producto.precio).toLocaleString("es-AR", { minimumFractionDigits: 0 })
+    : "0";
 
   return (
     <Link
@@ -40,7 +43,7 @@ const ProductoCard = ({ producto }) => {
         onClick={toggleLike}
         aria-label="Agregar a favoritos"
         className={`absolute top-3 right-3 p-1 rounded-full transition-colors duration-300 ${
-          liked ? "text-pink-600 bg-white" : "text-black bg-white hover:text-pink-600"
+          liked ? "text-black bg-white" : "text-black bg-white hover:text-pink-600"
         }`}
         style={{ zIndex: 10 }}
       >
@@ -75,7 +78,7 @@ const ProductoCard = ({ producto }) => {
 
         <button
           onClick={handleComprar}
-          className="mt-4 self-start bg-pink-500 text-white px-4 py-2 rounded-full hover:bg-black transition duration-300 flex items-center gap-2 text-sm shadow-lg"
+          className="mt-4 self-start bg-black text-white px-4 py-2 rounded-full hover:bg-pink-500 transition duration-300 flex items-center gap-2 text-sm shadow-lg"
         >
           <FaShoppingBag size={14} /> Comprar
         </button>

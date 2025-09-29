@@ -31,10 +31,10 @@ export default function Ropa() {
   }, [location.pathname]);
 
   return (
-    <section className="min-h-screen py-20 px-6 bg-gradient-to-br from-pink-300 via-white to-pink-400 font-body">
+    <section className="min-h-screen py-20 px-6 bg-gradient-to-br from-pink-100 via-white to-pink-200 font-body">
       <div className="max-w-7xl mx-auto">
         <h2 className="text-2xl font-extrabold mb-6 text-pink-600 drop-shadow-sm">
-          Ropa
+          
         </h2>
 
         {loading ? (

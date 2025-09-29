@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
@@ -26,18 +27,19 @@ const Register = () => {
 
     setLoading(true);
     try {
+      // Llamada al backend usando API_BASE_URL y sin withCredentials
       const response = await axios.post(`${API_BASE_URL}/users/register`, {
         nombre,
         email,
         password,
-      }, { withCredentials: true });
+      });
 
       setSuccessMsg("Registro exitoso. Ahora podés iniciar sesión.");
       setNombre("");
       setEmail("");
       setPassword("");
 
-      // Redirigir al login después de 2s opcionalmente
+      // Redirigir al login después de 2s
       setTimeout(() => navigate("/auth"), 2000);
     } catch (error) {
       if (error.response?.data?.message) {
@@ -58,8 +60,16 @@ const Register = () => {
       >
         <h2 className="text-2xl font-bold text-center text-black">Registrarse</h2>
 
-        {errorMsg && <div className="bg-red-100 text-red-700 p-2 rounded mb-2 text-center">{errorMsg}</div>}
-        {successMsg && <div className="bg-green-100 text-green-700 p-2 rounded mb-2 text-center">{successMsg}</div>}
+        {errorMsg && (
+          <div className="bg-red-100 text-red-700 p-2 rounded mb-2 text-center">
+            {errorMsg}
+          </div>
+        )}
+        {successMsg && (
+          <div className="bg-green-100 text-green-700 p-2 rounded mb-2 text-center">
+            {successMsg}
+          </div>
+        )}
 
         <input
           type="text"

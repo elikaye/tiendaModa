@@ -7,9 +7,9 @@ import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import Destacados from './components/Destacados';
 import ProductosList from './components/ProductosList';
-import AdminProductos from './components/admin/AdminProductos';
+import AdminDashboard from './components/admin/AdminDashboard'; // <-- Dashboard integrado
 import Auth from './components/admin/Auth';
-import Register from './components/admin/Register'; // <-- Importado Register
+import Register from './components/admin/Register';
 import Footer from './components/Footer';
 import WhatsAppButton from './components/WhatsAppButton';
 import DetalleProducto from './components/DetalleProducto';
@@ -20,7 +20,8 @@ import Ropa from './pages/Ropa';
 import Calzados from './pages/Calzados';
 import Hogar from './pages/Hogar';
 import Electronica from './pages/Electronica';
-
+import Maquillajes from './pages/Maquillaje';
+import ArticulosDeTemporada from './pages/ArticulosDeTemporada';
 function App() {
   const isLoggedIn = localStorage.getItem("adminLoggedIn") === "true";
 
@@ -36,9 +37,10 @@ function App() {
             {/* Header/Nav */}
             <Navbar />
 
-            {/* Contenido principal con flex-grow para empujar el footer abajo */}
+            {/* Contenido principal */}
             <main className="flex-grow">
               <Routes>
+                {/* Página principal */}
                 <Route
                   path="/"
                   element={
@@ -49,29 +51,39 @@ function App() {
                     </>
                   }
                 />
+
+                {/* Páginas de categorías */}
                 <Route path="/ropa" element={<Ropa />} />
                 <Route path="/calzados" element={<Calzados />} />
                 <Route path="/hogar" element={<Hogar />} />
                 <Route path="/electronica" element={<Electronica />} />
+                <Route path="/maquillaje" element={<Maquillajes />} />
+                <Route path="/articulos-de-temporada" element={<ArticulosDeTemporada />} />
+
+                {/* Detalle de producto */}
                 <Route path="/producto/:id" element={<DetalleProducto />} />
+
+                {/* Carrito */}
                 <Route path="/carrito" element={<Carrito />} />
 
-                {/* Login (auth) */}
+                {/* Login (Auth) */}
                 <Route path="/auth" element={<Auth />} />
 
-                {/* Registro (ahora es público) */}
+                {/* Registro público */}
                 <Route path="/register" element={<Register />} />
                 <Route path="/admin/register" element={<Register />} />
 
                 {/* Panel de administración protegido */}
                 <Route
                   path="/admin"
-                  element={isLoggedIn ? <AdminProductos /> : <Navigate to="/auth" />}
+                  element={isLoggedIn ? <AdminDashboard /> : <Navigate to="/auth" />}
                 />
+
+                {/* Podés agregar más rutas de admin aquí en el futuro si es necesario */}
               </Routes>
             </main>
 
-            {/* Footer siempre al final */}
+            {/* Footer y botón de WhatsApp */}
             <Footer />
             <WhatsAppButton />
           </div>

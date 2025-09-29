@@ -41,7 +41,7 @@ const ProductosList = () => {
     return <p className="text-center mt-10">No hay productos que coincidan.</p>;
 
   return (
-    <div id="productos" className="bg-pink-200 min-h-screen py-10 px-6">
+    <div id="productos" className="bg-pink-100 min-h-screen py-10 px-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
         {productosFiltrados.map((producto) => (
           <ProductoCard key={producto.id || producto._id} producto={producto} />

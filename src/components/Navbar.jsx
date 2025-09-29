@@ -1,8 +1,6 @@
-
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FaBars, FaTimes, FaUserCircle, FaShoppingCart } from 'react-icons/fa'; 
-import logo from '../assets/images/logo3.png';
 import lupa from '../assets/lupa.png';
 import whatsapp from '../assets/whatsapp-black.png';
 import facebook from '../assets/facebook-black.png';
@@ -20,7 +18,6 @@ export default function Navbar() {
   const navigate = useNavigate();
 
   const toggleMenu = () => setMenuOpen(!menuOpen);
-  const toggleSearch = () => setShowSearch(!showSearch);
 
   const secciones = [
     ['Inicio', '/'],
@@ -28,30 +25,22 @@ export default function Navbar() {
     ['Calzados', '/calzados'],
     ['Hogar', '/hogar'],
     ['Electrónica', '/electronica'],
+    ['Maquillaje', '/maquillaje'],
+    ['Artículos de temporada', '/articulos-de-temporada'],
   ];
 
-  // Al hacer submit en el input buscar
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     setQuery(localQuery.trim());
     setMenuOpen(false);
     setShowSearch(false);
-    navigate('/search');  // --> Necesitás crear esta ruta y componente SearchPage
+    navigate('/search');
   };
 
   return (
-    <header className="fixed top-0 left-0 w-full z-50 backdrop-blur-md bg-white/40 border-b border-white/30 shadow-md">
+    <header className="fixed top-0 left-0 w-full z-50 backdrop-blur-md bg-black/40  shadow-md">
       <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-3">
-        {/* Logo */}
-        <div className="flex items-center gap-3">
-          <img src={logo} alt="Logo" className="h-10 w-auto drop-shadow" />
-          <div className="leading-tight hidden sm:block">
-            <span className="text-lg font-extrabold text-black font-body">Barby Tienda</span>
-            <span className="text-sm text-gray-700 font-semibold hidden lg:block font-body">
-              Todo lo que amás en un solo lugar
-            </span>
-          </div>
-        </div>
+       
 
         {/* Menú desktop */}
         <nav className="hidden md:flex gap-8 font-bold text-sm font-body">
@@ -67,7 +56,7 @@ export default function Navbar() {
           ))}
         </nav>
 
-        {/* Íconos y login */}
+        {/* Íconos */}
         <div className="flex items-center gap-4 relative">
           {/* Buscador */}
           <form onSubmit={handleSearchSubmit} className="relative">
@@ -126,7 +115,7 @@ export default function Navbar() {
 
           <Link
             to="/auth"
-            className="text-black hover:text-pink-600 text-2xl transition-colors duration-300"
+            className="text-black hover:text-pink-500 text-2xl transition-colors duration-300"
           >
             <FaUserCircle />
           </Link>
@@ -143,13 +132,13 @@ export default function Navbar() {
 
       {/* Menú móvil */}
       {menuOpen && (
-        <nav className="md:hidden px-6 pb-4 flex flex-col gap-4 font-body font-bold bg-gray-100/80 backdrop-blur-md shadow-md">
+        <nav className="md:hidden px-6 pb-4 flex flex-col gap-4 font-body font-bold bg-white/70 backdrop-blur-md shadow-md text-black">
           {secciones.map(([label, to]) => (
             <Link
               key={label}
               to={to}
               onClick={() => setMenuOpen(false)}
-              className="text-black hover:text-pink-500 hover:drop-shadow-[0_0_6px_#f472b6] transition duration-300"
+              className="hover:text-pink-500 hover:drop-shadow-[0_0_6px_#f472b6] transition duration-300"
             >
               {label}
             </Link>
@@ -159,14 +148,14 @@ export default function Navbar() {
               navigate('/carrito');
               setMenuOpen(false);
             }}
-            className="text-black hover:text-pink-500 transition duration-300 text-left"
+            className="hover:text-pink-500 transition duration-300 text-left"
           >
             Carrito ({carrito.length})
           </button>
           <Link
             to="/auth"
             onClick={() => setMenuOpen(false)}
-            className="text-black hover:text-pink-500 transition duration-300"
+            className="hover:text-pink-500 transition duration-300"
           >
             Login / Registro
           </Link>
@@ -175,3 +164,5 @@ export default function Navbar() {
     </header>
   );
 }
+
+

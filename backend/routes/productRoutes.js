@@ -1,20 +1,18 @@
 const express = require('express');
 const Product = require('../models/product'); 
-const { validationResult, body } = require('express-validator');
+const { body, validationResult } = require('express-validator');
 const authMiddleware = require('../middleware/authMiddleware');
 const multer = require('multer');
-const cloudinary = require('../cloudinaryConfig'); // tu archivo config de Cloudinary
+const cloudinary = require('../cloudinaryConfig');
 
 const router = express.Router();
-const upload = multer({ dest: 'uploads/' }); // carpeta temporal para las imágenes
+const upload = multer({ dest: 'uploads/' });
 
-// Validación del producto
+// --- Validaciones ---
 const validateProduct = [
-  body('name').trim().isLength({ min: 2 }).withMessage('Nombre inválido (mín 2 caracteres)'),
-  body('price').isFloat({ gt: 0 }).withMessage('El precio debe ser mayor a 0'),
-  body('description').optional().trim(),
-  body('subcategoria').optional().isLength({ min: 2, max: 50 }).withMessage('Subcategoría inválida'),
-  body('categoria').trim().isLength({ min: 2, max: 50 }).withMessage('Categoría inválida'),
+  body('nombre').trim().isLength({ min: 2 }).withMessage('Nombre inválido (mín 2 caracteres)'),
+  body('precio').isFloat({ gt: 0 }).withMessage('El precio debe ser mayor a 0'),
+  body('categoria').trim().isLength({ min: 2 }).withMessage('Categoría inválida'),
   body('estado').optional().isIn(['activo', 'inactivo', 'agotado']).withMessage('Estado inválido'),
   body('destacados').optional().isBoolean().withMessage('Destacados debe ser booleano'),
   (req, res, next) => {
@@ -24,7 +22,7 @@ const validateProduct = [
   }
 ];
 
-// Middleware para cargar producto por ID
+// --- Middleware para cargar producto por ID ---
 const loadProduct = async (req, res, next) => {
   try {
     const product = await Product.findByPk(req.params.id);
@@ -37,17 +35,28 @@ const loadProduct = async (req, res, next) => {
   }
 };
 
-// Obtener productos
+// --- GET todos los productos con búsqueda y paginación ---
 router.get('/', async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const offset = (page - 1) * limit;
+    const search = req.query.search || '';
 
     const whereClause = {};
     if (req.query.categoria) whereClause.categoria = req.query.categoria;
     if (req.query.subcategoria) whereClause.subcategoria = req.query.subcategoria;
     if (req.query.destacados === 'true') whereClause.destacados = true;
+
+    // Búsqueda en nombre, descripción y categoría
+    if (search) {
+      const { Op } = require('sequelize');
+      whereClause[Op.or] = [
+        { nombre: { [Op.iLike]: `%${search}%` } },
+        { descripcion: { [Op.iLike]: `%${search}%` } },
+        { categoria: { [Op.iLike]: `%${search}%` } },
+      ];
+    }
 
     const { count, rows: products } = await Product.findAndCountAll({
       where: whereClause,
@@ -68,31 +77,34 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Obtener producto por ID
+// --- GET producto por ID ---
 router.get('/:id', loadProduct, (req, res) => {
   res.json(req.product);
 });
 
-// Crear producto con Cloudinary
+// --- POST crear producto ---
 router.post('/', authMiddleware, upload.single('image'), validateProduct, async (req, res) => {
   try {
-    let imageUrl = req.body.imageUrl;
+    let imageUrl = req.body.imageUrl || null;
     if (req.file) {
       const result = await cloudinary.uploader.upload(req.file.path, { folder: 'productos' });
       imageUrl = result.secure_url;
     }
 
-    const { name, price, description, subcategoria, categoria, estado, destacados } = req.body;
+    const precioFloat = parseFloat(req.body.precio.toString().replace(/\./g,'').replace(',', '.'));
 
     const newProduct = await Product.create({
-      name,
-      price,
-      description,
-      subcategoria,
-      categoria,
-      imageUrl,
-      estado,
-      destacados
+      nombre: req.body.nombre,
+      precio: precioFloat,
+      descripcion: req.body.descripcion || null,
+      categoria: req.body.categoria,
+      subcategoria: req.body.subcategoria || null,
+      talles: req.body.talles || null,
+      colores: req.body.colores || null,
+      medidas: req.body.medidas || null,
+      destacados: req.body.destacados || false,
+      estado: req.body.estado || 'activo',
+      imageUrl
     });
 
     res.status(201).json(newProduct);
@@ -102,18 +114,31 @@ router.post('/', authMiddleware, upload.single('image'), validateProduct, async 
   }
 });
 
-// Actualizar producto con Cloudinary
+// --- PUT actualizar producto ---
 router.put('/:id', authMiddleware, upload.single('image'), loadProduct, validateProduct, async (req, res) => {
   try {
-    let imageUrl = req.body.imageUrl;
+    let imageUrl = req.body.imageUrl || req.product.imageUrl || null;
     if (req.file) {
       const result = await cloudinary.uploader.upload(req.file.path, { folder: 'productos' });
       imageUrl = result.secure_url;
     }
 
-    const { name, price, description, subcategoria, categoria, estado, destacados } = req.body;
+    const precioFloat = parseFloat(req.body.precio.toString().replace(/\./g,'').replace(',', '.'));
 
-    await req.product.update({ name, price, description, subcategoria, categoria, imageUrl, estado, destacados });
+    await req.product.update({
+      nombre: req.body.nombre,
+      precio: precioFloat,
+      descripcion: req.body.descripcion || null,
+      categoria: req.body.categoria,
+      subcategoria: req.body.subcategoria || null,
+      talles: req.body.talles || null,
+      colores: req.body.colores || null,
+      medidas: req.body.medidas || null,
+      destacados: req.body.destacados || false,
+      estado: req.body.estado || 'activo',
+      imageUrl
+    });
+
     res.json(req.product);
   } catch (error) {
     console.error('❌ Error al actualizar producto:', error);
@@ -121,7 +146,7 @@ router.put('/:id', authMiddleware, upload.single('image'), loadProduct, validate
   }
 });
 
-// Eliminar producto
+// --- DELETE eliminar producto ---
 router.delete('/:id', authMiddleware, loadProduct, async (req, res) => {
   try {
     await req.product.destroy();
