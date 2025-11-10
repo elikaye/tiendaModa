@@ -1,11 +1,11 @@
-const bcrypt = require('bcryptjs');
-const sequelize = require('./config/database'); // Ajustá la ruta si es necesario
-const User = require('./models/user'); // Ajustá la ruta si es necesario
+import bcrypt from 'bcryptjs';
+import sequelize from './config/database.js';
+import User from './models/user.js';
 
 (async () => {
   try {
     await sequelize.authenticate();
-    console.log('Conectado a la base de datos.');
+    console.log('✔ Conectado a la base de datos.');
 
     const passwordPlain = 'test1234'; // Contraseña para el usuario inicial
     const salt = await bcrypt.genSalt(10);
@@ -15,13 +15,20 @@ const User = require('./models/user'); // Ajustá la ruta si es necesario
       nombre: 'Admin Inicial',
       email: 'admin@tuapp.com',
       password: passwordHash,
-      rol: 'admin'  // puede ser 'cliente' o 'admin'
+      rol: 'admin', // puede ser 'cliente' o 'admin'
     });
 
-    console.log('Usuario creado:', nuevoUsuario.toJSON());
+    console.log('✅ Usuario creado correctamente:');
+    console.log({
+      nombre: nuevoUsuario.nombre,
+      email: nuevoUsuario.email,
+      rol: nuevoUsuario.rol,
+      passwordOriginal: passwordPlain, // solo para verificar
+    });
+
     process.exit(0);
   } catch (error) {
-    console.error('Error creando usuario:', error);
+    console.error('❌ Error creando usuario:', error);
     process.exit(1);
   }
 })();

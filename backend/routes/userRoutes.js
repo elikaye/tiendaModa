@@ -1,21 +1,17 @@
-// userRoutes.js
-const express = require('express');
-const router = express.Router();
-const { registrarUsuario, loginUsuario } = require('../controllers/userController');
-const jwt = require('jsonwebtoken');
+import express from 'express';
+import jwt from 'jsonwebtoken';
+import { registrarUsuario, loginUsuario } from '../controllers/userController.js';
 
-// Endpoints existentes
+const router = express.Router();
+
 router.post('/register', registrarUsuario);
 router.post('/login', loginUsuario);
 
-// Endpoint temporal para generar token de admin
+// Token de prueba admin
 router.get('/token-test', (req, res) => {
-  const payload = {
-    id: 1,       // id del usuario admin
-    rol: 'admin' // rol admin
-  };
+  const payload = { id: 1, rol: 'admin' };
   const token = jwt.sign(payload, process.env.JWT_SECRET || 'secreto123', { expiresIn: '1h' });
   res.json({ token });
 });
 
-module.exports = router;
+export default router;

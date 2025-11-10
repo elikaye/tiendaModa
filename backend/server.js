@@ -1,62 +1,68 @@
-// server.js
-const express = require('express');
-const dotenv = require('dotenv');
-const cors = require('cors');
-const sequelize = require('./config/database'); // usa process.env para host, user, pass, db
-const productRoutes = require('./routes/productRoutes');
-const userRoutes = require('./routes/userRoutes');
+import express from 'express';
+import dotenv from 'dotenv';
+import cors from 'cors';
+import { sequelize } from './models/index.js';
+
+// 📦 Importar rutas
+import userRoutes from './routes/userRoutes.js';
+import productRoutes from './routes/productRoutes.js';
+import cartRoutes from './routes/cartRoutes.js';
+import orderRoutes from './routes/orderRoutes.js';
+import favoritoRoutes from './routes/favoritoRoutes.js';
 
 dotenv.config();
 const app = express();
 
-// ---- CORS ----
-// PARA DESARROLLO: permitir cualquier origen (solo temporal)
-app.use(cors({
-  origin: true, // permite cualquier origen
-  methods: ['GET','POST','PUT','DELETE','OPTIONS'],
-  allowedHeaders: ['Content-Type','Authorization'],
-  credentials: true
-}));
+// 🌐 PERMITIMOS LOCAL Y PRODUCCIÓN (Vercel, etc.)
+const allowedOrigins = [
+  'http://localhost:5173',
+  // 'https://tu-dominio.vercel.app',  ← agregá esto cuando tengas el dominio
+];
 
-// Middleware para preflight (OPTIONS)
-app.options('*', cors({
-  origin: true,
-  methods: ['GET','POST','PUT','DELETE','OPTIONS'],
-  allowedHeaders: ['Content-Type','Authorization'],
-  credentials: true
-}));
+// ✅ Configuración segura de CORS
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        console.warn('🚫 Bloqueado por CORS:', origin);
+        callback(new Error('No permitido por CORS'));
+      }
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  })
+);
 
-// Middleware JSON
+app.options('*', cors()); // preflight
+
 app.use(express.json());
 
-// ---- Rutas ----
+// 📦 Rutas principales
 app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/products', productRoutes);
+app.use('/api/v1/carrito', cartRoutes);
+app.use('/api/v1/ordenes', orderRoutes);
+app.use('/api/v1/favoritos', favoritoRoutes);
 
-// Test
-app.get('/', (req, res) => {
-  res.send('✅ API funcionando con Sequelize, MySQL y Cloudinary 🚀');
-});
+// 🧠 Test del servidor
+app.get('/', (req, res) => res.send('✅ API funcionando 🚀'));
 
-app.get('/test-cors', (req, res) => {
-  console.log('💡 /test-cors llamada');
-  res.json({ message: '✅ CORS funcionando!' });
-});
-
-// 404
+// 🚧 Manejo de errores 404
 app.use((req, res) => res.status(404).json({ message: 'Ruta no encontrada' }));
 
-// Middleware global de errores
+// ⚠️ Manejo de errores globales
 app.use((err, req, res, next) => {
   console.error('🔴 Error global:', err.message);
   res.status(500).json({ message: 'Error interno del servidor' });
 });
 
-// ---- Inicio del servidor ----
 const PORT = process.env.PORT || 5000;
 
-// Verificación de variables críticas
-const requiredEnvs = [
+// ⚙️ Verificamos variables de entorno necesarias
+[
   'DB_NAME',
   'DB_USER',
   'DB_PASSWORD',
@@ -64,22 +70,18 @@ const requiredEnvs = [
   'DB_PORT',
   'CLOUDINARY_CLOUD_NAME',
   'CLOUDINARY_API_KEY',
-  'CLOUDINARY_API_SECRET'
-];
-
-requiredEnvs.forEach(key => {
-  if (!process.env[key]) {
-    console.warn(`⚠️ Variable de entorno faltante: ${key}`);
-  }
+  'CLOUDINARY_API_SECRET',
+  'JWT_SECRET',
+].forEach((key) => {
+  if (!process.env[key]) console.warn(`⚠️ Variable de entorno faltante: ${key}`);
 });
 
-// Conexión a la DB y levantado del servidor
-sequelize.authenticate()
-  .then(() => {
-    console.log('✅ Conectado a MySQL con Sequelize');
-    app.listen(PORT, () => console.log(`🚀 Servidor corriendo en Railway en el puerto ${PORT}`));
-  })
-  .catch(err => {
-    console.error('❌ Error al conectar con Sequelize:', err.message);
-    process.exit(1);
-  });
+// 🔗 Conexión a la base de datos y arranque del servidor
+try {
+  await sequelize.authenticate();
+  console.log('✅ Conectado a MySQL con Sequelize');
+  app.listen(PORT, () => console.log(`🚀 Servidor corriendo en puerto ${PORT}`));
+} catch (err) {
+  console.error('❌ Error al conectar con Sequelize:', err.message);
+  process.exit(1);
+}

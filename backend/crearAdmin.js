@@ -1,7 +1,10 @@
-// crearAdmin.js
-require('dotenv').config();
-const sequelize = require('./config/database'); // ajustá la ruta si hace falta
-const User = require('./models/user'); // ajustá la ruta si hace falta
+
+
+import dotenv from 'dotenv';
+import sequelize from './config/database.js';
+import User from './models/user.js';
+
+dotenv.config();
 
 async function crearUsuarioAdmin() {
   try {
@@ -24,7 +27,7 @@ async function crearUsuarioAdmin() {
       await existente.destroy({ force: true }); // elimina completamente
     }
 
-    // Crear admin de cero con contraseña en texto plano (el hook del modelo hará el hash)
+    // Crear admin de cero (el hook del modelo hace el hash)
     const user = await User.create({
       nombre,
       email,
@@ -37,7 +40,6 @@ async function crearUsuarioAdmin() {
     console.log(`   Rol: ${user.rol}`);
 
     process.exit(0);
-
   } catch (error) {
     console.error('❌ Error creando usuario admin:', error);
     process.exit(1);
@@ -45,4 +47,3 @@ async function crearUsuarioAdmin() {
 }
 
 crearUsuarioAdmin();
-
