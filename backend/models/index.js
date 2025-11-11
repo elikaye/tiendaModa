@@ -3,8 +3,8 @@ import sequelize from '../config/database.js';
 
 import Cart from './Cart.js';           // carritos
 import OrdenFinal from './OrdenFinal.js'; // ordenes_final
-import User from './User.js';           // users
-import Product from './Product.js';     // products
+import User from './user.js';           // users
+import Product from './product.js';     // products
 import Favorito from './favorito.js';   // favoritos
 
 // ---- Relaciones Cart ----

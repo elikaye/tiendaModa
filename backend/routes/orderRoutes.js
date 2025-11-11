@@ -1,5 +1,5 @@
 import express from 'express';
-import { Cart, Order, User } from '../models/index.js';
+import { Cart, OrdenFinal, User } from '../models/index.js';
 import { authenticate } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
@@ -7,9 +7,9 @@ const router = express.Router();
 // --- Obtener todas las órdenes de un usuario ---
 router.get('/:userId', authenticate, async (req, res) => {
   try {
-    const ordenes = await Order.findAll({
+    const ordenes = await OrdenFinal.findAll({
       where: { user_id: req.params.userId },
-      include: [{ model: User, as: 'orderUsuario', attributes: ['id', 'nombre', 'email'] }],
+      include: [{ model: User, as: 'ordenFinalUsuario', attributes: ['id', 'nombre', 'email'] }],
       order: [['updated_at', 'DESC']],
     });
     res.json(ordenes);
@@ -33,7 +33,7 @@ router.post('/', authenticate, async (req, res) => {
       0
     );
 
-    const nuevaOrden = await Order.create({
+    const nuevaOrden = await OrdenFinal.create({
       user_id: userId,
       productos: carrito.productos,
       total,
@@ -54,9 +54,9 @@ router.post('/', authenticate, async (req, res) => {
 // --- Obtener detalle de una orden ---
 router.get('/detalle/:id', authenticate, async (req, res) => {
   try {
-    const orden = await Order.findOne({
+    const orden = await OrdenFinal.findOne({
       where: { id: req.params.id, user_id: req.user.id },
-      include: [{ model: User, as: 'orderUsuario', attributes: ['id', 'nombre', 'email'] }],
+      include: [{ model: User, as: 'ordenFinalUsuario', attributes: ['id', 'nombre', 'email'] }],
     });
 
     if (!orden) return res.status(404).json({ message: 'Orden no encontrada' });
