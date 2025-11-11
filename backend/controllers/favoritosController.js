@@ -11,7 +11,6 @@ export const getFavoritos = async (req, res) => {
     const favorito = await Favorito.findOne({ where: { user_id: userId } });
     if (!favorito) return res.json({ productos: [] });
 
-    // Aseguramos que el campo productos siempre sea un array
     const productos = Array.isArray(favorito.productos)
       ? favorito.productos
       : JSON.parse(favorito.productos || '[]');
@@ -36,16 +35,16 @@ export const addFavorito = async (req, res) => {
 
     let favorito = await Favorito.findOne({ where: { user_id: userId } });
 
-    // Si no existe, lo creamos con el primer producto
     if (!favorito) {
+      // Si no existe, lo creamos con el primer producto
       favorito = await Favorito.create({
         user_id: userId,
         productos: [producto],
       });
     } else {
-      // Recuperamos los productos actuales
+      // ✅ Aseguramos que productosActuales sea siempre un array real
       let productosActuales = Array.isArray(favorito.productos)
-        ? [...favorito.productos]
+        ? favorito.productos
         : JSON.parse(favorito.productos || '[]');
 
       // Evitamos duplicados
@@ -57,8 +56,11 @@ export const addFavorito = async (req, res) => {
       }
     }
 
-    // Respondemos siempre con la lista actualizada
-    res.json({ productos: favorito.productos });
+    res.json({
+      productos: Array.isArray(favorito.productos)
+        ? favorito.productos
+        : JSON.parse(favorito.productos || '[]'),
+    });
   } catch (error) {
     console.error('❌ Error en addFavorito:', error);
     res.status(500).json({ error: 'Error al agregar favorito' });

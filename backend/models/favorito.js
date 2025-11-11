@@ -15,7 +15,7 @@ Favorito.init(
       allowNull: false,
     },
     productos: {
-      type: DataTypes.TEXT, // ✅ cambiamos de JSON a TEXT para compatibilidad total con MySQL
+      type: DataTypes.TEXT, // ✅ compatibilidad total con MySQL
       allowNull: false,
       defaultValue: '[]',
       get() {
@@ -27,7 +27,27 @@ Favorito.init(
         }
       },
       set(value) {
-        this.setDataValue('productos', JSON.stringify(value || []));
+        try {
+          // ✅ Leemos lo que ya hay guardado
+          const actual = JSON.parse(this.getDataValue('productos') || '[]');
+
+          // ✅ Si llega un solo producto (objeto), lo agregamos al array existente
+          if (value && !Array.isArray(value)) {
+            const existe = actual.some((p) => p.id === value.id);
+            if (!existe) actual.push(value);
+            this.setDataValue('productos', JSON.stringify(actual));
+          } else {
+            // ✅ Si llega un array completo, lo fusionamos sin duplicados
+            const nuevos = [...actual];
+            value.forEach((p) => {
+              if (!nuevos.some((x) => x.id === p.id)) nuevos.push(p);
+            });
+            this.setDataValue('productos', JSON.stringify(nuevos));
+          }
+        } catch (err) {
+          console.error('❌ Error al setear productos en Favorito:', err);
+          this.setDataValue('productos', JSON.stringify(value || []));
+        }
       },
     },
   },
