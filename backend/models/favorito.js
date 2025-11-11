@@ -1,3 +1,4 @@
+
 import { DataTypes, Model } from 'sequelize';
 import sequelize from '../config/database.js';
 
@@ -15,29 +16,36 @@ Favorito.init(
       allowNull: false,
     },
     productos: {
-      type: DataTypes.TEXT, // ✅ compatibilidad total con MySQL
+      // ✅ MySQL no soporta JSON puro en todas las versiones de Railway,
+      // pero lo maneja como TEXT correctamente si controlamos el parseo.
+      type: DataTypes.TEXT,
       allowNull: false,
       defaultValue: '[]',
       get() {
         const rawValue = this.getDataValue('productos');
         try {
-          return JSON.parse(rawValue || '[]');
+          return typeof rawValue === 'string' ? JSON.parse(rawValue) : rawValue;
         } catch {
           return [];
         }
       },
       set(value) {
         try {
-          // ✅ Leemos lo que ya hay guardado
-          const actual = JSON.parse(this.getDataValue('productos') || '[]');
+          // ✅ Recuperamos el valor actual
+          const actualRaw = this.getDataValue('productos');
+          const actual = typeof actualRaw === 'string'
+            ? JSON.parse(actualRaw || '[]')
+            : Array.isArray(actualRaw)
+            ? actualRaw
+            : [];
 
-          // ✅ Si llega un solo producto (objeto), lo agregamos al array existente
           if (value && !Array.isArray(value)) {
+            // ✅ Si llega un solo producto, lo agregamos
             const existe = actual.some((p) => p.id === value.id);
             if (!existe) actual.push(value);
             this.setDataValue('productos', JSON.stringify(actual));
-          } else {
-            // ✅ Si llega un array completo, lo fusionamos sin duplicados
+          } else if (Array.isArray(value)) {
+            // ✅ Si llega un array, fusionamos sin duplicados
             const nuevos = [...actual];
             value.forEach((p) => {
               if (!nuevos.some((x) => x.id === p.id)) nuevos.push(p);
