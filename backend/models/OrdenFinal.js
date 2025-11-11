@@ -1,7 +1,7 @@
 import { DataTypes } from 'sequelize';
 import sequelize from '../config/database.js';
 
-const Order = sequelize.define('Order', {
+const OrdenFinal = sequelize.define('OrdenFinal', {
   id: {
     type: DataTypes.INTEGER,
     autoIncrement: true,
@@ -20,21 +20,13 @@ const Order = sequelize.define('Order', {
     type: DataTypes.FLOAT,
     allowNull: false,
     defaultValue: 0
-  },
-  updated_at: {
-    type: DataTypes.DATE,
-    allowNull: false,
-    defaultValue: DataTypes.NOW
-  },
-  delete_at: {
-    type: DataTypes.DATE,
-    allowNull: true
   }
 }, {
   tableName: 'ordenes_final',
-  timestamps: false,
+  timestamps: true,
+  underscored: true,
   paranoid: true,
   deletedAt: 'delete_at'
 });
 
-export default Order;
+export default OrdenFinal;
