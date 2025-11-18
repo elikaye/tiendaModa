@@ -1,5 +1,5 @@
 import React from 'react';
-import logo from '../assets/logo13.png';
+import logo from '../assets/barbara13.png';
 import mercadopago from '../assets/mercado-pago.svg';
 import facebook from '../assets/facebook-white.png';
 import instagram from '../assets/instagram-white.png';

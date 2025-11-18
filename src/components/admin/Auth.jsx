@@ -1,9 +1,10 @@
-// Auth.jsx
+// src/pages/Auth/Auth.jsx
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import { API_BASE_URL } from "../../config";
 import { RiEyeLine, RiEyeOffLine } from "react-icons/ri";
+import { useAuth } from "../../context/AuthContext"; // ✅ usamos el contexto
 
 // Mostrar a qué URL apunta el API
 console.log("🚀 API_BASE_URL:", API_BASE_URL);
@@ -15,6 +16,7 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const navigate = useNavigate();
+  const { login } = useAuth(); // ✅ traemos login del contexto
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -30,21 +32,21 @@ const Auth = () => {
 
     setLoading(true);
     try {
-      // Llamada al backend con la URL de Railway
-      const response = await axios.post(
-        `${API_BASE_URL}/users/login`,
-        { email, password }
-      );
+      // Llamada al backend (Railway o local)
+      const response = await axios.post(`${API_BASE_URL}/users/login`, {
+        email,
+        password,
+      });
 
       const { token, user } = response.data;
 
       if (token && user) {
-        localStorage.setItem("token", token);
+        login(user, token); // ✅ guarda en contexto + localStorage
+
+        // Redirigir según rol
         if (user.rol === "admin") {
-          localStorage.setItem("adminLoggedIn", "true");
           navigate("/admin");
         } else {
-          localStorage.setItem("userLoggedIn", "true");
           navigate("/");
         }
       } else {
@@ -136,7 +138,11 @@ const Auth = () => {
                 mostrarPassword ? "Ocultar contraseña" : "Mostrar contraseña"
               }
             >
-              {mostrarPassword ? <RiEyeOffLine size={24} /> : <RiEyeLine size={24} />}
+              {mostrarPassword ? (
+                <RiEyeOffLine size={24} />
+              ) : (
+                <RiEyeLine size={24} />
+              )}
             </button>
           </div>
         </div>

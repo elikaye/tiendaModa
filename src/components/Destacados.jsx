@@ -1,11 +1,12 @@
-
 import { useEffect, useState } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay } from 'swiper/modules';
 import { FaShoppingBag } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
-import { useCart } from '../context/cartContext'; 
+import { useCart } from '../context/CartContext'; 
 import 'swiper/css';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function Destacados() {
   const [productos, setProductos] = useState([]);
@@ -37,10 +38,26 @@ function Destacados() {
   if (error) return <p className="text-center py-10 text-red-600">{error}</p>;
   if (!productos.length) return <p className="text-center py-10">No hay productos destacados disponibles.</p>;
 
-  const handleComprar = (e, producto) => {
+  const handleComprar = async (e, producto) => {
     e.preventDefault();
-    agregarAlCarrito(producto);
-    alert(`Agregaste ${producto.nombre} al carrito!`);
+    try {
+      await agregarAlCarrito(producto, 1);
+
+      toast.success(`${producto.nombre} agregado al carrito!`, {
+        position: 'top-right',
+        autoClose: 2000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+    } catch (err) {
+      console.error(err);
+      toast.error("No se pudo agregar el producto al carrito", {
+        position: 'top-right',
+        autoClose: 2000,
+      });
+    }
   };
 
   return (
@@ -63,9 +80,8 @@ function Destacados() {
         >
           {productos.map(prod => {
             const imgSrc = prod.imageUrl || '/placeholder.png';
-           const precioNumber = Number(prod.precio) || 0;
-           const precioFormateado = precioNumber.toLocaleString('es-AR', { minimumFractionDigits: 0 });
-
+            const precioNumber = Number(prod.precio) || 0;
+            const precioFormateado = precioNumber.toLocaleString('es-AR', { minimumFractionDigits: 0 });
 
             return (
               <SwiperSlide key={prod.id || prod._id}>

@@ -1,7 +1,9 @@
+
+
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FaBars, FaTimes, FaUserCircle, FaShoppingCart } from 'react-icons/fa'; 
-import lupa from '../assets/lupa.png';
+import { Heart, Search } from 'lucide-react'; // <-- nuevos íconos
 import whatsapp from '../assets/whatsapp-black.png';
 import facebook from '../assets/facebook-black.png';
 import instagram from '../assets/instagram-black.png';
@@ -41,7 +43,6 @@ export default function Navbar() {
     <header className="fixed top-0 left-0 w-full z-50 backdrop-blur-md bg-black/40  shadow-md">
       <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-3">
        
-
         {/* Menú desktop */}
         <nav className="hidden md:flex gap-8 font-bold text-sm font-body">
           {secciones.map(([label, to]) => (
@@ -60,11 +61,10 @@ export default function Navbar() {
         <div className="flex items-center gap-4 relative">
           {/* Buscador */}
           <form onSubmit={handleSearchSubmit} className="relative">
-            <img
-              src={lupa}
-              alt="Buscar"
+            <Search
+              size={24}
               onClick={() => setShowSearch((v) => !v)}
-              className="h-6 w-6 cursor-pointer transition-transform hover:scale-110 hover:brightness-125 hover:drop-shadow-[0_0_6px_#f472b6] duration-300"
+              className="cursor-pointer transition-transform hover:scale-110 hover:brightness-125 hover:drop-shadow-[0_0_6px_#f472b6] duration-300"
             />
             {showSearch && (
               <input
@@ -77,6 +77,14 @@ export default function Navbar() {
               />
             )}
           </form>
+
+          {/* Favoritos */}
+          <Link
+            to="/favoritos"
+            className="relative text-black text-2xl transition-colors duration-300 hover:text-pink-500"
+          >
+            <Heart />
+          </Link>
 
           {/* Carrito */}
           <button
@@ -159,10 +167,15 @@ export default function Navbar() {
           >
             Login / Registro
           </Link>
+          <Link
+            to="/favoritos"
+            onClick={() => setMenuOpen(false)}
+            className="hover:text-pink-500 transition duration-300 text-left"
+          >
+            Favoritos
+          </Link>
         </nav>
       )}
     </header>
   );
 }
-
-
