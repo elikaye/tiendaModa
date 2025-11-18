@@ -56,7 +56,7 @@ export const addFavorito = async (req, res) => {
         productosActuales.push(producto);
       }
 
-      // Reforzar persistencia: siempre asignar y guardar
+      // Persistir siempre
       favorito.productos = productosActuales;
       await favorito.save();
     }
