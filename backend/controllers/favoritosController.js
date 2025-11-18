@@ -26,7 +26,7 @@ export const getFavoritos = async (req, res) => {
   }
 };
 
-// ❤️ Agregar favorito (reforzado)
+// ❤️ Agregar producto a favoritos (SIN reemplazar los anteriores)
 export const addFavorito = async (req, res) => {
   try {
     const userId = req.user?.id;
@@ -36,27 +36,28 @@ export const addFavorito = async (req, res) => {
     if (!producto || !producto.id)
       return res.status(400).json({ error: "Producto inválido" });
 
+    // Buscar registro existente
     let favorito = await Favorito.findOne({ where: { user_id: userId } });
 
     if (!favorito) {
-      // Crear registro nuevo si no existe
+      // Si NO existe → crear array nuevo
       favorito = await Favorito.create({
         user_id: userId,
         productos: [producto],
       });
     } else {
-      // Actualizar array existente
+      // Si existe → agregar SIN borrar nada
       const productosActuales = parseArray(favorito.productos);
 
-      // Agregar solo si no existe
+      // Evitar duplicados
       const existe = productosActuales.some(
         (p) => p.id.toString() === producto.id.toString()
       );
+
       if (!existe) {
         productosActuales.push(producto);
       }
 
-      // Persistir siempre
       favorito.productos = productosActuales;
       await favorito.save();
     }
@@ -68,14 +69,14 @@ export const addFavorito = async (req, res) => {
   }
 };
 
-// 💔 Eliminar favorito
+// 💔 Eliminar producto de favoritos
 export const removeFavorito = async (req, res) => {
   try {
     const userId = req.user?.id;
     if (!userId) return res.status(401).json({ error: "Usuario no autenticado" });
 
     const { productoId } = req.body;
-    if (!productoId) return res.status(400).json({ error: "ProductoId requerido" });
+    if (!productoId) return res.status(400).json({ error: "productoId requerido" });
 
     const favorito = await Favorito.findOne({ where: { user_id: userId } });
     if (!favorito) return res.json({ productos: [] });
@@ -94,7 +95,7 @@ export const removeFavorito = async (req, res) => {
   }
 };
 
-// 🗑️ Vaciar favoritos
+// 🗑️ Vaciar todos los favoritos
 export const clearFavoritos = async (req, res) => {
   try {
     const userId = req.user?.id;
