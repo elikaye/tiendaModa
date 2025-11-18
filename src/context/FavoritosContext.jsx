@@ -63,7 +63,6 @@ export const FavoritosProvider = ({ children }) => {
           ? res.data.productos
           : [];
 
-        // Sincroniza todo correctamente
         setFavoritos(productos);
         localStorage.setItem("favoritos", JSON.stringify(productos));
       } catch (err) {
@@ -110,7 +109,7 @@ export const FavoritosProvider = ({ children }) => {
       } catch (err) {
         console.error("❌ Error al agregar favorito:", err);
         toast.error("No se pudo agregar");
-        setFavoritos(favoritos); // Revertir
+        setFavoritos(favoritos); // revertir
       } finally {
         setSyncing(false);
       }
