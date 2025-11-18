@@ -14,12 +14,12 @@ Favorito.init(
       type: DataTypes.INTEGER,
       allowNull: false
     },
+
     productos: { 
       type: DataTypes.TEXT,
       allowNull: false,
       defaultValue: "[]",
 
-      // Obtener JSON parseado
       get() {
         const raw = this.getDataValue("productos");
         try {
@@ -29,29 +29,17 @@ Favorito.init(
         }
       },
 
-      // Guardar siempre como string
       set(value) {
         this.setDataValue("productos", JSON.stringify(value));
       }
-    },
-
-    created_at: {
-      type: DataTypes.DATE,
-      allowNull: false,
-      defaultValue: DataTypes.NOW
-    },
-    updated_at: {
-      type: DataTypes.DATE,
-      allowNull: false,
-      defaultValue: DataTypes.NOW
     }
   },
   {
     sequelize,
     modelName: "Favorito",
     tableName: "favoritos",
-    timestamps: false,
-    underscored: true,
+    timestamps: true,   // <-- Sequelize maneja created_at y updated_at
+    underscored: true,  // usa created_at / updated_at
     paranoid: false
   }
 );
