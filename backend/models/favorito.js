@@ -1,4 +1,3 @@
-
 import { DataTypes, Model } from "sequelize";
 import sequelize from "../config/database.js";
 
@@ -16,10 +15,26 @@ Favorito.init(
       allowNull: false
     },
     productos: { 
-      type: DataTypes.JSON,
+      type: DataTypes.TEXT,
       allowNull: false,
-      defaultValue: []
+      defaultValue: "[]",
+
+      // Obtener JSON parseado
+      get() {
+        const raw = this.getDataValue("productos");
+        try {
+          return JSON.parse(raw);
+        } catch {
+          return [];
+        }
+      },
+
+      // Guardar siempre como string
+      set(value) {
+        this.setDataValue("productos", JSON.stringify(value));
+      }
     },
+
     created_at: {
       type: DataTypes.DATE,
       allowNull: false,
@@ -37,7 +52,7 @@ Favorito.init(
     tableName: "favoritos",
     timestamps: false,
     underscored: true,
-    paranoid: false // 👈 esto evita deleted_at
+    paranoid: false
   }
 );
 
