@@ -17,11 +17,7 @@ export const useFavoritos = () => useContext(FavoritosContext);
 export const FavoritosProvider = ({ children }) => {
   const { user, token } = useAuth();
 
-  // 🟣 Estados
-  const [favoritos, setFavoritos] = useState(() => {
-    const saved = localStorage.getItem("favoritos");
-    return saved ? JSON.parse(saved) : [];
-  });
+  const [favoritos, setFavoritos] = useState([]);
   const [loading, setLoading] = useState(false);
   const [syncing, setSyncing] = useState(false);
 
@@ -36,14 +32,7 @@ export const FavoritosProvider = ({ children }) => {
   }
 
   /* ----------------------------------------------
-     🟣 Guardar favoritos en LocalStorage
-  ---------------------------------------------- */
-  useEffect(() => {
-    localStorage.setItem("favoritos", JSON.stringify(favoritos));
-  }, [favoritos]);
-
-  /* ----------------------------------------------
-     🟣 Cargar favoritos desde backend solo 1 vez
+     🟣 Cargar favoritos del backend al iniciar sesión
   ---------------------------------------------- */
   useEffect(() => {
     const fetchFavoritos = async () => {
@@ -74,6 +63,15 @@ export const FavoritosProvider = ({ children }) => {
 
     fetchFavoritos();
   }, [user, token]);
+
+  /* ----------------------------------------------
+     🟣 Guardar en localStorage SOLO cuando hay usuario
+  ---------------------------------------------- */
+  useEffect(() => {
+    if (user && token) {
+      localStorage.setItem("favoritos", JSON.stringify(favoritos));
+    }
+  }, [favoritos, user, token]);
 
   /* ----------------------------------------------
      🟣 Agregar Favorito
@@ -161,7 +159,7 @@ export const FavoritosProvider = ({ children }) => {
     } catch (err) {
       console.error("❌ Error al limpiar favoritos:", err);
       toast.error("No se pudo vaciar");
-      setFavoritos(prev); // revertir
+      setFavoritos(prev);
     }
   }, [favoritos, user, token]);
 
