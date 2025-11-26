@@ -1,31 +1,72 @@
-// backend/routes/favoritosRoutes.js
-import express from 'express';
-import {
-  getFavoritos,
-  addFavorito,
-  removeFavorito,
-  clearFavoritos,
-} from '../controllers/favoritosController.js';
-import { authenticate } from '../middleware/authMiddleware.js';
+
+import express from "express";
+import { authenticate } from "../middleware/authMiddleware.js";
+import Favorito from "../models/favorito.js";
 
 const router = express.Router();
 
-// Asegurarse de que el body se lea correctamente como JSON
-router.use(express.json());
+// GET favoritos
+router.get("/", authenticate, async (req, res) => {
+  try {
+    const fav = await Favorito.findOne({ where: { user_id: req.user.id } });
+    res.json(fav || { productos: [] });
+  } catch (err) {
+    res.status(500).json({ error: "Error obteniendo favoritos" });
+  }
+});
 
-// Todas las rutas de favoritos requieren autenticación
-router.use(authenticate);
+// POST agregar favorito
+router.post("/", authenticate, async (req, res) => {
+  const { producto } = req.body;
+  try {
+    let fav = await Favorito.findOne({ where: { user_id: req.user.id } });
 
-// Obtener todos los favoritos
-router.get('/', getFavoritos);
+    if (!fav) {
+      fav = await Favorito.create({
+        user_id: req.user.id,
+        productos: [producto],
+      });
+    } else {
+      fav.productos = [...fav.productos, producto];
+      await fav.save();
+    }
 
-// Agregar un producto a favoritos
-router.post('/', addFavorito);
+    res.json(fav);
+  } catch (err) {
+    res.status(500).json({ error: "Error agregando favorito" });
+  }
+});
 
-// Eliminar un producto específico
-router.delete('/', removeFavorito);
+// DELETE eliminar uno
+router.delete("/", authenticate, async (req, res) => {
+  const { productoId } = req.body;
 
-// Vaciar toda la lista de favoritos
-router.delete('/clear', clearFavoritos);
+  try {
+    let fav = await Favorito.findOne({ where: { user_id: req.user.id } });
+    if (!fav) return res.json({ productos: [] });
+
+    fav.productos = fav.productos.filter((p) => p.id !== productoId);
+    await fav.save();
+
+    res.json(fav);
+  } catch (err) {
+    res.status(500).json({ error: "Error eliminando favorito" });
+  }
+});
+
+// DELETE vaciar
+router.delete("/all", authenticate, async (req, res) => {
+  try {
+    let fav = await Favorito.findOne({ where: { user_id: req.user.id } });
+    if (fav) {
+      fav.productos = [];
+      await fav.save();
+    }
+
+    res.json({ productos: [] });
+  } catch (err) {
+    res.status(500).json({ error: "Error vaciando favoritos" });
+  }
+});
 
 export default router;

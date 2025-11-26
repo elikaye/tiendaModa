@@ -16,21 +16,17 @@ Favorito.init(
     },
 
     productos: { 
-      type: DataTypes.TEXT,
+      type: DataTypes.JSON,      // ✔️ ESTE ERA EL ERROR
       allowNull: false,
-      defaultValue: "[]",
+      defaultValue: [],
 
       get() {
         const raw = this.getDataValue("productos");
-        try {
-          return JSON.parse(raw);
-        } catch {
-          return [];
-        }
+        return Array.isArray(raw) ? raw : [];
       },
 
       set(value) {
-        this.setDataValue("productos", JSON.stringify(value));
+        this.setDataValue("productos", value);
       }
     }
   },
@@ -38,8 +34,8 @@ Favorito.init(
     sequelize,
     modelName: "Favorito",
     tableName: "favoritos",
-    timestamps: true,   // <-- Sequelize maneja created_at y updated_at
-    underscored: true,  // usa created_at / updated_at
+    timestamps: true,
+    underscored: true,
     paranoid: false
   }
 );
