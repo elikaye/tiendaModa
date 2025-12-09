@@ -9,7 +9,11 @@ const router = express.Router();
 router.get("/", authenticate, async (req, res) => {
   try {
     const fav = await Favorito.findOne({ where: { user_id: req.user.id } });
-    res.json(fav || { productos: [] });
+
+    // 🚨 Proteger si productos viene null
+    const productos = fav?.productos || [];
+
+    res.json({ productos });
   } catch (err) {
     res.status(500).json({ error: "Error obteniendo favoritos" });
   }
@@ -18,6 +22,7 @@ router.get("/", authenticate, async (req, res) => {
 // POST agregar favorito
 router.post("/", authenticate, async (req, res) => {
   const { producto } = req.body;
+
   try {
     let fav = await Favorito.findOne({ where: { user_id: req.user.id } });
 
@@ -27,7 +32,9 @@ router.post("/", authenticate, async (req, res) => {
         productos: [producto],
       });
     } else {
-      fav.productos = [...fav.productos, producto];
+      // 🚨 Proteger si productos es null
+      const actual = Array.isArray(fav.productos) ? fav.productos : [];
+      fav.productos = [...actual, producto];
       await fav.save();
     }
 
@@ -43,9 +50,13 @@ router.delete("/", authenticate, async (req, res) => {
 
   try {
     let fav = await Favorito.findOne({ where: { user_id: req.user.id } });
+
     if (!fav) return res.json({ productos: [] });
 
-    fav.productos = fav.productos.filter((p) => p.id !== productoId);
+    // 🚨 Proteger si productos es null
+    const actual = Array.isArray(fav.productos) ? fav.productos : [];
+
+    fav.productos = actual.filter((p) => p?.id !== productoId);
     await fav.save();
 
     res.json(fav);

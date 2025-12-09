@@ -1,12 +1,5 @@
 // src/context/FavoritosContext.jsx
-import React, {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  useRef,
-  useCallback,
-} from "react";
+import React, { createContext, useContext, useState, useEffect } from "react";
 import axios from "axios";
 import { useAuth } from "./AuthContext";
 import { toast } from "react-toastify";
@@ -15,164 +8,102 @@ const FavoritosContext = createContext();
 export const useFavoritos = () => useContext(FavoritosContext);
 
 export const FavoritosProvider = ({ children }) => {
-  const { user, token } = useAuth();
-
+  const { token } = useAuth();
   const [favoritos, setFavoritos] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [syncing, setSyncing] = useState(false);
 
   const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
-  const axiosInstanceRef = useRef(null);
 
-  if (!axiosInstanceRef.current) {
-    axiosInstanceRef.current = axios.create({
-      baseURL: API_URL,
-      headers: { "Content-Type": "application/json" },
-    });
-  }
+  const axiosAuth = axios.create({
+    baseURL: API_URL,
+    headers: { "Content-Type": "application/json" },
+  });
 
-  /* ----------------------------------------------
-     🟣 Cargar favoritos del backend al iniciar sesión
-  ---------------------------------------------- */
+  // 🔹 Cargar favoritos al iniciar sesión
   useEffect(() => {
-    const fetchFavoritos = async () => {
-      if (!user || !token) {
+    const fetchFavs = async () => {
+      if (!token) {
         setFavoritos([]);
-        localStorage.removeItem("favoritos");
         return;
       }
 
-      setLoading(true);
       try {
-        const res = await axiosInstanceRef.current.get("/api/v1/favoritos", {
+        const res = await axiosAuth.get("/api/v1/favoritos", {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        const productos = Array.isArray(res.data?.productos)
+        // Productos del backend ya vienen como objetos
+        const productos = Array.isArray(res.data.productos)
           ? res.data.productos
           : [];
 
         setFavoritos(productos);
-        localStorage.setItem("favoritos", JSON.stringify(productos));
       } catch (err) {
-        console.error("❌ Error al cargar favoritos:", err);
-      } finally {
-        setLoading(false);
+        console.error("❌ Error cargando favoritos:", err);
       }
     };
 
-    fetchFavoritos();
-  }, [user, token]);
+    fetchFavs();
+  }, [token]);
 
-  /* ----------------------------------------------
-     🟣 Guardar en localStorage SOLO cuando hay usuario
-  ---------------------------------------------- */
-  useEffect(() => {
-    if (user && token) {
-      localStorage.setItem("favoritos", JSON.stringify(favoritos));
-    }
-  }, [favoritos, user, token]);
-
-  /* ----------------------------------------------
-     🟣 Agregar Favorito
-  ---------------------------------------------- */
-  const agregarFavorito = useCallback(
-    async (producto) => {
-      if (!user || !token) {
-        toast.info("💖 Iniciá sesión para guardar favoritos");
-        return;
-      }
-
-      if (syncing) return;
-      setSyncing(true);
-
-      // Evitar duplicados
-      if (favoritos.some((p) => p.id === producto.id)) {
-        toast.info("Ese producto ya está en tus favoritos");
-        setSyncing(false);
-        return;
-      }
-
-      const nuevos = [...favoritos, producto];
-      setFavoritos(nuevos);
-
-      try {
-        await axiosInstanceRef.current.post(
-          "/api/v1/favoritos",
-          { producto },
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-
-        toast.success(`${producto.nombre} agregado ❤️`);
-      } catch (err) {
-        console.error("❌ Error al agregar favorito:", err);
-        toast.error("No se pudo agregar");
-        setFavoritos(favoritos); // revertir
-      } finally {
-        setSyncing(false);
-      }
-    },
-    [favoritos, user, token, syncing]
-  );
-
-  /* ----------------------------------------------
-     🟣 Eliminar Favorito
-  ---------------------------------------------- */
-  const eliminarFavorito = useCallback(
-    async (productoId) => {
-      if (!user || !token) return;
-
-      const nuevos = favoritos.filter((p) => p.id !== productoId);
-      setFavoritos(nuevos);
-
-      try {
-        await axiosInstanceRef.current.delete("/api/v1/favoritos", {
-          headers: { Authorization: `Bearer ${token}` },
-          data: { productoId },
-        });
-
-        toast.success("Producto eliminado");
-      } catch (err) {
-        console.error("❌ Error al eliminar favorito:", err);
-        toast.error("No se pudo eliminar");
-        setFavoritos(favoritos); // revertir
-      }
-    },
-    [favoritos, user, token]
-  );
-
-  /* ----------------------------------------------
-     🟣 Vaciar Favoritos
-  ---------------------------------------------- */
-  const clearFavoritos = useCallback(async () => {
-    if (!user || !token) return;
-
-    const prev = [...favoritos];
-    setFavoritos([]);
+  // ❤️ Agregar favorito
+  const agregarFavorito = async (producto) => {
+    if (!token)
+      return toast.info("Iniciá sesión para guardar favoritos ❤️");
 
     try {
-      await axiosInstanceRef.current.delete("/api/v1/favoritos/clear", {
+      const res = await axiosAuth.post(
+        "/api/v1/favoritos",
+        { producto }, // 🔥 ESTO ES LO CORRECTO PARA TU BACKEND
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      setFavoritos(res.data.productos);
+      toast.success("Agregado a favoritos ❤️");
+    } catch (err) {
+      console.error("❌ Error al agregar:", err);
+    }
+  };
+
+  // 💔 Eliminar favorito
+  const eliminarFavorito = async (productoId) => {
+    if (!token) return;
+
+    try {
+      const res = await axiosAuth.delete("/api/v1/favoritos", {
+        headers: { Authorization: `Bearer ${token}` },
+        data: { productoId }, // 🔥 EL BACKEND ESPERA ESTO
+      });
+
+      setFavoritos(res.data.productos);
+      toast.success("Eliminado de favoritos 💔");
+    } catch (err) {
+      console.error("❌ Error al eliminar:", err);
+    }
+  };
+
+  // 🗑 Vaciar favoritos
+  const clearFavoritos = async () => {
+    if (!token) return;
+
+    try {
+      await axiosAuth.delete("/api/v1/favoritos/all", {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      toast.success("Favoritos vaciados");
+      setFavoritos([]);
+      toast.success("Favoritos vaciados 🗑");
     } catch (err) {
-      console.error("❌ Error al limpiar favoritos:", err);
-      toast.error("No se pudo vaciar");
-      setFavoritos(prev);
+      console.error("❌ Error al vaciar:", err);
     }
-  }, [favoritos, user, token]);
+  };
 
   return (
     <FavoritosContext.Provider
       value={{
         favoritos,
-        loading,
-        syncing,
         agregarFavorito,
         eliminarFavorito,
         clearFavoritos,
-        setFavoritos,
       }}
     >
       {children}

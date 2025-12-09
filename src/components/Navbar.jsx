@@ -1,22 +1,24 @@
-
-
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { FaBars, FaTimes, FaUserCircle, FaShoppingCart } from 'react-icons/fa'; 
-import { Heart, Search } from 'lucide-react'; // <-- nuevos íconos
+import { FaBars, FaTimes, FaUserCircle, FaShoppingCart } from 'react-icons/fa';
+import { Heart, Search } from 'lucide-react';
 import whatsapp from '../assets/whatsapp-black.png';
 import facebook from '../assets/facebook-black.png';
 import instagram from '../assets/instagram-black.png';
 
 import { useCart } from '../context/CartContext';
 import { useSearch } from '../context/SearchContext';
+import { useFavoritos } from '../context/FavoritosContext'; // ⭐ IMPORTANTE
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [localQuery, setLocalQuery] = useState('');
+
   const { carrito } = useCart();
+  const { favoritos } = useFavoritos(); // ⭐ CONTADOR DE FAVORITOS
   const { setQuery } = useSearch();
+
   const navigate = useNavigate();
 
   const toggleMenu = () => setMenuOpen(!menuOpen);
@@ -40,10 +42,10 @@ export default function Navbar() {
   };
 
   return (
-    <header className="fixed top-0 left-0 w-full z-50 backdrop-blur-md bg-black/40  shadow-md">
+    <header className="fixed top-0 left-0 w-full z-50 backdrop-blur-md bg-black/40 shadow-md">
       <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-3">
-       
-        {/* Menú desktop */}
+
+        {/* Menú escritorio */}
         <nav className="hidden md:flex gap-8 font-bold text-sm font-body">
           {secciones.map(([label, to]) => (
             <Link
@@ -57,8 +59,9 @@ export default function Navbar() {
           ))}
         </nav>
 
-        {/* Íconos */}
+        {/* Iconos */}
         <div className="flex items-center gap-4 relative">
+
           {/* Buscador */}
           <form onSubmit={handleSearchSubmit} className="relative">
             <Search
@@ -78,12 +81,17 @@ export default function Navbar() {
             )}
           </form>
 
-          {/* Favoritos */}
+          {/* Favoritos + contador */}
           <Link
             to="/favoritos"
             className="relative text-black text-2xl transition-colors duration-300 hover:text-pink-500"
           >
             <Heart />
+            {favoritos.length > 0 && (
+              <span className="absolute -top-2 -right-2 bg-pink-600 text-white rounded-full text-xs w-5 h-5 flex items-center justify-center font-bold">
+                {favoritos.length}
+              </span>
+            )}
           </Link>
 
           {/* Carrito */}
@@ -151,6 +159,8 @@ export default function Navbar() {
               {label}
             </Link>
           ))}
+
+          {/* Carrito en móvil */}
           <button
             onClick={() => {
               navigate('/carrito');
@@ -160,19 +170,22 @@ export default function Navbar() {
           >
             Carrito ({carrito.length})
           </button>
-          <Link
-            to="/auth"
-            onClick={() => setMenuOpen(false)}
-            className="hover:text-pink-500 transition duration-300"
-          >
-            Login / Registro
-          </Link>
+
+          {/* Favoritos en móvil con contador */}
           <Link
             to="/favoritos"
             onClick={() => setMenuOpen(false)}
             className="hover:text-pink-500 transition duration-300 text-left"
           >
-            Favoritos
+            Favoritos ({favoritos.length})
+          </Link>
+
+          <Link
+            to="/auth"
+            onClick={() => setMenuOpen(false)}
+            className="hover:text-pink-500 transition duration-300"
+          >
+            Iniciar sesión / Registro
           </Link>
         </nav>
       )}

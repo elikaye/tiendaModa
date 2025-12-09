@@ -39,7 +39,7 @@ const validateProduct = [
   },
 ];
 
-// --- Middleware para cargar producto por ID ---
+// --- Middleware para cargar producto ---
 const loadProduct = async (req, res, next) => {
   try {
     const product = await Product.findByPk(req.params.id);
@@ -54,18 +54,12 @@ const loadProduct = async (req, res, next) => {
   }
 };
 
-// --- GET todos los productos con búsqueda y paginación ---
+// --- GET TODOS LOS PRODUCTOS (SIN PAGINACIÓN, COMPLETO) ---
 router.get('/', async (req, res) => {
   try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
-    const offset = (page - 1) * limit;
     const search = req.query.search || '';
 
     const whereClause = {};
-    if (req.query.categoria) whereClause.categoria = req.query.categoria;
-    if (req.query.subcategoria) whereClause.subcategoria = req.query.subcategoria;
-    if (req.query.destacados === 'true') whereClause.destacados = true;
 
     if (search) {
       whereClause[Op.or] = [
@@ -75,19 +69,16 @@ router.get('/', async (req, res) => {
       ];
     }
 
-    const { count, rows: products } = await Product.findAndCountAll({
+    const products = await Product.findAll({
       where: whereClause,
-      limit,
-      offset,
       order: [['createdAt', 'DESC']],
     });
 
     res.json({
-      total: count,
-      totalPages: Math.ceil(count / limit),
-      currentPage: page,
+      total: products.length,
       products,
     });
+
   } catch (error) {
     console.error('🔥 Error al obtener productos:', error);
     res.status(500).json({ message: 'Error al obtener productos' });
@@ -108,6 +99,7 @@ router.post(
   async (req, res) => {
     try {
       let imageUrl = req.body.imageUrl || null;
+
       if (req.file) {
         const result = await cloudinary.uploader.upload(req.file.path, {
           folder: 'productos',
@@ -151,6 +143,7 @@ router.put(
   async (req, res) => {
     try {
       let imageUrl = req.body.imageUrl || req.product.imageUrl || null;
+
       if (req.file) {
         const result = await cloudinary.uploader.upload(req.file.path, {
           folder: 'productos',

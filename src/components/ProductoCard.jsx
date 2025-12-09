@@ -13,12 +13,15 @@ const ProductoCard = ({ producto }) => {
 
   if (!producto) return null;
 
-  // Favoritos siempre es array gracias al context
+  // Siempre usar un array seguro
   const favoritosArray = favoritos || [];
 
-  const isFavorito = favoritosArray.some(
-    (f) => f.id.toString() === producto.id.toString()
-  );
+  // ✅ FIX: evitar que 'f' sea null o no tenga producto_id
+  const isFavorito = favoritosArray.some((f) => {
+    if (!f || (!f.id && !f.producto_id)) return false;
+    const favId = f.id || f.producto_id;
+    return favId.toString() === producto.id?.toString();
+  });
 
   const toggleFavorito = async (e) => {
     e.preventDefault();
@@ -47,7 +50,6 @@ const ProductoCard = ({ producto }) => {
     navigate("/carrito");
   };
 
-  // URL de imagen segura
   const imgSrc = producto.imageUrl
     ? producto.imageUrl.startsWith("http")
       ? producto.imageUrl
@@ -63,7 +65,6 @@ const ProductoCard = ({ producto }) => {
       to={`/producto/${producto.id || producto._id}`}
       className="relative text-black bg-white rounded-xl shadow-lg hover:shadow-2xl transition-shadow duration-300 cursor-pointer p-4 flex flex-col justify-between h-full mt-6"
     >
-      {/* ❤️ Botón favoritos */}
       <button
         onClick={toggleFavorito}
         aria-label="Agregar a favoritos"
@@ -74,7 +75,6 @@ const ProductoCard = ({ producto }) => {
         <FaHeart size={22} />
       </button>
 
-      {/* 🖼 Imagen */}
       <img
         src={imgSrc}
         alt={producto.nombre || "Producto"}
@@ -90,7 +90,6 @@ const ProductoCard = ({ producto }) => {
         }}
       />
 
-      {/* 🧾 Info producto */}
       <div className="flex flex-col flex-grow">
         <h3 className="font-title text-black font-semibold text-xl mb-1">
           {producto.nombre || "Sin nombre"}
@@ -102,7 +101,6 @@ const ProductoCard = ({ producto }) => {
           ${precioFormateado}
         </p>
 
-        {/* 🛍 Botón comprar */}
         <button
           onClick={handleComprar}
           className="mt-4 self-start bg-black text-white px-4 py-2 rounded-full hover:bg-pink-500 transition duration-300 flex items-center gap-2 text-sm shadow-lg"

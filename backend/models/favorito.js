@@ -14,28 +14,18 @@ Favorito.init(
       type: DataTypes.INTEGER,
       allowNull: false
     },
-
     productos: { 
-      type: DataTypes.JSON,      // ✔️ ESTE ERA EL ERROR
+      type: DataTypes.JSON,       // Guarda directamente como JSON
       allowNull: false,
-      defaultValue: [],
-
-      get() {
-        const raw = this.getDataValue("productos");
-        return Array.isArray(raw) ? raw : [];
-      },
-
-      set(value) {
-        this.setDataValue("productos", value);
-      }
+      defaultValue: [],           // default vacío
     }
   },
   {
     sequelize,
     modelName: "Favorito",
     tableName: "favoritos",
-    timestamps: true,
-    underscored: true,
+    timestamps: true,   // created_at y updated_at automáticos
+    underscored: true,  // usa snake_case
     paranoid: false
   }
 );

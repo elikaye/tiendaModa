@@ -4,68 +4,112 @@ import ProductoCard from "./ProductoCard";
 import { useSearch } from "../context/SearchContext";
 import { CLOUDINARY_BASE_URL } from "../config";
 
-// 🔹 Mezcla balanceada por categoría
-function mezclarPorCategoria(productos) {
-  const categorias = {};
-  productos.forEach((p) => {
-    if (!categorias[p.categoria]) categorias[p.categoria] = [];
-    categorias[p.categoria].push(p);
-  });
+// 🔵 Normaliza categorías en pocas opciones reales
+function normalizarCategoria(catRaw) {
+  if (!catRaw) return "otros";
 
-  const mezclados = [];
-  const keys = Object.keys(categorias);
+  const cat = catRaw.trim().toLowerCase();
 
-  while (keys.some((k) => categorias[k].length > 0)) {
-    const ordenAleatorio = [...keys].sort(() => Math.random() - 0.5);
-    for (const key of ordenAleatorio) {
-      if (categorias[key].length > 0) {
-        mezclados.push(categorias[key].shift());
+  if (cat.includes("ropa") || cat.includes("remera") || cat.includes("pantal"))
+    return "ropa";
+  if (cat.includes("zapa") || cat.includes("calza") || cat.includes("bot"))
+    return "calzado";
+  if (cat.includes("electr")) return "electronica";
+  if (cat.includes("maqu") || cat.includes("make") || cat.includes("cosme"))
+    return "maquillaje";
+  if (cat.includes("hogar") || cat.includes("cocina") || cat.includes("decor"))
+    return "hogar";
+  if (
+    cat.includes("tempor") ||
+    cat.includes("nav") ||
+    cat.includes("verano") ||
+    cat.includes("invie")
+  )
+    return "temporada";
+
+  return "otros"; // fallback
+}
+
+// 🔵 Mezcla equilibrada de categorías
+function mezclarBalanceado(grupos) {
+  const categorias = Object.keys(grupos);
+  const resultado = [];
+  let restos = true;
+
+  while (restos) {
+    restos = false;
+
+    // orden dinámico aleatorio en cada ronda
+    const orden = [...categorias].sort(() => Math.random() - 0.5);
+
+    for (const cat of orden) {
+      if (grupos[cat].length > 0) {
+        resultado.push(grupos[cat].shift());
+        restos = true;
       }
     }
   }
 
-  return mezclados;
+  return resultado;
 }
 
 const ProductosList = () => {
+  const { query = "" } = useSearch();
   const [productos, setProductos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const { query = "" } = useSearch();
 
   useEffect(() => {
     setLoading(true);
-    setError(null);
 
-    fetch(`/api/products`)
-      .then((res) => {
-        if (!res.ok) throw new Error(`Error HTTP: ${res.status}`);
-        return res.json();
-      })
+    fetch(`http://localhost:5000/api/v1/productos`)
+      .then((res) => res.json())
       .then((data) => {
-        const prods = data.products || [];
+        // Acepta ambos casos: { products: [] } o []
+        let prods = data.products || data || [];
 
-        // Aseguramos URLs completas de imágenes
-        prods.forEach((p) => {
-          if (p.imageUrl && !p.imageUrl.startsWith("http")) {
-            p.imageUrl = `${CLOUDINARY_BASE_URL}${p.imageUrl}`;
-          }
-        });
+        // 🔵 normalizar todos los productos
+        prods = prods.map((p) => ({
+          ...p,
+          id: p.id || p._id,
+          categoria: normalizarCategoria(p.categoria),
+          precio: parseFloat(p.precio) || 0,
+          imageUrl:
+            p.imageUrl && !p.imageUrl.startsWith("http")
+              ? `${CLOUDINARY_BASE_URL}${p.imageUrl}`
+              : p.imageUrl,
+        }));
 
-        // Mezclamos categorías
-        const mezclados = mezclarPorCategoria(prods);
+        // 🔵 agrupar por categoría ya normalizada
+        const grupos = {};
+        for (const p of prods) {
+          if (!grupos[p.categoria]) grupos[p.categoria] = [];
+          grupos[p.categoria].push(p);
+        }
+
+        // 🔵 mezcla real
+        const mezclados = mezclarBalanceado(grupos);
+
+        // 🔵 evita filas incompletas (3 columnas)
+        const columnas = 3;
+        const resto = mezclados.length % columnas;
+
+        if (resto === 1 && mezclados.length > 1) {
+          const ultimo = mezclados.pop();
+          const pos = Math.floor(Math.random() * (mezclados.length - 1));
+          mezclados.splice(pos, 0, ultimo);
+        }
+
         setProductos(mezclados);
       })
-      .catch((err) => {
-        console.error("Error al cargar productos:", err);
-        setError("No se pudieron cargar los productos.");
-      })
+      .catch(() => setError("No se pudieron cargar los productos"))
       .finally(() => setLoading(false));
   }, []);
 
+  // 🔍 buscador
   const productosFiltrados = query
-    ? productos.filter((producto) =>
-        producto.nombre.toLowerCase().includes(query.toLowerCase())
+    ? productos.filter((p) =>
+        p.nombre?.toLowerCase().includes(query.toLowerCase())
       )
     : productos;
 
@@ -73,29 +117,18 @@ const ProductosList = () => {
     return <p className="text-center mt-10">Cargando productos...</p>;
   if (error)
     return <p className="text-center mt-10 text-red-600">{error}</p>;
-  if (productosFiltrados.length === 0)
-    return <p className="text-center mt-10">No hay productos que coincidan.</p>;
 
-  // 🔹 Ajuste de placeholders para completar fila visualmente
   const columnas = 3;
   const resto = productosFiltrados.length % columnas;
-  const placeholders =
-    resto === 0 ? [] : Array(columnas - resto).fill(null);
+  const placeholders = resto === 0 ? [] : Array(columnas - resto).fill(null);
 
   return (
-    <div id="productos" className="bg-pink-100 min-h-screen py-10 px-6">
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-        {productosFiltrados.map((producto) => {
-          producto.precio = parseFloat(producto.precio) || 0;
-          return (
-            <ProductoCard
-              key={producto.id || producto._id}
-              producto={producto}
-            />
-          );
-        })}
+    <div className="bg-pink-100 min-h-screen py-10 px-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md-grid-cols-3 gap-8">
+        {productosFiltrados.map((producto) => (
+          <ProductoCard key={producto.id} producto={producto} />
+        ))}
 
-        {/* Placeholders invisibles para completar la fila */}
         {placeholders.map((_, i) => (
           <div key={`ph-${i}`} className="invisible h-0"></div>
         ))}
