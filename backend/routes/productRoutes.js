@@ -55,7 +55,7 @@ const loadProduct = async (req, res, next) => {
   }
 };
 
-// --- GET PRODUCTOS CON PAGINACIÓN Y BÚSQUEDA ---
+// --- GET PRODUCTOS ---
 router.get('/', async (req, res) => {
   try {
     const page = req.query.page ? parseInt(req.query.page) : null;
@@ -63,6 +63,11 @@ router.get('/', async (req, res) => {
     const search = req.query.search || '';
 
     const whereClause = {};
+
+    // 🔴 FILTRO DESTACADOS (FIX)
+    if (req.query.destacados === 'true') {
+      whereClause.destacados = true;
+    }
 
     if (search) {
       const searchLower = `%${search.toLowerCase()}%`;
@@ -84,7 +89,6 @@ router.get('/', async (req, res) => {
       order: [['createdAt', 'DESC']],
     };
 
-    // 👉 SOLO aplicar paginación si viene page y limit
     if (page && limit) {
       queryOptions.limit = limit;
       queryOptions.offset = (page - 1) * limit;
@@ -94,7 +98,6 @@ router.get('/', async (req, res) => {
       ? await Product.findAndCountAll(queryOptions)
       : await Product.findAll(queryOptions);
 
-    // 👉 Respuesta consistente
     if (page && limit) {
       res.json({
         products: result.rows,
@@ -114,7 +117,6 @@ router.get('/', async (req, res) => {
     res.status(500).json({ message: 'Error al obtener productos' });
   }
 });
-
 
 // --- GET producto por ID ---
 router.get('/:id', loadProduct, (req, res) => {
