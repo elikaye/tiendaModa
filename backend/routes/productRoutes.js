@@ -1,5 +1,6 @@
+
 import express from 'express';
-import { Product } from '../models/index.js';
+import { Product, sequelize } from '../models/index.js';
 import { body, validationResult } from 'express-validator';
 import { authenticate } from '../middleware/authMiddleware.js';
 import multer from 'multer';
@@ -54,36 +55,66 @@ const loadProduct = async (req, res, next) => {
   }
 };
 
-// --- GET TODOS LOS PRODUCTOS (SIN PAGINACIÓN, COMPLETO) ---
+// --- GET PRODUCTOS CON PAGINACIÓN Y BÚSQUEDA ---
 router.get('/', async (req, res) => {
   try {
+    const page = req.query.page ? parseInt(req.query.page) : null;
+    const limit = req.query.limit ? parseInt(req.query.limit) : null;
     const search = req.query.search || '';
 
     const whereClause = {};
 
     if (search) {
+      const searchLower = `%${search.toLowerCase()}%`;
       whereClause[Op.or] = [
-        { nombre: { [Op.iLike]: `%${search}%` } },
-        { descripcion: { [Op.iLike]: `%${search}%` } },
-        { categoria: { [Op.iLike]: `%${search}%` } },
+        sequelize.where(sequelize.fn('LOWER', sequelize.col('nombre')), {
+          [Op.like]: searchLower,
+        }),
+        sequelize.where(sequelize.fn('LOWER', sequelize.col('descripcion')), {
+          [Op.like]: searchLower,
+        }),
+        sequelize.where(sequelize.fn('LOWER', sequelize.col('categoria')), {
+          [Op.like]: searchLower,
+        }),
       ];
     }
 
-    const products = await Product.findAll({
+    const queryOptions = {
       where: whereClause,
       order: [['createdAt', 'DESC']],
-    });
+    };
 
-    res.json({
-      total: products.length,
-      products,
-    });
+    // 👉 SOLO aplicar paginación si viene page y limit
+    if (page && limit) {
+      queryOptions.limit = limit;
+      queryOptions.offset = (page - 1) * limit;
+    }
+
+    const result = page && limit
+      ? await Product.findAndCountAll(queryOptions)
+      : await Product.findAll(queryOptions);
+
+    // 👉 Respuesta consistente
+    if (page && limit) {
+      res.json({
+        products: result.rows,
+        currentPage: page,
+        totalPages: Math.ceil(result.count / limit),
+        totalProducts: result.count,
+      });
+    } else {
+      res.json({
+        products: result,
+        totalProducts: result.length,
+      });
+    }
 
   } catch (error) {
     console.error('🔥 Error al obtener productos:', error);
     res.status(500).json({ message: 'Error al obtener productos' });
   }
 });
+
 
 // --- GET producto por ID ---
 router.get('/:id', loadProduct, (req, res) => {
