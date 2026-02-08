@@ -1,105 +1,155 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { CartProvider } from './context/CartContext';
-import { SearchProvider } from './context/SearchContext';
-import { AuthProvider } from './context/AuthContext';
-import { FavoritosProvider } from './context/FavoritosContext';
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 
-import Navbar from './components/Navbar';
-import Hero from './components/Hero';
-import Destacados from './components/Destacados';
-import ProductosList from './components/ProductosList';
-import AdminDashboard from './components/admin/AdminDashboard';
-import Auth from './components/admin/Auth';
-import Register from './components/admin/Register';
-import Footer from './components/Footer';
-import WhatsAppButton from './components/WhatsAppButton';
-import DetalleProducto from './components/DetalleProducto';
-import Carrito from './components/Carrito';
-import FavoritosPage from './pages/FavoritosPage'; // ✅ Página de favoritos
-import ScrollToTop from './components/ScrollToTop';
+// src/App.jsx
+import React from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
 
-import Ropa from './pages/Ropa';
-import Calzados from './pages/Calzados';
-import Hogar from './pages/Hogar';
-import Electronica from './pages/Electronica';
-import Maquillajes from './pages/Maquillaje';
-import ArticulosDeTemporada from './pages/ArticulosDeTemporada';
+import { CartProvider } from "./context/CartContext";
+import { SearchProvider } from "./context/SearchContext";
+import { AuthProvider, useAuth } from "./context/AuthContext";
+import { FavoritosProvider } from "./context/FavoritosContext";
+import { FrontendSettingsProvider } from "./context/FrontendSettingsContext";
 
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
+import Navbar from "./components/Navbar";
+import Hero from "./components/Hero";
+import Destacados from "./components/Destacados";
+import ProductosList from "./components/ProductosList";
+import Footer from "./components/Footer";
+import WhatsAppButton from "./components/WhatsAppButton";
+import ScrollToTop from "./components/ScrollToTop";
+
+import AdminDashboard from "./components/admin/AdminDashboard";
+import Auth from "./components/admin/Auth";
+import Register from "./components/admin/Register";
+
+import DetalleProducto from "./components/DetalleProducto";
+import Carrito from "./components/Carrito";
+import FavoritosPage from "./pages/FavoritosPage";
+
+import SearchResults from "./pages/SearchResults";
+
+import ForgotPassword from "./components/ForgotPassword";
+import ResetPassword from "./components/ResetPassword";
+
+import RopaDeDama from "./pages/RopaDeDama";
+import RopaDeHombre from "./pages/RopaDeHombre";
+import Calzados from "./pages/Calzados";
+import Bazar from "./pages/Bazar";
+import ArticulosDeTemporada from "./pages/ArticulosDeTemporada";
+
+/* ===============================
+   🔐 Ruta protegida Admin
+================================ */
+const ProtectedAdminRoute = ({ children }) => {
+  const { user } = useAuth();
+  return user?.rol === "admin" ? children : <Navigate to="/auth" />;
+};
+
+/* ===============================
+   📦 Contenido principal
+================================ */
+const AppContent = () => {
+  return (
+    <>
+      <Navbar />
+
+      <main className="flex-1 overflow-visible">
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <>
+                <Hero />
+                <Destacados />
+                <ProductosList />
+              </>
+            }
+          />
+
+          <Route path="/search" element={<SearchResults />} />
+
+          <Route path="/ropa-dama" element={<RopaDeDama />} />
+          <Route path="/ropa-hombre" element={<RopaDeHombre />} />
+          <Route path="/calzados" element={<Calzados />} />
+          <Route path="/bazar" element={<Bazar />} />
+          <Route
+            path="/articulos-de-temporada"
+            element={<ArticulosDeTemporada />}
+          />
+
+          <Route path="/producto/:id" element={<DetalleProducto />} />
+
+          <Route path="/carrito" element={<Carrito />} />
+          <Route path="/favoritos" element={<FavoritosPage />} />
+
+          <Route path="/auth" element={<Auth />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/admin/register" element={<Register />} />
+
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password/:token" element={<ResetPassword />} />
+
+          <Route
+            path="/admin"
+            element={
+              <ProtectedAdminRoute>
+                <AdminDashboard />
+              </ProtectedAdminRoute>
+            }
+          />
+
+          <Route path="/ropa" element={<Navigate to="/ropa-dama" />} />
+        </Routes>
+      </main>
+    </>
+  );
+};
+
+/* ===============================
+   🚀 App principal
+================================ */
 function App() {
-  const isLoggedIn = localStorage.getItem("adminLoggedIn") === "true";
-
   return (
     <AuthProvider>
-      <CartProvider>
-        <SearchProvider>
-          <FavoritosProvider>
-            <Router>
-              <ScrollToTop />
-              <div className="font-sans text-black min-h-screen flex flex-col relative">
-                {/* Fondo animado */}
-                <div className="fixed inset-0 -z-10 bg-gradient-to-br from-pink-100 via-white to-pink-200 bg-[length:300%_300%] animate-gradient" />
+      <FrontendSettingsProvider>
+        <CartProvider>
+          <SearchProvider>
+            <FavoritosProvider>
+              <Router>
+                <ScrollToTop />
 
-                {/* Header/Nav */}
-                <Navbar />
+                {/* ✅ WRAPPER CORREGIDO */}
+                <div className="font-sans text-black flex flex-col relative min-h-screen overflow-x-hidden">
 
-                {/* Contenido principal */}
-                <main className="flex-grow">
-                  <Routes>
-                    <Route
-                      path="/"
-                      element={
-                        <>
-                          <Hero />
-                          <Destacados />
-                          <ProductosList />
-                        </>
-                      }
-                    />
+                  {/* ✅ FONDO QUE CRECE CON EL CONTENIDO */}
+                  <div className="absolute top-0 left-0 w-full h-full -z-10 bg-gradient-to-br from-pink-100 via-white to-pink-200 bg-[length:300%_300%] animate-gradient" />
 
-                    <Route path="/ropa" element={<Ropa />} />
-                    <Route path="/calzados" element={<Calzados />} />
-                    <Route path="/hogar" element={<Hogar />} />
-                    <Route path="/electronica" element={<Electronica />} />
-                    <Route path="/maquillaje" element={<Maquillajes />} />
-                    <Route path="/articulos-de-temporada" element={<ArticulosDeTemporada />} />
+                  <AppContent />
 
-                    <Route path="/producto/:id" element={<DetalleProducto />} />
-                    <Route path="/carrito" element={<Carrito />} />
-                    <Route path="/favoritos" element={<FavoritosPage />} /> {/* ✅ Favoritos */}
+                  <footer className="mt-auto">
+                    <Footer />
+                  </footer>
 
-                    <Route path="/auth" element={<Auth />} />
-                    <Route path="/register" element={<Register />} />
-                    <Route path="/admin/register" element={<Register />} />
-                    <Route
-                      path="/admin"
-                      element={isLoggedIn ? <AdminDashboard /> : <Navigate to="/auth" />}
-                    />
-                  </Routes>
-                </main>
+                  <WhatsAppButton />
 
-                <Footer />
-                <WhatsAppButton />
-
-                <ToastContainer
-                  position="top-right"
-                  autoClose={3000}
-                  hideProgressBar={false}
-                  newestOnTop={false}
-                  closeOnClick
-                  rtl={false}
-                  pauseOnFocusLoss
-                  draggable
-                  pauseOnHover
-                  theme="colored"
-                />
-              </div>
-            </Router>
-          </FavoritosProvider>
-        </SearchProvider>
-      </CartProvider>
+                  <ToastContainer
+                    position="top-right"
+                    autoClose={3000}
+                    theme="colored"
+                  />
+                </div>
+              </Router>
+            </FavoritosProvider>
+          </SearchProvider>
+        </CartProvider>
+      </FrontendSettingsProvider>
     </AuthProvider>
   );
 }

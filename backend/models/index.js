@@ -1,15 +1,15 @@
 // backend/models/index.js
 import sequelize from '../config/database.js';
 
-import Cart from './Cart.js';           // carritos
+import Carrito from './carrito.js';           // carritos
 import OrdenFinal from './OrdenFinal.js'; // ordenes_final
 import User from './user.js';           // users
 import Product from './product.js';     // products
 import Favorito from './favorito.js';   // favoritos
 
-// ---- Relaciones Cart ----
-User.hasOne(Cart, { foreignKey: 'user_id', as: 'usuarioCart' });
-Cart.belongsTo(User, { foreignKey: 'user_id', as: 'cartUsuario' });
+// ---- Relaciones Carrito ----
+User.hasOne(Carrito, { foreignKey: 'user_id', as: 'usuarioCarrito' });
+Carrito.belongsTo(User, { foreignKey: 'user_id', as: 'carritoUsuario' });
 
 // ---- Relaciones OrdenFinal ----
 User.hasMany(OrdenFinal, { foreignKey: 'user_id', as: 'usuarioOrdenesFinal' });
@@ -25,7 +25,7 @@ Favorito.belongsTo(User, { foreignKey: 'user_id', as: 'favoritoUsuario' });
 
 export {
   sequelize,
-  Cart,
+  Carrito,
   OrdenFinal,
   User,
   Product,

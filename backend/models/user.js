@@ -1,4 +1,3 @@
-
 import { DataTypes, Model } from 'sequelize';
 import bcrypt from 'bcryptjs';
 import sequelize from '../config/database.js';
@@ -11,28 +10,60 @@ class User extends Model {
 
 User.init(
   {
-    id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
-    nombre: { type: DataTypes.STRING, allowNull: false },
-    email: { type: DataTypes.STRING, allowNull: false, unique: true, validate: { isEmail: true } },
-    password: { type: DataTypes.STRING, allowNull: false },
-    rol: { type: DataTypes.STRING, allowNull: false, defaultValue: 'cliente' },
+    id: {
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
+      primaryKey: true,
+    },
+
+    nombre: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+
+    email: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      unique: true,
+      validate: { isEmail: true },
+    },
+
+    password: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+
+    rol: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      defaultValue: 'cliente',
+    },
+
+    // 🔑 RECUPERACIÓN DE CONTRASEÑA
+    resetToken: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+
+    resetTokenExp: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
   },
   {
     sequelize,
     modelName: 'User',
     tableName: 'users',
 
-    // 🚫 El default oculta password
     defaultScope: {
       attributes: { exclude: ['password'] },
     },
 
-    // ✅ ESTE SCOPE FORZA A MOSTRAR PASSWORD
     scopes: {
       withPassword: {
         attributes: {
           include: ['password'],
-          exclude: [], // ← ESTA LÍNEA ARREGLA TODO
+          exclude: [],
         },
       },
     },

@@ -1,5 +1,6 @@
+// src/components/admin/Register.jsx
 
-import React, { useState } from "react";
+import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import { API_BASE_URL } from "../../config";
@@ -13,6 +14,7 @@ const Register = () => {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
+
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -27,8 +29,7 @@ const Register = () => {
 
     setLoading(true);
     try {
-      // Llamada al backend usando API_BASE_URL y sin withCredentials
-      const response = await axios.post(`${API_BASE_URL}/users/register`, {
+      await axios.post(`${API_BASE_URL}/users/register`, {
         nombre,
         email,
         password,
@@ -39,7 +40,6 @@ const Register = () => {
       setEmail("");
       setPassword("");
 
-      // Redirigir al login después de 2s
       setTimeout(() => navigate("/auth"), 2000);
     } catch (error) {
       if (error.response?.data?.message) {
@@ -53,76 +53,101 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-100 via-white to-pink-200 px-4">
-      <form
-        onSubmit={handleSubmit}
-        className="bg-white p-8 rounded-lg shadow-md w-full max-w-md space-y-4"
-      >
-        <h2 className="text-2xl font-bold text-center text-black">Registrarse</h2>
+    <div className="bg-gray-100 px-4 pt-20 sm:pt-24 pb-12">
+      <div className="mx-auto w-full max-w-md bg-white p-6 sm:p-8 rounded-xl shadow-lg">
+        <h2 className="text-2xl font-body font-semibold text-center mb-6">
+          Registrarse
+        </h2>
 
         {errorMsg && (
-          <div className="bg-red-100 text-red-700 p-2 rounded mb-2 text-center">
+          <div className="bg-red-100 text-red-700 p-2 rounded mb-4 text-center text-sm">
             {errorMsg}
           </div>
         )}
+
         {successMsg && (
-          <div className="bg-green-100 text-green-700 p-2 rounded mb-2 text-center">
+          <div className="bg-green-100 text-green-700 p-2 rounded mb-4 text-center text-sm">
             {successMsg}
           </div>
         )}
 
-        <input
-          type="text"
-          placeholder="Nombre completo"
-          value={nombre}
-          onChange={(e) => setNombre(e.target.value)}
-          className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-pink-400"
-          required
-        />
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* NOMBRE */}
+          <div>
+            <label className="block font-body font-semibold mb-1">
+              Nombre completo
+            </label>
+            <input
+              type="text"
+              value={nombre}
+              onChange={(e) => setNombre(e.target.value)}
+              className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500"
+              required
+            />
+          </div>
 
-        <input
-          type="email"
-          placeholder="Correo electrónico"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-pink-400"
-          required
-        />
+          {/* EMAIL */}
+          <div>
+            <label className="block font-body font-semibold mb-1">
+              Correo electrónico
+            </label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500"
+              required
+            />
+          </div>
 
-        <div className="relative">
-          <input
-            type={mostrarPassword ? "text" : "password"}
-            placeholder="Contraseña"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-pink-400 pr-10"
-            required
-          />
+          {/* PASSWORD */}
+          <div>
+            <label className="block font-body font-semibold mb-1">
+              Contraseña
+            </label>
+            <div className="relative">
+              <input
+                type={mostrarPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500"
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setMostrarPassword(!mostrarPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-pink-500"
+              >
+                {mostrarPassword ? (
+                  <RiEyeOffLine size={22} />
+                ) : (
+                  <RiEyeLine size={22} />
+                )}
+              </button>
+            </div>
+          </div>
+
+          {/* BOTÓN */}
           <button
-            type="button"
-            onClick={() => setMostrarPassword(!mostrarPassword)}
-            className="absolute right-2 top-2 text-pink-600 hover:text-pink-700 focus:outline-none"
-            aria-label={mostrarPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+            type="submit"
+            disabled={loading}
+            className="w-full bg-pink-500 active:bg-black transition-colors text-white font-body font-semibold py-3 rounded-lg disabled:opacity-50"
           >
-            {mostrarPassword ? <RiEyeOffLine size={24} /> : <RiEyeLine size={24} />}
+            {loading ? "Registrando..." : "Registrarse"}
           </button>
-        </div>
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-purple-600 text-white py-2 rounded-full hover:bg-purple-700 transition duration-300 disabled:opacity-50"
-        >
-          {loading ? "Registrando..." : "Registrarse"}
-        </button>
-
-        <div className="text-center mt-4 text-sm">
-          ¿Ya tenés cuenta?{" "}
-          <Link to="/auth" className="text-purple-600 hover:underline font-semibold">
-            Iniciá sesión
-          </Link>
-        </div>
-      </form>
+          {/* LOGIN */}
+          <p className="text-center text-sm mt-4">
+            ¿Ya tenés cuenta?{" "}
+            <Link
+              to="/auth"
+              className="text-pink-500 font-body font-semibold"
+            >
+              Iniciá sesión
+            </Link>
+          </p>
+        </form>
+      </div>
     </div>
   );
 };

@@ -3,16 +3,16 @@ import ProductoCard from "../components/ProductoCard";
 import { API_BASE_URL, CLOUDINARY_BASE_URL } from "../config";
 
 let io = null;
-try { io = require("socket.io-client"); } catch(e){ io = null; }
+try { io = require("socket.io-client"); } catch(e) { io = null; }
 
-function normalizarCategoria(catRaw){
-  if(!catRaw) return "otros";
+function normalizarCategoria(catRaw) {
+  if (!catRaw) return "otros";
   const cat = catRaw.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
-  if(cat.includes("zapa") || cat.includes("calza") || cat.includes("bot")) return "calzado";
+  if (cat.includes("bazar") || cat.includes("cocina") || cat.includes("decor")) return "bazar";
   return "otros";
 }
 
-// Helper para dividir en filas según columnas
+// Helper para dividir en filas según cantidad de columnas
 const chunkArray = (arr, chunkSize) => {
   const result = [];
   for(let i=0;i<arr.length;i+=chunkSize){
@@ -21,20 +21,20 @@ const chunkArray = (arr, chunkSize) => {
   return result;
 };
 
-export default function Calzado(){
-  const [productos,setProductos] = useState([]);
-  const [loading,setLoading] = useState(true);
-  const [error,setError] = useState(null);
+export default function Bazar() {
+  const [productos, setProductos] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const rawRef = useRef([]);
   const socketRef = useRef(null);
 
-  const mezclarBalanceado = (lista)=>{
-    const grupos={};
-    lista.forEach(p=>{if(!grupos[p.categoria]) grupos[p.categoria]=[]; grupos[p.categoria].push(p)});
-    const resultado=[];
-    let restos=true;
-    const categorias=Object.keys(grupos);
+  const mezclarBalanceado = (lista) => {
+    const grupos = {};
+    lista.forEach(p => { if(!grupos[p.categoria]) grupos[p.categoria]=[]; grupos[p.categoria].push(p); });
+    const resultado = [];
+    let restos = true;
+    const categorias = Object.keys(grupos);
     while(restos){
       restos=false;
       const orden=[...categorias].sort(()=>Math.random()-0.5);
@@ -45,37 +45,41 @@ export default function Calzado(){
     return resultado;
   };
 
-  const fetchProductos = async()=>{
+  const fetchProductos = async () => {
     setLoading(true);
-    try{
+    try {
       const res = await fetch(`${API_BASE_URL}/products`);
       if(!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
-      const prods = (data.products || []).map(p=>({
+      const prods = (data.products || []).map(p => ({
         ...p,
-        id:p.id||p._id,
+        id: p.id || p._id,
         categoria: normalizarCategoria(p.categoria),
-        precio: parseFloat(p.precio)||0,
-        imageUrl: p.imageUrl && !p.imageUrl.startsWith("http") ? `${CLOUDINARY_BASE_URL}${p.imageUrl}` : p.imageUrl
+        precio: parseFloat(p.precio) || 0,
+        imageUrl: p.imageUrl && !p.imageUrl.startsWith("http") ? `${CLOUDINARY_BASE_URL}${p.imageUrl}` : p.imageUrl,
       }));
-      rawRef.current = prods.filter(p=>p.categoria==="calzado");
+      rawRef.current = prods.filter(p => p.categoria==="bazar");
       setProductos(mezclarBalanceado(rawRef.current));
       setError(null);
-    }catch(err){
+    } catch(err){
       console.error(err);
-      setError("No se pudieron cargar los productos de calzado.");
+      setError("No se pudieron cargar los productos de bazar.");
       setProductos([]);
-    }finally{ setLoading(false); }
+    } finally { setLoading(false); }
   };
 
-  useEffect(()=>{
+  useEffect(() => {
     fetchProductos();
-    let socketClient=null;
-    try{
-      if(io){ socketClient=io.connect(window.location.origin); socketRef.current=socketClient; socketClient.on("productos:changed",fetchProductos); }
-    }catch{}
-    return ()=>{ if(socketRef.current) socketRef.current.disconnect(); };
-  },[]);
+    let socketClient = null;
+    try {
+      if(io){
+        socketClient = io.connect(window.location.origin);
+        socketRef.current = socketClient;
+        socketClient.on("productos:changed", fetchProductos);
+      }
+    } catch{}
+    return () => { if(socketRef.current) socketRef.current.disconnect(); };
+  }, []);
 
   const COLUMNAS_MOBILE = 4; // columnas por fila en mobile
 
@@ -96,15 +100,15 @@ export default function Calzado(){
           <>
             {/* MOBILE */}
             <div className="sm:hidden space-y-4">
-              {chunkArray(productos, COLUMNAS_MOBILE).map((filaProductos,index)=>(
+              {chunkArray(productos, COLUMNAS_MOBILE).map((filaProductos, index) => (
                 <div
                   key={index}
                   className="flex space-x-4 overflow-x-auto pb-2"
                   style={{ scrollSnapType: "x mandatory" }}
                 >
-                  {filaProductos.map(p=>(
+                  {filaProductos.map(p => (
                     <div key={p.id} className="flex-shrink-0 w-64" style={{ scrollSnapAlign: "start" }}>
-                      <ProductoCard producto={p}/>
+                      <ProductoCard producto={p} />
                     </div>
                   ))}
                 </div>
@@ -113,7 +117,9 @@ export default function Calzado(){
 
             {/* DESKTOP */}
             <div className="hidden sm:grid sm:grid-cols-2 md:grid-cols-3 gap-6">
-              {productos.map(p=><ProductoCard key={p.id} producto={p}/>)}
+              {productos.map(p => (
+                <ProductoCard key={p.id} producto={p} />
+              ))}
             </div>
           </>
         ) : (

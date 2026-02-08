@@ -1,5 +1,5 @@
 import express from 'express';
-import { Cart, OrdenFinal, User } from '../models/index.js';
+import { Carrito, OrdenFinal, User } from '../models/index.js';
 import { authenticate } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
@@ -23,7 +23,7 @@ router.get('/:userId', authenticate, async (req, res) => {
 router.post('/', authenticate, async (req, res) => {
   try {
     const userId = req.user.id;
-    const carrito = await Cart.findOne({ where: { user_id: userId } });
+    const carrito = await Carrito.findOne({ where: { user_id: userId } });
 
     if (!carrito || !carrito.productos || carrito.productos.length === 0)
       return res.status(400).json({ message: 'Carrito vacío' });
@@ -42,7 +42,7 @@ router.post('/', authenticate, async (req, res) => {
     });
 
     // Vaciar carrito
-    await Cart.update({ productos: [], total: 0 }, { where: { user_id: userId } });
+    await Carrito.update({ productos: [], total: 0 }, { where: { user_id: userId } });
 
     res.status(201).json(nuevaOrden);
   } catch (error) {

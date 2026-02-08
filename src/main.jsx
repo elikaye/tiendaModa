@@ -1,3 +1,4 @@
+
 // main.jsx
 
 import React from 'react'
@@ -8,10 +9,6 @@ import 'swiper/css/pagination';
 import 'swiper/css/navigation';
 import './index.css'; 
 
-
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
+  <App />
 )
-

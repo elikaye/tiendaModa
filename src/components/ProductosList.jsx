@@ -1,140 +1,147 @@
-
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import ProductoCard from "./ProductoCard";
-import { useSearch } from "../context/SearchContext";
 import { CLOUDINARY_BASE_URL } from "../config";
+import { useSearch } from "../context/SearchContext";
 
-// 🔵 Normaliza categorías en pocas opciones reales
-function normalizarCategoria(catRaw) {
-  if (!catRaw) return "otros";
+const FILAS_MOBILE = 3;       // número de filas en mobile
+const COLUMNAS_MOBILE = 4;    // columnas visibles por fila en mobile
+const MAX_PRODUCTOS = FILAS_MOBILE * COLUMNAS_MOBILE;
 
-  const cat = catRaw.trim().toLowerCase();
+const shuffle = (arr) => [...arr].sort(() => Math.random() - 0.5);
 
-  if (cat.includes("ropa") || cat.includes("remera") || cat.includes("pantal"))
-    return "ropa";
-  if (cat.includes("zapa") || cat.includes("calza") || cat.includes("bot"))
-    return "calzado";
-  if (cat.includes("electr")) return "electronica";
-  if (cat.includes("maqu") || cat.includes("make") || cat.includes("cosme"))
-    return "maquillaje";
-  if (cat.includes("hogar") || cat.includes("cocina") || cat.includes("decor"))
-    return "hogar";
-  if (
-    cat.includes("tempor") ||
-    cat.includes("nav") ||
-    cat.includes("verano") ||
-    cat.includes("invie")
-  )
-    return "temporada";
+const normalizar = (texto = "") =>
+  texto
+    .toString()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
 
-  return "otros"; // fallback
-}
-
-// 🔵 Mezcla equilibrada de categorías
-function mezclarBalanceado(grupos) {
-  const categorias = Object.keys(grupos);
-  const resultado = [];
-  let restos = true;
-
-  while (restos) {
-    restos = false;
-
-    // orden dinámico aleatorio en cada ronda
-    const orden = [...categorias].sort(() => Math.random() - 0.5);
-
-    for (const cat of orden) {
-      if (grupos[cat].length > 0) {
-        resultado.push(grupos[cat].shift());
-        restos = true;
-      }
-    }
+const chunkArray = (arr, chunkSize) => {
+  const result = [];
+  for (let i = 0; i < arr.length; i += chunkSize) {
+    result.push(arr.slice(i, i + chunkSize));
   }
+  return result;
+};
 
-  return resultado;
-}
-
-const ProductosList = () => {
-  const { query = "" } = useSearch();
+export default function ProductosList() {
   const [productos, setProductos] = useState([]);
+  const [productosHome, setProductosHome] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const { query } = useSearch();
+
+  const fetchProductos = async () => {
+    try {
+      const API_URL =
+        import.meta.env.VITE_API_URL || "http://localhost:5000";
+
+      const res = await fetch(`${API_URL}/api/v1/products?limit=1000`);
+      if (!res.ok) throw new Error("Error cargando productos");
+
+      const data = await res.json();
+      const raw = data.products || [];
+
+      const adaptados = raw.map((p) => ({
+        ...p,
+        id: p.id || p._id,
+        imageUrl:
+          p.imageUrl && !p.imageUrl.startsWith("http")
+            ? `${CLOUDINARY_BASE_URL}${p.imageUrl}`
+            : p.imageUrl,
+        precio: parseFloat(p.precio) || 0,
+      }));
+
+      setProductos(adaptados);
+
+      // Mezclar productos y limitar a MAX_PRODUCTOS para mobile
+      const shuffled = shuffle(adaptados).slice(0, MAX_PRODUCTOS);
+      setProductosHome(shuffled);
+    } catch (err) {
+      console.error(err);
+      setError("No se pudieron cargar los productos");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    setLoading(true);
-
-    fetch(`http://localhost:5000/api/v1/productos`)
-      .then((res) => res.json())
-      .then((data) => {
-        // Acepta ambos casos: { products: [] } o []
-        let prods = data.products || data || [];
-
-        // 🔵 normalizar todos los productos
-        prods = prods.map((p) => ({
-          ...p,
-          id: p.id || p._id,
-          categoria: normalizarCategoria(p.categoria),
-          precio: parseFloat(p.precio) || 0,
-          imageUrl:
-            p.imageUrl && !p.imageUrl.startsWith("http")
-              ? `${CLOUDINARY_BASE_URL}${p.imageUrl}`
-              : p.imageUrl,
-        }));
-
-        // 🔵 agrupar por categoría ya normalizada
-        const grupos = {};
-        for (const p of prods) {
-          if (!grupos[p.categoria]) grupos[p.categoria] = [];
-          grupos[p.categoria].push(p);
-        }
-
-        // 🔵 mezcla real
-        const mezclados = mezclarBalanceado(grupos);
-
-        // 🔵 evita filas incompletas (3 columnas)
-        const columnas = 3;
-        const resto = mezclados.length % columnas;
-
-        if (resto === 1 && mezclados.length > 1) {
-          const ultimo = mezclados.pop();
-          const pos = Math.floor(Math.random() * (mezclados.length - 1));
-          mezclados.splice(pos, 0, ultimo);
-        }
-
-        setProductos(mezclados);
-      })
-      .catch(() => setError("No se pudieron cargar los productos"))
-      .finally(() => setLoading(false));
+    fetchProductos();
   }, []);
 
-  // 🔍 buscador
-  const productosFiltrados = query
-    ? productos.filter((p) =>
-        p.nombre?.toLowerCase().includes(query.toLowerCase())
-      )
-    : productos;
+  const productosFiltrados = useMemo(() => {
+    if (!query) return productosHome;
 
-  if (loading)
-    return <p className="text-center mt-10">Cargando productos...</p>;
-  if (error)
+    const q = normalizar(query);
+
+    return productos.filter(
+      (p) =>
+        normalizar(p.nombre).includes(q) ||
+        normalizar(p.categoria).includes(q)
+    );
+  }, [query, productos, productosHome]);
+
+  if (error) {
     return <p className="text-center mt-10 text-red-600">{error}</p>;
-
-  const columnas = 3;
-  const resto = productosFiltrados.length % columnas;
-  const placeholders = resto === 0 ? [] : Array(columnas - resto).fill(null);
+  }
 
   return (
-    <div className="bg-pink-100 min-h-screen py-10 px-6">
-      <div className="grid grid-cols-1 sm:grid-cols-2 md-grid-cols-3 gap-8">
-        {productosFiltrados.map((producto) => (
-          <ProductoCard key={producto.id} producto={producto} />
-        ))}
+    <div className="bg-pink-100 min-h-screen py-6 px-4">
+      {loading ? (
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+          {Array(8)
+            .fill(null)
+            .map((_, i) => (
+              <div
+                key={i}
+                className="animate-pulse bg-white rounded-xl shadow h-72"
+              />
+            ))}
+        </div>
+      ) : productosFiltrados.length === 0 ? (
+        <p className="text-center text-gray-600 text-lg mt-10">
+          No se encontraron productos para{" "}
+          <span className="font-semibold">“{query}”</span>
+        </p>
+      ) : (
+        <>
+          {/* MOBILE: scroll independiente por fila con scroll snap */}
+          <div className="sm:hidden space-y-4">
+            {chunkArray(productosFiltrados, COLUMNAS_MOBILE).map(
+              (filaProductos, index) => (
+                <div
+                  key={index}
+                  className="flex space-x-4 overflow-x-auto pb-2"
+                  style={{
+                    scrollSnapType: "x mandatory",
+                  }}
+                >
+                  {filaProductos.map((p) => (
+                    <div
+                      key={p.id}
+                      className="flex-shrink-0 w-64"
+                      style={{
+                        scrollSnapAlign: "start",
+                      }}
+                    >
+                      <ProductoCard producto={p} />
+                    </div>
+                  ))}
+                </div>
+              )
+            )}
+          </div>
 
-        {placeholders.map((_, i) => (
-          <div key={`ph-${i}`} className="invisible h-0"></div>
-        ))}
-      </div>
+          {/* DESKTOP: grid normal */}
+          <div className="hidden sm:grid sm:grid-cols-3 lg:grid-cols-4 gap-6">
+            {productosFiltrados.map((p) => (
+              <ProductoCard key={p.id} producto={p} />
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
-};
-
-export default ProductosList;
+}

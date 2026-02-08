@@ -1,29 +1,31 @@
-
+// routes/userRoutes.js
 import express from 'express';
 import jwt from 'jsonwebtoken';
-import {
-  registrarUsuario,
-  loginUsuario,
-  getUsuarios,
-  updateUsuario,
-  deleteUsuario
+import { 
+  registrarUsuario, 
+  loginUsuario, 
+  forgotPassword, 
+  resetPassword 
 } from '../controllers/userController.js';
 
 const router = express.Router();
 
-// Auth
+/* ==================== AUTH ==================== */
 router.post('/register', registrarUsuario);
 router.post('/login', loginUsuario);
 
-// Admin usuarios
-router.get('/', getUsuarios);
-router.put('/:id', updateUsuario);
-router.delete('/:id', deleteUsuario);
+/* ==================== RECUPERAR CONTRASEÑA ==================== */
+router.post('/forgot-password', forgotPassword);
+router.post('/reset-password/:token', resetPassword);
 
-// Token test
+/* ==================== TOKEN TEST ==================== */
 router.get('/token-test', (req, res) => {
   const payload = { id: 1, rol: 'admin' };
-  const token = jwt.sign(payload, process.env.JWT_SECRET || 'secreto123', { expiresIn: '1h' });
+  const token = jwt.sign(
+    payload,
+    process.env.JWT_SECRET || 'secreto123',
+    { expiresIn: '1h' }
+  );
   res.json({ token });
 });
 

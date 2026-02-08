@@ -8,7 +8,7 @@ try { io = require("socket.io-client"); } catch(e){ io = null; }
 function normalizarCategoria(catRaw){
   if(!catRaw) return "otros";
   const cat = catRaw.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
-  if(cat.includes("zapa") || cat.includes("calza") || cat.includes("bot")) return "calzado";
+  if(cat.includes("hombre") || cat.includes("masculin") || cat === "ropa") return "ropa-hombre";
   return "otros";
 }
 
@@ -21,7 +21,7 @@ const chunkArray = (arr, chunkSize) => {
   return result;
 };
 
-export default function Calzado(){
+export default function RopaDeHombre(){
   const [productos,setProductos] = useState([]);
   const [loading,setLoading] = useState(true);
   const [error,setError] = useState(null);
@@ -58,12 +58,12 @@ export default function Calzado(){
         precio: parseFloat(p.precio)||0,
         imageUrl: p.imageUrl && !p.imageUrl.startsWith("http") ? `${CLOUDINARY_BASE_URL}${p.imageUrl}` : p.imageUrl
       }));
-      rawRef.current = prods.filter(p=>p.categoria==="calzado");
+      rawRef.current = prods.filter(p=>p.categoria==="ropa-hombre");
       setProductos(mezclarBalanceado(rawRef.current));
       setError(null);
     }catch(err){
       console.error(err);
-      setError("No se pudieron cargar los productos de calzado.");
+      setError("No se pudieron cargar los productos de ropa de hombre.");
       setProductos([]);
     }finally{ setLoading(false); }
   };
@@ -77,7 +77,7 @@ export default function Calzado(){
     return ()=>{ if(socketRef.current) socketRef.current.disconnect(); };
   },[]);
 
-  const COLUMNAS_MOBILE = 4; // columnas por fila en mobile
+  const COLUMNAS_MOBILE = 4;
 
   return (
     <section className="min-h-screen py-20 px-6 bg-gradient-to-br from-pink-100 via-white to-pink-200 font-body">

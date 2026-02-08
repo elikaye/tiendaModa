@@ -1,194 +1,188 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { FaBars, FaTimes, FaUserCircle, FaShoppingCart } from 'react-icons/fa';
-import { Heart, Search } from 'lucide-react';
-import whatsapp from '../assets/whatsapp-black.png';
-import facebook from '../assets/facebook-black.png';
-import instagram from '../assets/instagram-black.png';
+import React, { useState } from "react";
+import { Link, NavLink, useNavigate } from "react-router-dom";
+import { FaBars, FaTimes, FaUserCircle, FaShoppingCart } from "react-icons/fa";
+import { LayoutDashboard, Heart, Search } from "lucide-react";
 
-import { useCart } from '../context/CartContext';
-import { useSearch } from '../context/SearchContext';
-import { useFavoritos } from '../context/FavoritosContext'; // ⭐ IMPORTANTE
+import whatsapp from "../assets/whatsapp-black.png";
+import facebook from "../assets/facebook-black.png";
+import instagram from "../assets/instagram-black.png";
 
-export default function Navbar() {
+import { useCart } from "../context/CartContext";
+import { useSearch } from "../context/SearchContext";
+import { useFavoritos } from "../context/FavoritosContext";
+import { useAuth } from "../context/AuthContext";
+
+function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
-  const [localQuery, setLocalQuery] = useState('');
+  const [localQuery, setLocalQuery] = useState("");
 
   const { carrito } = useCart();
-  const { favoritos } = useFavoritos(); // ⭐ CONTADOR DE FAVORITOS
+  const { favoritos } = useFavoritos();
   const { setQuery } = useSearch();
+  const { user, logout } = useAuth();
 
   const navigate = useNavigate();
 
-  const toggleMenu = () => setMenuOpen(!menuOpen);
-
   const secciones = [
-    ['Inicio', '/'],
-    ['Ropa', '/ropa'],
-    ['Calzados', '/calzados'],
-    ['Hogar', '/hogar'],
-    ['Electrónica', '/electronica'],
-    ['Maquillaje', '/maquillaje'],
-    ['Artículos de temporada', '/articulos-de-temporada'],
+    ["Inicio", "/"],
+    ["Ropa de dama", "/ropa-dama"],
+    ["Ropa de hombre", "/ropa-hombre"],
+    ["Calzados", "/calzados"],
+    ["Bazar", "/bazar"],
+    ["Artículos de temporada", "/articulos-de-temporada"],
   ];
+
+  const handleNavigate = (to) => {
+    navigate(to);
+    setMenuOpen(false);
+    setShowSearch(false);
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate("/");
+    setMenuOpen(false);
+  };
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     setQuery(localQuery.trim());
-    setMenuOpen(false);
     setShowSearch(false);
-    navigate('/search');
+    navigate("/search");
   };
 
   return (
-    <header className="fixed top-0 left-0 w-full z-50 backdrop-blur-md bg-black/40 shadow-md">
-      <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-3">
-
-        {/* Menú escritorio */}
-        <nav className="hidden md:flex gap-8 font-bold text-sm font-body">
+    <header className="fixed top-0 left-0 w-full z-50 bg-black/70 backdrop-blur-md shadow-md">
+      <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-2">
+        {/* MENÚ DESKTOP */}
+        <nav className="hidden md:flex gap-8 font-bold text-sm">
           {secciones.map(([label, to]) => (
-            <Link
-              key={label}
+            <NavLink
+              key={to}
               to={to}
-              onClick={() => setMenuOpen(false)}
-              className="text-black hover:text-pink-500 hover:drop-shadow-[0_0_6px_#f472b6] transition duration-300"
+              className={({ isActive }) =>
+                `flex items-center gap-2 transition ${
+                  isActive
+                    ? "text-pink-500 drop-shadow-[0_0_10px_#ec4899]"
+                    : "text-black hover:text-pink-500 hover:drop-shadow-[0_0_10px_#ec4899]"
+                }`
+              }
             >
+              <span className="w-2 h-2 rounded-full bg-black" />
               {label}
-            </Link>
+            </NavLink>
           ))}
         </nav>
 
-        {/* Iconos */}
-        <div className="flex items-center gap-4 relative">
+        {/* ICONOS */}
+        <div className="flex items-center gap-4 relative md:justify-end w-full md:w-auto">
+          {/* HAMBURGUESA MOBILE */}
+          <button
+            className="md:hidden text-xl text-black mr-auto"
+            onClick={() => setMenuOpen(!menuOpen)}
+          >
+            {menuOpen ? <FaTimes /> : <FaBars />}
+          </button>
 
-          {/* Buscador */}
+          {/* BUSCADOR */}
           <form onSubmit={handleSearchSubmit} className="relative">
             <Search
-              size={24}
-              onClick={() => setShowSearch((v) => !v)}
-              className="cursor-pointer transition-transform hover:scale-110 hover:brightness-125 hover:drop-shadow-[0_0_6px_#f472b6] duration-300"
+              size={22}
+              onClick={() => setShowSearch(!showSearch)}
+              className="cursor-pointer text-black hover:text-pink-500"
             />
             {showSearch && (
               <input
                 type="text"
-                placeholder="Buscar productos..."
+                placeholder="Buscar..."
                 value={localQuery}
                 onChange={(e) => setLocalQuery(e.target.value)}
+                className="absolute top-full mt-2 left-0 w-44 px-3 py-1 rounded text-sm shadow-md focus:outline-none z-50"
                 autoFocus
-                className="absolute right-0 top-7 w-48 border rounded px-3 py-1 text-sm shadow-md focus:outline-none"
               />
             )}
           </form>
 
-          {/* Favoritos + contador */}
-          <Link
+          {/* FAVORITOS */}
+          <NavLink
             to="/favoritos"
-            className="relative text-black text-2xl transition-colors duration-300 hover:text-pink-500"
+            className={({ isActive }) =>
+              `relative text-xl ${isActive ? "text-pink-500" : "text-black"}`
+            }
           >
-            <Heart />
+            <Heart className="hover:text-pink-500" />
             {favoritos.length > 0 && (
-              <span className="absolute -top-2 -right-2 bg-pink-600 text-white rounded-full text-xs w-5 h-5 flex items-center justify-center font-bold">
+              <span className="absolute -top-2 -right-2 bg-pink-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
                 {favoritos.length}
               </span>
             )}
-          </Link>
+          </NavLink>
 
-          {/* Carrito */}
-          <button
-            onClick={() => {
-              navigate('/carrito');
-              setMenuOpen(false);
-            }}
-            aria-label="Carrito de compras"
-            className="relative focus:outline-none"
+          {/* CARRITO */}
+          <NavLink
+            to="/carrito"
+            className={({ isActive }) =>
+              `relative text-xl ${isActive ? "text-pink-500" : "text-black"}`
+            }
           >
-            <FaShoppingCart className="h-6 w-6 text-black hover:text-pink-500 transition duration-300" />
+            <FaShoppingCart className="hover:text-pink-500" />
             {carrito.length > 0 && (
-              <span className="absolute -top-2 -right-2 bg-pink-600 text-white rounded-full text-xs w-5 h-5 flex items-center justify-center font-bold">
+              <span className="absolute -top-2 -right-2 bg-pink-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
                 {carrito.length}
               </span>
             )}
-          </button>
+          </NavLink>
 
-          {[whatsapp, instagram, facebook].map((icon, i) => (
-            <a
-              key={i}
-              href={
-                i === 0
-                  ? 'https://wa.me/+5491164283906'
-                  : i === 1
-                  ? 'https://www.instagram.com/barby_indu/'
-                  : 'https://www.facebook.com/barbara.andrada'
-              }
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:drop-shadow-[0_0_6px_#f472b6] hover:scale-110 transition-transform duration-300"
+          {/* ADMIN */}
+          {user?.rol === "admin" && (
+            <button onClick={() => navigate("/admin")}>
+              <LayoutDashboard className="text-xl text-black hover:text-pink-500" />
+            </button>
+          )}
+
+          {/* LOGIN / LOGOUT */}
+          {user ? (
+            <button
+              onClick={handleLogout}
+              className="text-xs font-bold text-black hover:text-pink-500 leading-tight"
             >
-              <img src={icon} alt="Red Social" className="h-6 w-6" />
-            </a>
-          ))}
-
-          <Link
-            to="/auth"
-            className="text-black hover:text-pink-500 text-2xl transition-colors duration-300"
-          >
-            <FaUserCircle />
-          </Link>
-
-          <button
-            className="text-black text-2xl md:hidden ml-2"
-            onClick={toggleMenu}
-            aria-label={menuOpen ? "Cerrar menú" : "Abrir menú"}
-          >
-            {menuOpen ? <FaTimes /> : <FaBars />}
-          </button>
+              Cerrar
+              <br />
+              sesión
+            </button>
+          ) : (
+            <Link to="/auth">
+              <FaUserCircle className="text-xl text-black hover:text-pink-500" />
+            </Link>
+          )}
         </div>
       </div>
 
-      {/* Menú móvil */}
+      {/* MENÚ MOBILE */}
       {menuOpen && (
-        <nav className="md:hidden px-6 pb-4 flex flex-col gap-4 font-body font-bold bg-white/70 backdrop-blur-md shadow-md text-black">
+        <nav className="md:hidden bg-black/10 backdrop-blur-md px-6 py-4 flex flex-col gap-4 text-white font-bold">
           {secciones.map(([label, to]) => (
-            <Link
-              key={label}
+            <NavLink
+              key={to}
               to={to}
               onClick={() => setMenuOpen(false)}
-              className="hover:text-pink-500 hover:drop-shadow-[0_0_6px_#f472b6] transition duration-300"
+              className={({ isActive }) =>
+                `flex items-center gap-2 text-left transition ${
+                  isActive
+                    ? "text-pink-500 drop-shadow-[0_0_12px_#ec4899]"
+                    : "hover:text-pink-500 hover:drop-shadow-[0_0_12px_#ec4899]"
+                }`
+              }
             >
+              <span className="w-2 h-2 rounded-full bg-white" />
               {label}
-            </Link>
+            </NavLink>
           ))}
-
-          {/* Carrito en móvil */}
-          <button
-            onClick={() => {
-              navigate('/carrito');
-              setMenuOpen(false);
-            }}
-            className="hover:text-pink-500 transition duration-300 text-left"
-          >
-            Carrito ({carrito.length})
-          </button>
-
-          {/* Favoritos en móvil con contador */}
-          <Link
-            to="/favoritos"
-            onClick={() => setMenuOpen(false)}
-            className="hover:text-pink-500 transition duration-300 text-left"
-          >
-            Favoritos ({favoritos.length})
-          </Link>
-
-          <Link
-            to="/auth"
-            onClick={() => setMenuOpen(false)}
-            className="hover:text-pink-500 transition duration-300"
-          >
-            Iniciar sesión / Registro
-          </Link>
         </nav>
       )}
     </header>
   );
 }
+
+export default Navbar;

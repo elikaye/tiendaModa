@@ -1,53 +1,93 @@
-import React from "react";
+
+import React, { useState, useEffect } from "react";
 import { FaHeart, FaShoppingBag } from "react-icons/fa";
 import { useCart } from "../context/CartContext";
 import { useFavoritos } from "../context/FavoritosContext";
-import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import { CLOUDINARY_BASE_URL } from "../config";
 
 const ProductoCard = ({ producto }) => {
-  const { agregarAlCarrito } = useCart();
+  const [loaded, setLoaded] = useState(false);
+  const [loadingFav, setLoadingFav] = useState(false);
+  const [processingCart, setProcessingCart] = useState(false);
+  const [isFavorito, setIsFavorito] = useState(false);
+
+  const { user } = useAuth();
+  const { carrito, agregarAlCarrito, eliminarDelCarrito } = useCart();
   const { favoritos, agregarFavorito, eliminarFavorito } = useFavoritos();
-  const navigate = useNavigate();
 
   if (!producto) return null;
 
-  // Siempre usar un array seguro
-  const favoritosArray = favoritos || [];
+  const esActivo = producto.estado === "activo";
 
-  // ✅ FIX: evitar que 'f' sea null o no tenga producto_id
-  const isFavorito = favoritosArray.some((f) => {
-    if (!f || (!f.id && !f.producto_id)) return false;
-    const favId = f.id || f.producto_id;
-    return favId.toString() === producto.id?.toString();
-  });
+  const estaEnCarrito = Array.isArray(carrito)
+    ? carrito.some((p) => p.id?.toString() === producto.id?.toString())
+    : false;
+
+  useEffect(() => {
+    const yaEsFavorito = Array.isArray(favoritos)
+      ? favoritos.some(
+          (f) =>
+            (f?.producto_id || f?.id)?.toString() ===
+            producto.id?.toString()
+        )
+      : false;
+
+    setIsFavorito(yaEsFavorito);
+  }, [favoritos, producto.id]);
 
   const toggleFavorito = async (e) => {
     e.preventDefault();
     e.stopPropagation();
+    if (loadingFav) return;
 
-    if (!agregarFavorito || !eliminarFavorito) {
+    if (!user) {
       toast.info("💖 Iniciá sesión para guardar tus favoritos");
       return;
     }
 
+    setLoadingFav(true);
     try {
       if (isFavorito) {
         await eliminarFavorito(producto.id);
+        setIsFavorito(false);
       } else {
         await agregarFavorito(producto);
+        setIsFavorito(true);
       }
-    } catch (err) {
-      console.error("❌ Error en toggleFavorito:", err);
+    } catch {
+      toast.error("No se pudo actualizar favoritos");
+    } finally {
+      setLoadingFav(false);
     }
   };
 
-  const handleComprar = (e) => {
+  const handleToggleCarrito = async (e) => {
     e.preventDefault();
     e.stopPropagation();
-    agregarAlCarrito(producto);
-    navigate("/carrito");
+    if (processingCart || !esActivo) return;
+
+    if (!user) {
+      toast.info("🛒 Iniciá sesión para poder comprar");
+      return;
+    }
+
+    setProcessingCart(true);
+    try {
+      if (estaEnCarrito) {
+        await eliminarDelCarrito(producto.id);
+        toast.info("Producto eliminado del carrito");
+      } else {
+        await agregarAlCarrito(producto, 1);
+        toast.success("Producto agregado al carrito");
+      }
+    } catch {
+      toast.error("No se pudo actualizar el carrito");
+    } finally {
+      setProcessingCart(false);
+    }
   };
 
   const imgSrc = producto.imageUrl
@@ -56,58 +96,76 @@ const ProductoCard = ({ producto }) => {
       : `${CLOUDINARY_BASE_URL}${producto.imageUrl}`
     : "/placeholder.png";
 
-  const precioFormateado = !isNaN(Number(producto.precio))
-    ? Number(producto.precio).toLocaleString("es-AR", { minimumFractionDigits: 0 })
-    : "0";
+  const precioFormateado = new Intl.NumberFormat("es-AR").format(
+    producto.precio
+  );
 
   return (
     <Link
-      to={`/producto/${producto.id || producto._id}`}
-      className="relative text-black bg-white rounded-xl shadow-lg hover:shadow-2xl transition-shadow duration-300 cursor-pointer p-4 flex flex-col justify-between h-full mt-6"
+      to={`/producto/${producto.id}`}
+      className="
+        relative bg-white text-black rounded-xl
+        shadow-md hover:shadow-lg
+        transition-shadow duration-300
+        p-3
+        flex flex-col justify-between
+        w-full
+      "
     >
+      {/* ❤️ FAVORITO */}
       <button
         onClick={toggleFavorito}
-        aria-label="Agregar a favoritos"
-        className={`absolute top-4 right-4 p-1 rounded-full transition-colors duration-300 z-20 ${
+        className={`absolute top-3 right-3 z-20 ${
           isFavorito ? "text-pink-600" : "text-black hover:text-pink-600"
         }`}
       >
-        <FaHeart size={22} />
+        <FaHeart size={20} />
       </button>
 
       <img
         src={imgSrc}
-        alt={producto.nombre || "Producto"}
-        className="rounded-md transition-transform duration-300 hover:scale-105 mb-4"
-        style={{
-          width: "100%",
-          height: "180px",
-          objectFit: "contain",
-        }}
-        onError={(e) => {
-          e.currentTarget.onerror = null;
-          e.currentTarget.src = "/placeholder.png";
-        }}
+        alt={producto.nombre}
+        className={`rounded-md mb-2 transition-opacity ${
+          loaded ? "opacity-100" : "opacity-0"
+        }`}
+        style={{ height: "180px", objectFit: "contain" }}
+        onLoad={() => setLoaded(true)}
+        onError={(e) => (e.currentTarget.src = "/placeholder.png")}
       />
 
-      <div className="flex flex-col flex-grow">
-        <h3 className="font-title text-black font-semibold text-xl mb-1">
-          {producto.nombre || "Sin nombre"}
-        </h3>
-        <p className="font-body text-gray-700 text-sm flex-grow line-clamp-3">
-          {producto.descripcion || "Sin descripción disponible"}
-        </p>
-        <p className="text-pink-600 font-bold text-xl mt-2">
-          ${precioFormateado}
-        </p>
+      <h3 className="font-body font-semibold text-sm sm:text-base mb-1 line-clamp-2">
+        {producto.nombre}
+      </h3>
 
+      <p className="text-gray-700 text-xs line-clamp-2">
+        {producto.descripcion}
+      </p>
+
+      <p className="text-pink-600 font-semibold text-base sm:text-lg mt-1">
+        ${precioFormateado}
+      </p>
+
+      {esActivo ? (
         <button
-          onClick={handleComprar}
-          className="mt-4 self-start bg-black text-white px-4 py-2 rounded-full hover:bg-pink-500 transition duration-300 flex items-center gap-2 text-sm shadow-lg"
+          onClick={handleToggleCarrito}
+          className={`mt-2 px-3 py-1.5 rounded-full text-xs font-body
+            flex items-center gap-2
+            mx-auto
+            transition
+            ${
+              estaEnCarrito
+                ? "bg-pink-500 text-white"
+                : "bg-black text-white hover:bg-pink-500"
+            }`}
         >
-          <FaShoppingBag size={14} /> Comprar
+          <FaShoppingBag size={14} />
+          {estaEnCarrito ? "En carrito" : "Comprar"}
         </button>
-      </div>
+      ) : (
+        <p className="mt-2 text-xs text-gray-500 italic text-center">
+          Producto sin stock
+        </p>
+      )}
     </Link>
   );
 };

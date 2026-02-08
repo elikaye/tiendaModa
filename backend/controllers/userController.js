@@ -1,196 +1,147 @@
-import bcrypt from 'bcryptjs';
+// controllers/userController.js
 import jwt from 'jsonwebtoken';
 import User from '../models/user.js';
+import nodemailer from 'nodemailer';
+import crypto from 'crypto';
+import { Op } from 'sequelize'; // <-- IMPORT CORRECTO
 
-// ==================== REGISTRO ====================
-export const registrarUsuario = async (req, res) => {
-  try {
-    const { nombre, email, password } = req.body;
-
-    if (!nombre || !email || !password) {
-      return res.status(400).json({
-        success: false,
-        message: 'Todos los campos son obligatorios',
-      });
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Email inválido',
-      });
-    }
-
-    const existeUsuario = await User.findOne({ where: { email } });
-    if (existeUsuario) {
-      return res.status(400).json({
-        success: false,
-        message: 'Email ya registrado',
-      });
-    }
-
-    // ⚡ El password se hashea en el hook del modelo
-    const nuevoUsuario = await User.create({
-      nombre,
-      email,
-      password,
-      rol: 'cliente',
-    });
-
-    const token = jwt.sign(
-      { id: nuevoUsuario.id, email: nuevoUsuario.email, rol: nuevoUsuario.rol },
-      process.env.JWT_SECRET,
-      { expiresIn: '4h' }
-    );
-
-    return res.status(201).json({
-      success: true,
-      message: 'Usuario registrado',
-      user: {
-        id: nuevoUsuario.id,
-        nombre: nuevoUsuario.nombre,
-        email: nuevoUsuario.email,
-        rol: nuevoUsuario.rol,
-      },
-      token,
-    });
-  } catch (error) {
-    console.error('❌ registrarUsuario:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Error servidor',
-    });
-  }
-};
-
-// ==================== LOGIN ====================
+/* ==================== LOGIN ==================== */
 export const loginUsuario = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    if (!email || !password) {
-      return res.status(400).json({
-        success: false,
-        message: 'Email y password requeridos',
-      });
-    }
-
-    const usuario = await User.scope('withPassword').findOne({
-      where: { email },
-    });
+    const usuario = await User.scope('withPassword').findOne({ where: { email } });
 
     if (!usuario) {
-      return res.status(401).json({
-        success: false,
-        message: 'Credenciales inválidas',
-      });
+      return res.status(401).json({ success: false, message: 'Credenciales incorrectas' });
     }
 
     const passwordOk = await usuario.comparePassword(password);
     if (!passwordOk) {
-      return res.status(401).json({
-        success: false,
-        message: 'Credenciales inválidas',
-      });
+      return res.status(401).json({ success: false, message: 'Credenciales incorrectas' });
     }
 
     const token = jwt.sign(
       { id: usuario.id, rol: usuario.rol },
-      process.env.JWT_SECRET,
-      { expiresIn: '4h' }
+      process.env.JWT_SECRET || 'secreto123',
+      { expiresIn: '7d' }
     );
 
-    const usuarioSinPassword = usuario.get();
-    delete usuarioSinPassword.password;
-
-    return res.json({
+    res.json({
       success: true,
-      message: 'Login exitoso',
-      user: usuarioSinPassword,
       token,
+      user: {
+        id: usuario.id,
+        nombre: usuario.nombre,
+        email: usuario.email,
+        rol: usuario.rol,
+      },
     });
   } catch (error) {
     console.error('❌ loginUsuario:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Error servidor',
-    });
+    res.status(500).json({ success: false, message: 'Error en el servidor' });
   }
 };
 
-// ==================== ADMIN - LISTAR USUARIOS ====================
-export const getUsuarios = async (req, res) => {
+/* ==================== REGISTRO ==================== */
+export const registrarUsuario = async (req, res) => {
   try {
-    const usuarios = await User.findAll({
-      attributes: { exclude: ['password'] },
-      paranoid: true,
-      order: [['createdAt', 'DESC']],
-    });
+    const usuario = await User.create(req.body);
 
-    return res.json(usuarios);
+    res.status(201).json({ success: true, message: 'Usuario creado correctamente' });
   } catch (error) {
-    console.error('❌ getUsuarios:', error);
-    return res.status(500).json({
-      message: 'Error al obtener usuarios',
-    });
+    console.error('❌ registrarUsuario:', error);
+    res.status(500).json({ success: false, message: 'Error al registrar usuario' });
   }
 };
 
-// ==================== ADMIN - ACTUALIZAR USUARIO ====================
-export const updateUsuario = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { nombre, email, rol, password } = req.body;
+/* ==================== USUARIOS ==================== */
+export const getUsuarios = async (req, res) => {
+  const usuarios = await User.findAll();
+  res.json(usuarios);
+};
 
-    const usuario = await User.findByPk(id);
+export const updateUsuario = async (req, res) => {
+  const { id } = req.params;
+  await User.update(req.body, { where: { id } });
+  res.json({ success: true });
+};
+
+export const deleteUsuario = async (req, res) => {
+  const { id } = req.params;
+  await User.destroy({ where: { id } });
+  res.json({ success: true });
+};
+
+/* ==================== SMTP ==================== */
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASSWORD },
+});
+
+/* ==================== FORGOT PASSWORD ==================== */
+export const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    const usuario = await User.findOne({ where: { email } });
+
     if (!usuario) {
-      return res.status(404).json({
-        message: 'Usuario no encontrado',
-      });
+      return res.json({ success: true, message: 'Si el email existe, te enviaremos instrucciones' });
     }
 
-    if (nombre) usuario.nombre = nombre;
-    if (email) usuario.email = email;
-    if (rol) usuario.rol = rol;
-    if (password) usuario.password = password; // hook lo hashea
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const resetTokenExp = Date.now() + 1000 * 60 * 30; // 30 min
 
+    usuario.resetToken = resetToken;
+    usuario.resetTokenExp = resetTokenExp;
     await usuario.save();
 
-    const usuarioSeguro = usuario.get();
-    delete usuarioSeguro.password;
+    const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
 
-    return res.json(usuarioSeguro);
-  } catch (error) {
-    console.error('❌ updateUsuario:', error);
-    return res.status(500).json({
-      message: 'Error al actualizar usuario',
+    await transporter.sendMail({
+      from: `"Tienda Barbie" <${process.env.SMTP_USER}>`,
+      to: usuario.email,
+      subject: 'Recuperación de contraseña',
+      html: `
+        <p>Hola ${usuario.nombre},</p>
+        <p>Hacé clic para restablecer tu contraseña:</p>
+        <a href="${resetUrl}">${resetUrl}</a>
+        <p>Expira en 30 minutos</p>
+      `,
     });
+
+    res.json({ success: true, message: 'Si el email existe, te enviaremos instrucciones' });
+  } catch (error) {
+    console.error('❌ forgotPassword:', error);
+    res.status(500).json({ success: false });
   }
 };
 
-// ==================== ADMIN - ELIMINAR USUARIO ====================
-export const deleteUsuario = async (req, res) => {
+/* ==================== RESET PASSWORD ==================== */
+export const resetPassword = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { token } = req.params;
+    const { password } = req.body;
 
-    const usuario = await User.findByPk(id);
+    const usuario = await User.scope('withPassword').findOne({
+      where: {
+        resetToken: token,
+        resetTokenExp: { [Op.gt]: Date.now() }, // <-- CORRECCIÓN CLAVE
+      },
+    });
+
     if (!usuario) {
-      return res.status(404).json({
-        message: 'Usuario no encontrado',
-      });
+      return res.status(400).json({ success: false, message: 'Token inválido o expirado' });
     }
 
-    // Soft delete
-    await usuario.destroy();
+    usuario.password = password; // se hashea en hooks
+    usuario.resetToken = null;
+    usuario.resetTokenExp = null;
+    await usuario.save();
 
-    return res.json({
-      message: 'Usuario eliminado correctamente',
-    });
+    res.json({ success: true, message: 'Contraseña actualizada correctamente' });
   } catch (error) {
-    console.error('❌ deleteUsuario:', error);
-    return res.status(500).json({
-      message: 'Error al eliminar usuario',
-    });
+    console.error('❌ resetPassword:', error);
+    res.status(500).json({ success: false, message: 'Error en el servidor' });
   }
 };

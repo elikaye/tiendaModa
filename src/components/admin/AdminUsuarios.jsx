@@ -2,178 +2,91 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { API_BASE_URL } from "../../config.jsx";
 
-const ROLES = ["cliente", "admin"];
-
 const AdminUsuarios = () => {
   const [usuarios, setUsuarios] = useState([]);
-  const [usuario, setUsuario] = useState({
-    nombre: "",
-    email: "",
-    password: "",
-    rol: "cliente",
-  });
-  const [editandoId, setEditandoId] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   const token = localStorage.getItem("token");
-  const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
+
+  const axiosConfig = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
 
   useEffect(() => {
     fetchUsuarios();
   }, []);
 
   const fetchUsuarios = async () => {
+    setLoading(true);
+    setError("");
+
     try {
-      const res = await axios.get(`${API_BASE_URL}/users`, config);
-      const data = Array.isArray(res.data) ? res.data : res.data.users || [];
+      const res = await axios.get(`${API_BASE_URL}/users`, axiosConfig);
+
+      const data =
+        Array.isArray(res.data)
+          ? res.data
+          : res.data.users
+          ? res.data.users
+          : res.data.data
+          ? res.data.data
+          : [];
+
       setUsuarios(data);
     } catch (err) {
-      console.error("Error al cargar usuarios:", err);
-      alert("No se pudieron cargar los usuarios.");
+      console.error("❌ Error al cargar usuarios:", err);
+      setError("No se pudieron cargar los usuarios.");
+    } finally {
+      setLoading(false);
     }
-  };
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setUsuario((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const resetForm = () => {
-    setUsuario({
-      nombre: "",
-      email: "",
-      password: "",
-      rol: "cliente",
-    });
-    setEditandoId(null);
-  };
-
-  const guardarUsuario = async () => {
-    if (!token) return alert("No estás autenticado.");
-    if (!usuario.nombre || !usuario.email) return alert("Nombre y email obligatorios.");
-
-    const payload = {
-      nombre: usuario.nombre,
-      email: usuario.email,
-      rol: usuario.rol,
-    };
-
-    // Solo enviar password si es nuevo o se modificó
-    if (usuario.password) payload.password = usuario.password;
-
-    try {
-      let res;
-      if (editandoId) {
-        res = await axios.put(`${API_BASE_URL}/users/${editandoId}`, payload, config);
-        setUsuarios((prev) =>
-          prev.map((u) => (u.id === editandoId ? res.data || { ...u, ...payload } : u))
-        );
-      } else {
-        res = await axios.post(`${API_BASE_URL}/users`, payload, config);
-        setUsuarios((prev) => [...prev, res.data]);
-      }
-      resetForm();
-    } catch (err) {
-      console.error("Error al guardar usuario:", err);
-      alert("Error al guardar usuario.");
-    }
-  };
-
-  const editarUsuario = (u) => {
-    setUsuario({
-      nombre: u.nombre,
-      email: u.email,
-      password: "", // nunca mostrar password real
-      rol: u.rol,
-    });
-    setEditandoId(u.id);
-    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const eliminarUsuario = async (id) => {
-    if (!token) return alert("No estás autenticado.");
-    if (!window.confirm("¿Seguro querés eliminar este usuario?")) return;
+    const confirmacion = window.confirm(
+      "¿Seguro que querés eliminar este usuario? Esta acción no se puede deshacer."
+    );
+    if (!confirmacion) return;
 
     try {
-      await axios.delete(`${API_BASE_URL}/users/${id}`, config);
+      await axios.delete(`${API_BASE_URL}/users/${id}`, axiosConfig);
       setUsuarios((prev) => prev.filter((u) => u.id !== id));
     } catch (err) {
-      console.error("Error al eliminar usuario:", err);
+      console.error("❌ Error al eliminar usuario:", err);
       alert("No se pudo eliminar el usuario.");
     }
   };
 
   return (
-    <div className="p-6 pt-32 max-w-6xl mx-auto">
-      <h2 className="text-2xl font-bold mb-6">AdminUsuarios</h2>
+    <div className="p-4 pt-20 md:p-6 md:pt-32 max-w-6xl mx-auto">
+      <h2 className="text-2xl font-body font-semibold mb-6">
+        Administrar usuarios
+      </h2>
 
-      {/* Formulario */}
-      <div className="mb-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-        <input
-          name="nombre"
-          value={usuario.nombre}
-          onChange={handleChange}
-          placeholder="Nombre"
-          className="border p-2 rounded w-full"
-        />
-        <input
-          name="email"
-          value={usuario.email}
-          onChange={handleChange}
-          placeholder="Email"
-          type="email"
-          className="border p-2 rounded w-full"
-        />
-        <input
-          name="password"
-          value={usuario.password}
-          onChange={handleChange}
-          placeholder={editandoId ? "Nueva contraseña (opcional)" : "Contraseña"}
-          type="password"
-          className="border p-2 rounded w-full"
-        />
-        <select
-          name="rol"
-          value={usuario.rol}
-          onChange={handleChange}
-          className="border p-2 rounded w-full"
-        >
-          {ROLES.map((r) => (
-            <option key={r} value={r}>
-              {r}
-            </option>
-          ))}
-        </select>
-      </div>
+      {loading && <p>Cargando usuarios…</p>}
+      {error && <p className="text-red-600 font-body">{error}</p>}
 
-      <button
-        onClick={guardarUsuario}
-        className={`py-2 px-6 rounded mb-8 text-white ${
-          editandoId ? "bg-violet-600 hover:bg-violet-700" : "bg-pink-600 hover:bg-pink-700"
-        }`}
-      >
-        {editandoId ? "Guardar Cambios" : "Crear Usuario"}
-      </button>
+      {!loading && usuarios.length === 0 && (
+        <p>No hay usuarios registrados.</p>
+      )}
 
-      {/* Listado */}
-      <ul className="space-y-6">
+      <ul className="space-y-4">
         {usuarios.map((u) => (
-          <li key={u.id} className="flex items-center gap-6 border rounded p-4 shadow-sm">
-            <div className="flex-grow">
-              <h3 className="font-semibold text-lg">{u.nombre}</h3>
-              <p>Email: {u.email}</p>
-              <p>Rol: {u.rol}</p>
-              <p>Creado: {new Date(u.createdAt).toLocaleString()}</p>
-              <p>Actualizado: {new Date(u.updatedAt).toLocaleString()}</p>
+          <li
+            key={u.id}
+            className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 border rounded font-body p-4"
+          >
+            <div className="text-sm sm:text-base">
+              <p className="font-semibold">{u.nombre}</p>
+              <p>{u.email}</p>
+              <p className="text-sm text-gray-600">Rol: {u.rol}</p>
             </div>
-            <button
-              onClick={() => editarUsuario(u)}
-              className="bg-violet-600 text-white px-4 py-2 rounded hover:bg-violet-700 transition mr-2"
-            >
-              Editar
-            </button>
+
             <button
               onClick={() => eliminarUsuario(u.id)}
-              className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition"
+              className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded font-body w-full sm:w-auto"
             >
               Eliminar
             </button>

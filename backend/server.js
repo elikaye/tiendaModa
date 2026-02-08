@@ -9,6 +9,7 @@ import productRoutes from './routes/productRoutes.js';
 import cartRoutes from './routes/cartRoutes.js';
 import orderRoutes from './routes/orderRoutes.js';
 import favoritoRoutes from './routes/favoritoRoutes.js';
+import frontendSettingsRoutes from './routes/frontendSettingsRoutes.js'; // ✅ NUEVO
 
 dotenv.config();
 const app = express();
@@ -16,7 +17,7 @@ const app = express();
 // 🌐 PERMITIMOS LOCAL Y PRODUCCIÓN (Vercel, etc.)
 const allowedOrigins = [
   'http://localhost:5173',
-  // 'https://tu-dominio.vercel.app',  ← agregá esto cuando tengas el dominio
+  // 'https://tu-dominio.vercel.app',
 ];
 
 // ✅ Configuración segura de CORS
@@ -46,6 +47,7 @@ app.use('/api/v1/products', productRoutes);
 app.use('/api/v1/carrito', cartRoutes);
 app.use('/api/v1/ordenes', orderRoutes);
 app.use('/api/v1/favoritos', favoritoRoutes);
+app.use('/api/v1/frontend-settings', frontendSettingsRoutes); // ✅ NUEVO
 
 // 🧠 Test del servidor
 app.get('/', (req, res) => res.send('✅ API funcionando 🚀'));
@@ -80,7 +82,9 @@ const PORT = process.env.PORT || 5000;
 try {
   await sequelize.authenticate();
   console.log('✅ Conectado a MySQL con Sequelize');
-  app.listen(PORT, () => console.log(`🚀 Servidor corriendo en puerto ${PORT}`));
+  app.listen(PORT, () =>
+    console.log(`🚀 Servidor corriendo en puerto ${PORT}`)
+  );
 } catch (err) {
   console.error('❌ Error al conectar con Sequelize:', err.message);
   process.exit(1);

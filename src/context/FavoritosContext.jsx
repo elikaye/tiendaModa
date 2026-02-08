@@ -1,11 +1,46 @@
 // src/context/FavoritosContext.jsx
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { useAuth } from "./AuthContext";
 import { toast } from "react-toastify";
 
 const FavoritosContext = createContext();
 export const useFavoritos = () => useContext(FavoritosContext);
+
+// 🔥 Toasters acelerados (900ms) + anti-duplicados
+const fastToast = {
+  added: (msg = "Agregado a favoritos ❤️") => {
+    if (toast.isActive("fav-add")) return;
+    toast.success(msg, {
+      toastId: "fav-add",
+      autoClose: 900,
+      hideProgressBar: true,
+      pauseOnHover: false,
+      closeOnClick: true,
+      draggable: false,
+    });
+  },
+  removed: (msg = "Eliminado de favoritos 💔") => {
+    if (toast.isActive("fav-remove")) return;
+    toast.info(msg, {
+      toastId: "fav-remove",
+      autoClose: 900,
+      hideProgressBar: true,
+      pauseOnHover: false,
+      closeOnClick: true,
+      draggable: false,
+    });
+  },
+  login: () => {
+    if (toast.isActive("login-required")) return;
+    toast.info("Iniciá sesión para guardar favoritos ❤️", {
+      toastId: "login-required",
+      autoClose: 1000,
+      hideProgressBar: true,
+      pauseOnHover: false,
+    });
+  },
+};
 
 export const FavoritosProvider = ({ children }) => {
   const { token } = useAuth();
@@ -31,7 +66,6 @@ export const FavoritosProvider = ({ children }) => {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        // Productos del backend ya vienen como objetos
         const productos = Array.isArray(res.data.productos)
           ? res.data.productos
           : [];
@@ -45,37 +79,36 @@ export const FavoritosProvider = ({ children }) => {
     fetchFavs();
   }, [token]);
 
-  // ❤️ Agregar favorito
+  // ❤️ Agregar favorito (OPTIMIZADA)
   const agregarFavorito = async (producto) => {
-    if (!token)
-      return toast.info("Iniciá sesión para guardar favoritos ❤️");
+    if (!token) return fastToast.login();
 
     try {
       const res = await axiosAuth.post(
         "/api/v1/favoritos",
-        { producto }, // 🔥 ESTO ES LO CORRECTO PARA TU BACKEND
+        { producto },
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
       setFavoritos(res.data.productos);
-      toast.success("Agregado a favoritos ❤️");
+      fastToast.added();
     } catch (err) {
       console.error("❌ Error al agregar:", err);
     }
   };
 
-  // 💔 Eliminar favorito
+  // 💔 Eliminar favorito (OPTIMIZADA)
   const eliminarFavorito = async (productoId) => {
     if (!token) return;
 
     try {
       const res = await axiosAuth.delete("/api/v1/favoritos", {
         headers: { Authorization: `Bearer ${token}` },
-        data: { productoId }, // 🔥 EL BACKEND ESPERA ESTO
+        data: { productoId },
       });
 
       setFavoritos(res.data.productos);
-      toast.success("Eliminado de favoritos 💔");
+      fastToast.removed();
     } catch (err) {
       console.error("❌ Error al eliminar:", err);
     }
@@ -91,7 +124,7 @@ export const FavoritosProvider = ({ children }) => {
       });
 
       setFavoritos([]);
-      toast.success("Favoritos vaciados 🗑");
+      fastToast.removed("Favoritos vaciados 🗑");
     } catch (err) {
       console.error("❌ Error al vaciar:", err);
     }

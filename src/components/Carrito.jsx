@@ -1,40 +1,88 @@
-
-// src/pages/Carrito.jsx
 import React, { useEffect } from "react";
 import { useCart } from "../context/CartContext";
+import { useAuth } from "../context/AuthContext";
 import { FaTrashAlt } from "react-icons/fa";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import placeholderImg from "../assets/carrito-de-compras.png";
 
+const numeroTienda = "+5491164283906";
+
 const Carrito = () => {
+  const { user } = useAuth();
   const {
     carrito,
     vaciarCarrito,
     eliminarDelCarrito,
-    actualizarCantidad,
+    agregarAlCarrito,
     total,
-    confirmarCompra,
     loading,
-    syncing
+    syncingIds,
   } = useCart();
-  const navigate = useNavigate();
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
 
-  const handleConfirm = async () => {
-    try {
-      const orden = await confirmarCompra();
-      navigate(`/ordenes/${orden.id}`);
-    } catch (err) {
-      alert("No se pudo procesar la compra. Intentá de nuevo.");
-    }
+  // 🔒 SIN SESIÓN
+  if (!user) {
+    return (
+      <div className="min-h-screen pt-12 md:pt-24 pb-20 px-4 text-center bg-gradient-to-br from-pink-100 via-white to-pink-200">
+        <h1 className="text-3xl font-body font-semibold mb-6">Tu carrito</h1>
+
+        <p className="text-gray-600 mb-6">
+          Para agregar productos y finalizar una compra necesitás iniciar sesión.
+        </p>
+
+        <Link
+          to="/auth"
+          className="inline-block bg-pink-500 text-white px-4 py-2 rounded-full hover:bg-black transition"
+        >
+          Iniciar sesión / Registrarse
+        </Link>
+      </div>
+    );
+  }
+
+  // 🔹 MENSAJE DE WHATSAPP CON LINK
+  const generarLinkWhatsApp = () => {
+    const productosTexto = carrito
+      .map((p) => {
+        const precioUnitario = Number(p.precio || 0).toLocaleString("es-AR");
+        const subtotal = Number(p.precio || 0) * p.cantidad;
+        const subtotalFormateado = subtotal.toLocaleString("es-AR");
+
+        const imageLink =
+          p.imageUrl || p.image || p.imagen
+            ? `Ver imagen: ${p.imageUrl || p.image || p.imagen}`
+            : "Imagen no disponible";
+
+        return `• ${p.nombre}
+${imageLink}
+Precio unitario: $${precioUnitario}
+Cantidad: ${p.cantidad}
+Subtotal: $${subtotalFormateado}`;
+      })
+      .join("\n\n");
+
+    const totalFormateado = total.toLocaleString("es-AR");
+
+    const mensaje = `Hola 😊  
+Quiero consultar por la compra de los siguientes productos:
+
+${productosTexto}
+
+Total estimado: $${totalFormateado}
+
+Quedo a la espera para confirmar stock, modelos y disponibilidad.`;
+
+    return `https://wa.me/${numeroTienda}?text=${encodeURIComponent(mensaje)}`;
   };
 
   return (
-    <div className="min-h-screen pt-32 pb-20 px-4 bg-gradient-to-br from-pink-100 via-white to-pink-200">
-      <h1 className="text-3xl font-bold text-center text-black mb-8">Tu Carrito</h1>
+    <div className="min-h-screen pt-12 md:pt-24 pb-20 px-4 bg-gradient-to-br from-pink-100 via-white to-pink-200">
+      <h1 className="text-3xl font-body font-semibold text-center mb-8">
+        Tu Carrito
+      </h1>
 
       {loading ? (
         <div className="text-center">Cargando carrito...</div>
@@ -43,55 +91,81 @@ const Carrito = () => {
           <p>No hay productos en el carrito.</p>
           <Link
             to="/"
-            className="mt-4 inline-block bg-pink-500 text-white px-6 py-2 rounded-full hover:bg-black transition duration-300"
+            className="mt-4 inline-block bg-pink-500 text-white px-4 py-2 rounded-full hover:bg-black transition"
           >
             Seguir comprando
           </Link>
         </div>
       ) : (
-        <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-lg p-6 space-y-4">
+        <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-lg p-4 md:p-6 space-y-4">
           {carrito.map((producto) => {
-            const { id, nombre, precio, cantidad, imageUrl, image } = producto;
-            const cantidadNum = Number(cantidad || 1);
+            const { id, nombre, precio, cantidad } = producto;
             const precioNum = Number(precio || 0);
-            const subtotal = cantidadNum * precioNum;
+            const subtotal = precioNum * cantidad;
+
+            const imgSrc =
+              producto.imageUrl || producto.image || producto.imagen || placeholderImg;
+
+            const syncing = syncingIds.includes(id);
 
             return (
-              <div key={id} className="flex items-center justify-between border-b pb-4">
-                <div className="flex items-center gap-4">
+              <div
+                key={id}
+                className="flex flex-col md:flex-row items-center md:justify-between border-b pb-4 gap-4"
+              >
+                <div className="flex items-center gap-4 w-full md:w-auto">
                   <img
-                    src={imageUrl || image || placeholderImg}
+                    src={imgSrc}
                     alt={nombre}
                     className="w-20 h-20 object-contain rounded"
-                    onError={(e) => { e.currentTarget.src = placeholderImg; }}
+                    onError={(e) => {
+                      e.currentTarget.src = placeholderImg;
+                    }}
                   />
-                  <div>
-                    <h2 className="font-semibold text-lg">{nombre}</h2>
+
+                  <div className="flex-1">
+                    <h2 className="font-semibold">{nombre}</h2>
+
                     <p className="text-sm text-gray-500">
-                      Precio unitario: {new Intl.NumberFormat("es-AR").format(precioNum)} $
+                      Precio unitario:{" "}
+                      <span className="text-pink-600 font-semibold">
+                        ${precioNum.toLocaleString("es-AR")}
+                      </span>
                     </p>
-                    <p className="text-pink-600 font-bold">
-                      Subtotal: {new Intl.NumberFormat("es-AR").format(subtotal)} $
+
+                    <p className="text-pink-600 font-semibold">
+                      Subtotal: ${subtotal.toLocaleString("es-AR")}
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3">
-                  <input
-                    type="number"
-                    min="1"
-                    value={cantidadNum}
-                    onChange={(e) => {
-                      const val = Math.max(1, Number(e.target.value || 1));
-                      actualizarCantidad(id, val);
-                    }}
-                    className="w-16 p-1 border rounded"
-                    title="Cantidad"
-                  />
+                <div className="flex items-center gap-2 mt-2 md:mt-0">
+                  <button
+                    onClick={() =>
+                      cantidad === 1
+                        ? eliminarDelCarrito(id)
+                        : agregarAlCarrito(producto, -1)
+                    }
+                    disabled={syncing}
+                    className="px-3 py-1 border rounded disabled:opacity-50"
+                  >
+                    −
+                  </button>
+
+                  <span className="w-8 text-center font-semibold">{cantidad}</span>
+
+                  <button
+                    onClick={() => agregarAlCarrito(producto, 1)}
+                    disabled={syncing}
+                    className="px-3 py-1 border rounded disabled:opacity-50"
+                  >
+                    +
+                  </button>
+
                   <button
                     onClick={() => eliminarDelCarrito(id)}
-                    className="text-pink-500 hover:text-black transition"
-                    title="Eliminar producto"
+                    disabled={syncing}
+                    className="text-pink-500 hover:text-black transition text-lg"
                   >
                     <FaTrashAlt />
                   </button>
@@ -100,31 +174,40 @@ const Carrito = () => {
             );
           })}
 
-          <div className="text-right font-semibold text-xl text-black">
-            Total: {new Intl.NumberFormat("es-AR").format(total)} $
+          <div className="text-right text-xl font-semibold text-pink-600">
+            Total: ${total.toLocaleString("es-AR")}
           </div>
 
-          <div className="flex justify-between mt-6">
+          <p className="text-sm text-gray-500 mt-2">
+            La confirmación final de stock y modelos se realiza por WhatsApp.
+          </p>
+
+          <div className="mt-4 flex justify-center">
+            <a
+              href={generarLinkWhatsApp()}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-pink-500 text-white text-base font-semibold px-4 py-2 rounded-full shadow hover:bg-black transition w-full max-w-xs text-center"
+            >
+              🛒 Finalizar compra por WhatsApp
+            </a>
+          </div>
+
+          <div className="flex flex-col sm:flex-row justify-between mt-4 gap-2">
             <button
               onClick={vaciarCarrito}
-              className="bg-black text-white px-5 py-2 rounded-full hover:bg-pink-500 transition duration-300"
-              disabled={syncing}
+              disabled={syncingIds.length > 0}
+              className="bg-black text-white px-4 py-2 rounded-full hover:bg-pink-500 transition"
             >
-              Vaciar Carrito
+              Vaciar carrito
             </button>
 
-            <div className="flex gap-3">
-              <button
-                onClick={handleConfirm}
-                className="bg-pink-600 text-white px-5 py-2 rounded-full hover:bg-black transition duration-300"
-                disabled={syncing}
-              >
-                {syncing ? "Procesando..." : "Confirmar Compra"}
-              </button>
-              <Link to="/" className="px-4 py-2 rounded-full border">
-                Seguir comprando
-              </Link>
-            </div>
+            <Link
+              to="/"
+              className="bg-pink-500 text-white px-4 py-2 rounded-full hover:bg-black transition text-center"
+            >
+              Seguir comprando
+            </Link>
           </div>
         </div>
       )}

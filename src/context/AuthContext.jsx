@@ -1,9 +1,5 @@
-
 // src/context/AuthContext.jsx
 import { createContext, useContext, useState, useEffect } from "react";
-import axios from "axios";
-
-axios.defaults.withCredentials = true; // 🔒 asegura envío de cookies o tokens
 
 const AuthContext = createContext();
 
@@ -12,7 +8,6 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(null);
 
   useEffect(() => {
-    // 🔍 Recuperar datos guardados y validar que sean válidos
     const storedUser = localStorage.getItem("user");
     const storedToken = localStorage.getItem("token");
 
@@ -27,30 +22,24 @@ export const AuthProvider = ({ children }) => {
         setUser(parsedUser);
         setToken(validToken);
       } else {
-        // 🧹 Limpieza si los datos son inválidos
-        setUser(null);
-        setToken(null);
-        localStorage.removeItem("user");
-        localStorage.removeItem("token");
+        logout(); // limpia todo si es inválido
       }
     } catch (err) {
-      console.error("❌ Error al leer localStorage:", err);
-      localStorage.removeItem("user");
-      localStorage.removeItem("token");
-      setUser(null);
-      setToken(null);
+      console.error("Error leyendo localStorage:", err);
+      logout();
     }
   }, []);
 
-  // ✅ Guarda user y token en localStorage
-  const login = (userData, token) => {
+  // LOGIN → guarda user + token
+  const login = (userData, receivedToken) => {
     setUser(userData);
-    setToken(token);
+    setToken(receivedToken);
+
     localStorage.setItem("user", JSON.stringify(userData));
-    localStorage.setItem("token", token);
+    localStorage.setItem("token", receivedToken);
   };
 
-  // 🚪 Limpia sesión completamente
+  // LOGOUT → limpia todo
   const logout = () => {
     setUser(null);
     setToken(null);
