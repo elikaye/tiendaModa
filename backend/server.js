@@ -17,7 +17,8 @@ const app = express();
 // 🌐 PERMITIMOS LOCAL Y PRODUCCIÓN (Vercel, etc.)
 const allowedOrigins = [
   'http://localhost:5173',
-   'https://tiendabarbie.vercel.app',
+  'https://tiendabarbie.vercel.app',
+  'https://www.tiendabarbie.vercel.app',
 ];
 
 // ✅ Configuración segura de CORS
