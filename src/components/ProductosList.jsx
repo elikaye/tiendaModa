@@ -1,10 +1,10 @@
 import React, { useEffect, useMemo, useState } from "react";
 import ProductoCard from "./ProductoCard";
-import { CLOUDINARY_BASE_URL } from "../config";
+import { CLOUDINARY_BASE_URL, API_BASE_URL } from "../config";
 import { useSearch } from "../context/SearchContext";
 
-const FILAS_MOBILE = 3;       // número de filas en mobile
-const COLUMNAS_MOBILE = 4;    // columnas visibles por fila en mobile
+const FILAS_MOBILE = 3;
+const COLUMNAS_MOBILE = 4;
 const MAX_PRODUCTOS = FILAS_MOBILE * COLUMNAS_MOBILE;
 
 const shuffle = (arr) => [...arr].sort(() => Math.random() - 0.5);
@@ -35,10 +35,7 @@ export default function ProductosList() {
 
   const fetchProductos = async () => {
     try {
-      const API_URL =
-        import.meta.env.VITE_API_URL || "http://localhost:5000";
-
-      const res = await fetch(`${API_URL}/api/v1/products?limit=1000`);
+      const res = await fetch(`${API_BASE_URL}/products?limit=1000`);
       if (!res.ok) throw new Error("Error cargando productos");
 
       const data = await res.json();
@@ -56,7 +53,6 @@ export default function ProductosList() {
 
       setProductos(adaptados);
 
-      // Mezclar productos y limitar a MAX_PRODUCTOS para mobile
       const shuffled = shuffle(adaptados).slice(0, MAX_PRODUCTOS);
       setProductosHome(shuffled);
     } catch (err) {
@@ -107,24 +103,20 @@ export default function ProductosList() {
         </p>
       ) : (
         <>
-          {/* MOBILE: scroll independiente por fila con scroll snap */}
+          {/* MOBILE */}
           <div className="sm:hidden space-y-4">
             {chunkArray(productosFiltrados, COLUMNAS_MOBILE).map(
               (filaProductos, index) => (
                 <div
                   key={index}
                   className="flex space-x-4 overflow-x-auto pb-2"
-                  style={{
-                    scrollSnapType: "x mandatory",
-                  }}
+                  style={{ scrollSnapType: "x mandatory" }}
                 >
                   {filaProductos.map((p) => (
                     <div
                       key={p.id}
                       className="flex-shrink-0 w-64"
-                      style={{
-                        scrollSnapAlign: "start",
-                      }}
+                      style={{ scrollSnapAlign: "start" }}
                     >
                       <ProductoCard producto={p} />
                     </div>
@@ -134,7 +126,7 @@ export default function ProductosList() {
             )}
           </div>
 
-          {/* DESKTOP: grid normal */}
+          {/* DESKTOP */}
           <div className="hidden sm:grid sm:grid-cols-3 lg:grid-cols-4 gap-6">
             {productosFiltrados.map((p) => (
               <ProductoCard key={p.id} producto={p} />
