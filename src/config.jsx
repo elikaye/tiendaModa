@@ -11,4 +11,3 @@ export const CLOUDINARY_BASE_URL = "https://res.cloudinary.com/dagwbvilx/image/u
 export const CLOUDINARY_CLOUD_NAME = "dagwbvilx";
 export const CLOUDINARY_UPLOAD_PRESET = "ecommerce_unsigned";
 
-
