@@ -35,6 +35,7 @@ export default function ProductosList() {
 
   const fetchProductos = async () => {
     try {
+      // 🔴 ACÁ ESTABA EL PROBLEMA
       const res = await fetch(`${API_BASE_URL}/products?limit=1000`);
       if (!res.ok) throw new Error("Error cargando productos");
 
@@ -69,9 +70,7 @@ export default function ProductosList() {
 
   const productosFiltrados = useMemo(() => {
     if (!query) return productosHome;
-
     const q = normalizar(query);
-
     return productos.filter(
       (p) =>
         normalizar(p.nombre).includes(q) ||
