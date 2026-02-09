@@ -96,7 +96,8 @@ const AdminProductos = () => {
     );
 
     if (!precioFloat || precioFloat <= 0) {
-      return alert("Precio inválido");
+      alert("Precio inválido");
+      return;
     }
 
     const payload = {
@@ -133,7 +134,6 @@ const AdminProductos = () => {
     fetchProductos(pagina, busqueda);
   };
 
-  // ✅ FIX precio al editar
   const editarProducto = (p) => {
     setProducto({
       ...p,
@@ -160,7 +160,7 @@ const AdminProductos = () => {
     <div className="p-6 max-w-6xl mx-auto">
       <h2 className="text-2xl font-semibold mb-4">Panel de productos</h2>
 
-      {/* FORM */}
+      {/* FORMULARIO */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <input name="nombre" value={producto.nombre} onChange={handleChange} placeholder="Nombre" className="border p-2 rounded" />
         <input name="descripcion" value={producto.descripcion} onChange={handleChange} placeholder="Descripción" className="border p-2 rounded" />
@@ -168,14 +168,7 @@ const AdminProductos = () => {
 
         <div className="flex flex-col gap-2">
           <input type="file" onChange={handleImagenChange} />
-
-          {producto.imageUrl && (
-            <img
-              src={producto.imageUrl}
-              alt="Preview"
-              className="h-24 object-contain border rounded p-1"
-            />
-          )}
+          {producto.imageUrl && <img src={producto.imageUrl} className="h-24 object-contain border rounded p-1" />}
         </div>
 
         <select name="categoria" value={producto.categoria} onChange={handleChange} className="border p-2 rounded">
@@ -192,27 +185,16 @@ const AdminProductos = () => {
           Destacado
         </label>
 
-        {categoriaSeleccionada?.tieneTalles && (
-          <input name="talles" value={producto.talles} onChange={handleChange} placeholder="Talles" className="border p-2 rounded" />
-        )}
-        {categoriaSeleccionada?.tieneColores && (
-          <input name="colores" value={producto.colores} onChange={handleChange} placeholder="Colores" className="border p-2 rounded" />
-        )}
-        {categoriaSeleccionada?.tieneMedidas && (
-          <input name="medidas" value={producto.medidas} onChange={handleChange} placeholder="Medidas" className="border p-2 rounded" />
-        )}
+        {categoriaSeleccionada?.tieneTalles && <input name="talles" value={producto.talles} onChange={handleChange} placeholder="Talles" className="border p-2 rounded" />}
+        {categoriaSeleccionada?.tieneColores && <input name="colores" value={producto.colores} onChange={handleChange} placeholder="Colores" className="border p-2 rounded" />}
+        {categoriaSeleccionada?.tieneMedidas && <input name="medidas" value={producto.medidas} onChange={handleChange} placeholder="Medidas" className="border p-2 rounded" />}
       </div>
 
       <button onClick={guardarProducto} className="bg-pink-600 text-white px-6 py-2 rounded mb-8">
         {editandoId ? "Guardar cambios" : "Crear producto"}
       </button>
 
-      <input
-        value={busqueda}
-        onChange={(e) => setBusqueda(e.target.value)}
-        placeholder="Buscar producto..."
-        className="border p-2 rounded w-full mb-6"
-      />
+      <input value={busqueda} onChange={(e) => setBusqueda(e.target.value)} placeholder="Buscar producto..." className="border p-2 rounded w-full mb-6" />
 
       <div className="flex gap-4 overflow-x-auto">
         {productos.map((p) => (
@@ -220,9 +202,7 @@ const AdminProductos = () => {
             <img src={p.imageUrl} className="h-28 object-contain mx-auto mb-2" />
             <h3 className="font-semibold">{p.nombre}</h3>
             <p className="text-xs">{p.descripcion}</p>
-            <p className="font-bold text-pink-600">
-              ${Number(p.precio).toLocaleString("es-AR")}
-            </p>
+            <p className="font-bold text-pink-600">${Number(p.precio).toLocaleString("es-AR")}</p>
             <div className="flex gap-2 mt-2">
               <button onClick={() => editarProducto(p)} className="bg-pink-500 text-white px-3 py-1 rounded">Editar</button>
               <button onClick={() => eliminarProducto(p.id)} className="bg-red-600 text-white px-3 py-1 rounded">Eliminar</button>
@@ -235,11 +215,7 @@ const AdminProductos = () => {
         <div className="flex justify-center gap-2 mt-6">
           <button disabled={pagina === 1} onClick={() => fetchProductos(pagina - 1, busqueda)}>Anterior</button>
           {Array.from({ length: totalPaginas }, (_, i) => (
-            <button
-              key={i}
-              onClick={() => fetchProductos(i + 1, busqueda)}
-              className={pagina === i + 1 ? "font-bold underline" : ""}
-            >
+            <button key={i} onClick={() => fetchProductos(i + 1, busqueda)} className={pagina === i + 1 ? "font-bold underline" : ""}>
               {i + 1}
             </button>
           ))}
