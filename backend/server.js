@@ -17,7 +17,7 @@ const app = express();
 // 🌐 PERMITIMOS LOCAL Y PRODUCCIÓN (Vercel, etc.)
 const allowedOrigins = [
   'http://localhost:5173',
-  'https://tiendabarby-igaif2836-eliana-kaye.vercel.app',
+   'https://tiendabarbie.vercel.app',
 ];
 
 // ✅ Configuración segura de CORS
