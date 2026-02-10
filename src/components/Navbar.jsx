@@ -3,10 +3,6 @@ import { Link, NavLink, useNavigate } from "react-router-dom";
 import { FaBars, FaTimes, FaUserCircle, FaShoppingCart } from "react-icons/fa";
 import { LayoutDashboard, Heart, Search } from "lucide-react";
 
-import whatsapp from "../assets/whatsapp-black.png";
-import facebook from "../assets/facebook-black.png";
-import instagram from "../assets/instagram-black.png";
-
 import { useCart } from "../context/CartContext";
 import { useSearch } from "../context/SearchContext";
 import { useFavoritos } from "../context/FavoritosContext";
@@ -47,9 +43,12 @@ function Navbar() {
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
-    setQuery(localQuery.trim());
-    setShowSearch(false);
+    const trimmedQuery = localQuery.trim();
+    if (!trimmedQuery) return;
+    setQuery(trimmedQuery);
     navigate("/search");
+    setShowSearch(false);
+    setMenuOpen(false); // Cierra menú mobile al buscar
   };
 
   return (
@@ -86,10 +85,19 @@ function Navbar() {
           </button>
 
           {/* BUSCADOR */}
-          <form onSubmit={handleSearchSubmit} className="relative">
+          <form
+            onSubmit={handleSearchSubmit}
+            className="relative"
+          >
             <Search
               size={22}
-              onClick={() => setShowSearch(!showSearch)}
+              onClick={() => {
+                if (localQuery.trim()) {
+                  handleSearchSubmit(new Event("submit", { bubbles: true }));
+                } else {
+                  setShowSearch(!showSearch);
+                }
+              }}
               className="cursor-pointer text-black hover:text-pink-500"
             />
             {showSearch && (
@@ -97,8 +105,11 @@ function Navbar() {
                 type="text"
                 placeholder="Buscar..."
                 value={localQuery}
-                onChange={(e) => setLocalQuery(e.target.value)}
-                className="absolute top-full mt-2 left-0 w-44 px-3 py-1 rounded text-sm shadow-md focus:outline-none z-50"
+                onChange={(e) => {
+                  setLocalQuery(e.target.value);
+                  setQuery(e.target.value); // 🔹 sincroniza con SearchContext
+                }}
+                className="absolute top-full mt-2 left-0 w-40 sm:w-44 px-3 py-1 rounded text-sm shadow-md focus:outline-none z-50"
                 autoFocus
               />
             )}

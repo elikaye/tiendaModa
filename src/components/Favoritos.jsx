@@ -1,7 +1,6 @@
-
 // src/components/Favoritos.jsx
 import React, { useEffect } from "react";
-import { useFavoritos } from "../context/FavoritosContext";
+import { useCart } from "../context/CartContext";
 import ProductoCard from "./ProductoCard";
 
 const COLUMNAS_MOBILE = 4;
@@ -15,15 +14,14 @@ const chunkArray = (arr, chunkSize) => {
 };
 
 const Favoritos = () => {
-  const { favoritos, loading } = useFavoritos();
+  const { favoritos, loading } = useCart();
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
 
   if (loading) return <p className="p-4">Cargando favoritos...</p>;
-  if (!favoritos.length)
-    return <p className="p-4">No tenés productos favoritos aún.</p>;
+  if (!favoritos.length) return <p className="p-4">No tenés productos favoritos aún.</p>;
 
   return (
     <div className="p-4">

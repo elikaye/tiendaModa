@@ -42,13 +42,17 @@ const AdminProductos = () => {
   const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
 
   const fetchProductos = async (page = 1, search = "") => {
-    const res = await axios.get(
-      `${API_BASE_URL}/products?page=${page}&limit=${productosPorPagina}&search=${search}`,
-      config
-    );
-    setProductos(res.data.products);
-    setPagina(res.data.currentPage);
-    setTotalPaginas(res.data.totalPages);
+    try {
+      const res = await axios.get(
+        `${API_BASE_URL}/products?page=${page}&limit=${productosPorPagina}&search=${search}`,
+        config
+      );
+      setProductos(res.data.products);
+      setPagina(res.data.currentPage);
+      setTotalPaginas(res.data.totalPages);
+    } catch (err) {
+      console.error("Error fetching productos:", err.response?.data || err.message);
+    }
   };
 
   useEffect(() => {
@@ -68,33 +72,49 @@ const AdminProductos = () => {
     }));
   };
 
+  // --- SUBIDA DE IMAGEN ---
   const handleImagenChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
+    if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_UPLOAD_PRESET) {
+      alert("Las variables de Cloudinary no están configuradas correctamente.");
+      return;
+    }
+
     setSubiendoImagen(true);
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
 
-    const res = await axios.post(
-      `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
-      formData
-    );
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
 
-    setProducto((prev) => ({
-      ...prev,
-      imageUrl: res.data.secure_url,
-      imagePublicId: res.data.public_id,
-    }));
-    setSubiendoImagen(false);
+      const res = await axios.post(
+        `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
+        formData
+      );
+
+      if (res.data?.secure_url && res.data?.public_id) {
+        setProducto((prev) => ({
+          ...prev,
+          imageUrl: res.data.secure_url,
+          imagePublicId: res.data.public_id,
+        }));
+      } else {
+        console.error("Respuesta Cloudinary incompleta:", res.data);
+        alert("Error: Cloudinary no devolvió la URL de la imagen.");
+      }
+    } catch (err) {
+      console.error("Error subiendo a Cloudinary:", err.response?.data || err.message);
+      alert("Error subiendo imagen a Cloudinary. Revisá la consola para más info.");
+    } finally {
+      setSubiendoImagen(false);
+    }
   };
 
+  // --- GUARDAR PRODUCTO ---
   const guardarProducto = async () => {
-    const precioFloat = Number(
-      producto.precio.replace(/\./g, "").replace(",", ".")
-    );
-
+    const precioFloat = Number(producto.precio.replace(/\./g, "").replace(",", "."));
     if (!precioFloat || precioFloat <= 0) {
       alert("Precio inválido");
       return;
@@ -109,29 +129,33 @@ const AdminProductos = () => {
       medidas: producto.medidas || null,
     };
 
-    if (editandoId) {
-      await axios.put(`${API_BASE_URL}/products/${editandoId}`, payload, config);
-    } else {
-      await axios.post(`${API_BASE_URL}/products`, payload, config);
+    try {
+      if (editandoId) {
+        await axios.put(`${API_BASE_URL}/products/${editandoId}`, payload, config);
+      } else {
+        await axios.post(`${API_BASE_URL}/products`, payload, config);
+      }
+
+      setProducto({
+        nombre: "",
+        descripcion: "",
+        precio: "",
+        imageUrl: "",
+        imagePublicId: "",
+        estado: "activo",
+        categoria: "",
+        subcategoria: "",
+        destacados: false,
+        talles: "",
+        colores: "",
+        medidas: "",
+      });
+      setEditandoId(null);
+      fetchProductos(pagina, busqueda);
+    } catch (err) {
+      console.error("Error guardando producto:", err.response?.data || err.message);
+      alert("Error guardando producto. Revisá la consola para más info.");
     }
-
-    setProducto({
-      nombre: "",
-      descripcion: "",
-      precio: "",
-      imageUrl: "",
-      imagePublicId: "",
-      estado: "activo",
-      categoria: "",
-      subcategoria: "",
-      destacados: false,
-      talles: "",
-      colores: "",
-      medidas: "",
-    });
-
-    setEditandoId(null);
-    fetchProductos(pagina, busqueda);
   };
 
   const editarProducto = (p) => {
@@ -148,19 +172,21 @@ const AdminProductos = () => {
   };
 
   const eliminarProducto = async (id) => {
-    await axios.delete(`${API_BASE_URL}/products/${id}`, config);
-    fetchProductos(pagina, busqueda);
+    try {
+      await axios.delete(`${API_BASE_URL}/products/${id}`, config);
+      fetchProductos(pagina, busqueda);
+    } catch (err) {
+      console.error("Error eliminando producto:", err.response?.data || err.message);
+      alert("Error eliminando producto. Revisá la consola para más info.");
+    }
   };
 
-  const categoriaSeleccionada = CATEGORIAS.find(
-    (c) => c.name === producto.categoria
-  );
+  const categoriaSeleccionada = CATEGORIAS.find(c => c.name === producto.categoria);
 
   return (
     <div className="p-6 max-w-6xl mx-auto">
       <h2 className="text-2xl font-semibold mb-4">Panel de productos</h2>
 
-      {/* FORMULARIO */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <input name="nombre" value={producto.nombre} onChange={handleChange} placeholder="Nombre" className="border p-2 rounded" />
         <input name="descripcion" value={producto.descripcion} onChange={handleChange} placeholder="Descripción" className="border p-2 rounded" />
@@ -168,18 +194,16 @@ const AdminProductos = () => {
 
         <div className="flex flex-col gap-2">
           <input type="file" onChange={handleImagenChange} />
+          {subiendoImagen && <p className="text-xs text-gray-500">Subiendo imagen...</p>}
           {producto.imageUrl && <img src={producto.imageUrl} className="h-24 object-contain border rounded p-1" />}
         </div>
 
         <select name="categoria" value={producto.categoria} onChange={handleChange} className="border p-2 rounded">
           <option value="">Categoría</option>
-          {CATEGORIAS.map((c) => (
-            <option key={c.name} value={c.name}>{c.name}</option>
-          ))}
+          {CATEGORIAS.map(c => <option key={c.name} value={c.name}>{c.name}</option>)}
         </select>
 
         <input name="subcategoria" value={producto.subcategoria} onChange={handleChange} placeholder="Subcategoría" className="border p-2 rounded" />
-
         <label className="flex items-center gap-2">
           <input type="checkbox" name="destacados" checked={producto.destacados} onChange={handleChange} />
           Destacado
@@ -194,10 +218,10 @@ const AdminProductos = () => {
         {editandoId ? "Guardar cambios" : "Crear producto"}
       </button>
 
-      <input value={busqueda} onChange={(e) => setBusqueda(e.target.value)} placeholder="Buscar producto..." className="border p-2 rounded w-full mb-6" />
+      <input value={busqueda} onChange={e => setBusqueda(e.target.value)} placeholder="Buscar producto..." className="border p-2 rounded w-full mb-6" />
 
       <div className="flex gap-4 overflow-x-auto">
-        {productos.map((p) => (
+        {productos.map(p => (
           <div key={p.id} className="min-w-[240px] border rounded p-3 text-sm">
             <img src={p.imageUrl} className="h-28 object-contain mx-auto mb-2" />
             <h3 className="font-semibold">{p.nombre}</h3>
@@ -215,9 +239,7 @@ const AdminProductos = () => {
         <div className="flex justify-center gap-2 mt-6">
           <button disabled={pagina === 1} onClick={() => fetchProductos(pagina - 1, busqueda)}>Anterior</button>
           {Array.from({ length: totalPaginas }, (_, i) => (
-            <button key={i} onClick={() => fetchProductos(i + 1, busqueda)} className={pagina === i + 1 ? "font-bold underline" : ""}>
-              {i + 1}
-            </button>
+            <button key={i} onClick={() => fetchProductos(i + 1, busqueda)} className={pagina === i + 1 ? "font-bold underline" : ""}>{i + 1}</button>
           ))}
           <button disabled={pagina === totalPaginas} onClick={() => fetchProductos(pagina + 1, busqueda)}>Siguiente</button>
         </div>

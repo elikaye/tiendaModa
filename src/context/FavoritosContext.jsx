@@ -1,5 +1,5 @@
 // src/context/FavoritosContext.jsx
-import React, { createContext, useContext, useState, useEffect, useRef } from "react";
+import React, { createContext, useContext, useState, useEffect } from "react";
 import axios from "axios";
 import { useAuth } from "./AuthContext";
 import { toast } from "react-toastify";
@@ -7,7 +7,7 @@ import { toast } from "react-toastify";
 const FavoritosContext = createContext();
 export const useFavoritos = () => useContext(FavoritosContext);
 
-// 🔥 Toasters acelerados (900ms) + anti-duplicados
+// 🔥 Toasters rápidos + anti-duplicados
 const fastToast = {
   added: (msg = "Agregado a favoritos ❤️") => {
     if (toast.isActive("fav-add")) return;
@@ -79,9 +79,10 @@ export const FavoritosProvider = ({ children }) => {
     fetchFavs();
   }, [token]);
 
-  // ❤️ Agregar favorito (OPTIMIZADA)
+  // ❤️ Agregar favorito
   const agregarFavorito = async (producto) => {
     if (!token) return fastToast.login();
+    if (favoritos.find((p) => p.id === producto.id)) return;
 
     try {
       const res = await axiosAuth.post(
@@ -93,11 +94,11 @@ export const FavoritosProvider = ({ children }) => {
       setFavoritos(res.data.productos);
       fastToast.added();
     } catch (err) {
-      console.error("❌ Error al agregar:", err);
+      console.error("❌ Error al agregar favorito:", err);
     }
   };
 
-  // 💔 Eliminar favorito (OPTIMIZADA)
+  // 💔 Eliminar favorito
   const eliminarFavorito = async (productoId) => {
     if (!token) return;
 
@@ -110,7 +111,7 @@ export const FavoritosProvider = ({ children }) => {
       setFavoritos(res.data.productos);
       fastToast.removed();
     } catch (err) {
-      console.error("❌ Error al eliminar:", err);
+      console.error("❌ Error al eliminar favorito:", err);
     }
   };
 
@@ -126,7 +127,7 @@ export const FavoritosProvider = ({ children }) => {
       setFavoritos([]);
       fastToast.removed("Favoritos vaciados 🗑");
     } catch (err) {
-      console.error("❌ Error al vaciar:", err);
+      console.error("❌ Error al vaciar favoritos:", err);
     }
   };
 
