@@ -29,26 +29,20 @@ function Navbar() {
     ["Artículos de temporada", "/articulos-de-temporada"],
   ];
 
-  const handleNavigate = (to) => {
-    navigate(to);
-    setMenuOpen(false);
-    setShowSearch(false);
-  };
-
   const handleLogout = () => {
     logout();
-    navigate("/");
     setMenuOpen(false);
+    navigate("/");
   };
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
-    const trimmedQuery = localQuery.trim();
-    if (!trimmedQuery) return;
-    setQuery(trimmedQuery);
-    navigate("/search");
+    if (!localQuery.trim()) return;
+
+    setQuery(localQuery.trim());
     setShowSearch(false);
-    setMenuOpen(false); // Cierra menú mobile al buscar
+    setMenuOpen(false);
+    navigate("/search");
   };
 
   return (
@@ -63,8 +57,8 @@ function Navbar() {
               className={({ isActive }) =>
                 `flex items-center gap-2 transition ${
                   isActive
-                    ? "text-pink-500 drop-shadow-[0_0_10px_#ec4899]"
-                    : "text-black hover:text-pink-500 hover:drop-shadow-[0_0_10px_#ec4899]"
+                    ? "text-pink-500"
+                    : "text-black hover:text-pink-500"
                 }`
               }
             >
@@ -76,28 +70,22 @@ function Navbar() {
 
         {/* ICONOS */}
         <div className="flex items-center gap-4 relative md:justify-end w-full md:w-auto">
-          {/* HAMBURGUESA MOBILE */}
+          {/* HAMBURGUESA */}
           <button
             className="md:hidden text-xl text-black mr-auto"
-            onClick={() => setMenuOpen(!menuOpen)}
+            onClick={() => {
+              setMenuOpen(!menuOpen);
+              setShowSearch(false);
+            }}
           >
             {menuOpen ? <FaTimes /> : <FaBars />}
           </button>
 
           {/* BUSCADOR */}
-          <form
-            onSubmit={handleSearchSubmit}
-            className="relative"
-          >
+          <form onSubmit={handleSearchSubmit} className="relative">
             <Search
               size={22}
-              onClick={() => {
-                if (localQuery.trim()) {
-                  handleSearchSubmit(new Event("submit", { bubbles: true }));
-                } else {
-                  setShowSearch(!showSearch);
-                }
-              }}
+              onClick={() => setShowSearch(!showSearch)}
               className="cursor-pointer text-black hover:text-pink-500"
             />
             {showSearch && (
@@ -105,23 +93,15 @@ function Navbar() {
                 type="text"
                 placeholder="Buscar..."
                 value={localQuery}
-                onChange={(e) => {
-                  setLocalQuery(e.target.value);
-                  setQuery(e.target.value); // 🔹 sincroniza con SearchContext
-                }}
-                className="absolute top-full mt-2 left-0 w-40 sm:w-44 px-3 py-1 rounded text-sm shadow-md focus:outline-none z-50"
+                onChange={(e) => setLocalQuery(e.target.value)}
+                className="absolute top-full mt-2 right-0 w-44 px-3 py-1 rounded text-sm shadow-md focus:outline-none z-50"
                 autoFocus
               />
             )}
           </form>
 
           {/* FAVORITOS */}
-          <NavLink
-            to="/favoritos"
-            className={({ isActive }) =>
-              `relative text-xl ${isActive ? "text-pink-500" : "text-black"}`
-            }
-          >
+          <NavLink to="/favoritos" className="relative text-xl text-black">
             <Heart className="hover:text-pink-500" />
             {favoritos.length > 0 && (
               <span className="absolute -top-2 -right-2 bg-pink-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
@@ -131,12 +111,7 @@ function Navbar() {
           </NavLink>
 
           {/* CARRITO */}
-          <NavLink
-            to="/carrito"
-            className={({ isActive }) =>
-              `relative text-xl ${isActive ? "text-pink-500" : "text-black"}`
-            }
-          >
+          <NavLink to="/carrito" className="relative text-xl text-black">
             <FaShoppingCart className="hover:text-pink-500" />
             {carrito.length > 0 && (
               <span className="absolute -top-2 -right-2 bg-pink-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
@@ -148,7 +123,7 @@ function Navbar() {
           {/* ADMIN */}
           {user?.rol === "admin" && (
             <button onClick={() => navigate("/admin")}>
-              <LayoutDashboard className="text-xl text-black hover:text-pink-500" />
+              <LayoutDashboard className="text-black hover:text-pink-500" />
             </button>
           )}
 
@@ -156,11 +131,9 @@ function Navbar() {
           {user ? (
             <button
               onClick={handleLogout}
-              className="text-xs font-bold text-black hover:text-pink-500 leading-tight"
+              className="text-xs font-bold text-black hover:text-pink-500"
             >
-              Cerrar
-              <br />
-              sesión
+              Cerrar<br />sesión
             </button>
           ) : (
             <Link to="/auth">
@@ -178,13 +151,7 @@ function Navbar() {
               key={to}
               to={to}
               onClick={() => setMenuOpen(false)}
-              className={({ isActive }) =>
-                `flex items-center gap-2 text-left transition ${
-                  isActive
-                    ? "text-pink-500 drop-shadow-[0_0_12px_#ec4899]"
-                    : "hover:text-pink-500 hover:drop-shadow-[0_0_12px_#ec4899]"
-                }`
-              }
+              className="flex items-center gap-2 hover:text-pink-500"
             >
               <span className="w-2 h-2 rounded-full bg-white" />
               {label}

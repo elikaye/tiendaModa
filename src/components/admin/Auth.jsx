@@ -1,6 +1,4 @@
-
 // src/components/admin/Auth.jsx
-
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -15,42 +13,51 @@ const Auth = () => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg("");
+    setLoading(true);
 
     try {
-      const response = await axios.post(
+      const { data } = await axios.post(
         `${API_BASE_URL}/users/login`,
-        { email, password }
+        { email, password },
+        { withCredentials: false }
       );
 
-      const { token, user } = response.data;
+      const { token, user } = data;
 
-      if (token && user) {
-        login(user, token);
+      if (!token || !user) {
+        throw new Error("Respuesta inválida del servidor");
+      }
 
-        if (user.rol === "admin") {
-          navigate("/admin");
-        } else {
-          navigate("/");
-        }
+      login(user, token);
+
+      // 🔹 Redirección segura
+      if (user.rol === "admin") {
+        navigate("/admin", { replace: true });
       } else {
-        setErrorMsg("No se recibieron datos válidos de autenticación.");
+        navigate("/", { replace: true });
       }
     } catch (error) {
-      console.error("Error en login:", error);
+      console.error("❌ Error en login:", error);
+
       if (error.response?.status === 401) {
         setErrorMsg("Credenciales incorrectas.");
+      } else if (error.response?.status === 404) {
+        setErrorMsg("Usuario no encontrado.");
       } else {
         setErrorMsg("Error al intentar iniciar sesión.");
       }
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="bg-gray-100 px-4 pt-20 sm:pt-24 pb-12">
+    <div className="bg-gray-100 px-4 pt-20 sm:pt-24 pb-12 min-h-screen">
       <div className="mx-auto w-full max-w-md bg-white p-6 sm:p-8 rounded-xl shadow-lg">
         <h2 className="text-2xl font-semibold text-center mb-6">
           Iniciar sesión
@@ -74,6 +81,7 @@ const Auth = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              autoComplete="email"
             />
           </div>
 
@@ -89,18 +97,19 @@ const Auth = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                autoComplete="current-password"
               />
               <button
                 type="button"
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-600"
-                onClick={() => setShowPassword(!showPassword)}
+                onClick={() => setShowPassword((prev) => !prev)}
               >
                 {showPassword ? "Ocultar" : "Mostrar"}
               </button>
             </div>
           </div>
 
-          {/* RECUPERAR CONTRASEÑA (ACTIVO) */}
+          {/* RECUPERAR CONTRASEÑA */}
           <div className="text-right">
             <Link
               to="/forgot-password"
@@ -113,9 +122,10 @@ const Auth = () => {
           {/* BOTÓN */}
           <button
             type="submit"
-            className="w-full bg-pink-500 active:bg-black transition-colors text-white font-body font-semibold py-3 rounded-lg"
+            disabled={loading}
+            className="w-full bg-pink-500 active:bg-black transition-colors text-white font-body font-semibold py-3 rounded-lg disabled:opacity-60"
           >
-            Iniciar sesión
+            {loading ? "Ingresando..." : "Iniciar sesión"}
           </button>
 
           {/* REGISTER */}

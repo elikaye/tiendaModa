@@ -1,37 +1,46 @@
-// src/context/AuthContext.jsx
-import { createContext, useContext, useState, useEffect } from "react";
 
-const AuthContext = createContext();
+// src/context/AuthContext.jsx
+import { createContext, useContext, useEffect, useState } from "react";
+
+const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
+  const [loading, setLoading] = useState(true);
 
+  // 🔹 Cargar sesión desde localStorage
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    const storedToken = localStorage.getItem("token");
-
     try {
-      const parsedUser = storedUser ? JSON.parse(storedUser) : null;
-      const validToken =
-        storedToken && storedToken !== "null" && storedToken !== "undefined"
-          ? storedToken
-          : null;
+      const storedUser = localStorage.getItem("user");
+      const storedToken = localStorage.getItem("token");
 
-      if (parsedUser && validToken) {
-        setUser(parsedUser);
-        setToken(validToken);
-      } else {
-        logout(); // limpia todo si es inválido
+      if (!storedUser || !storedToken) {
+        logout();
+        setLoading(false);
+        return;
       }
-    } catch (err) {
-      console.error("Error leyendo localStorage:", err);
+
+      const parsedUser = JSON.parse(storedUser);
+
+      if (storedToken === "null" || storedToken === "undefined") {
+        logout();
+      } else {
+        setUser(parsedUser);
+        setToken(storedToken);
+      }
+    } catch (error) {
+      console.error("❌ Error leyendo sesión:", error);
       logout();
+    } finally {
+      setLoading(false);
     }
   }, []);
 
-  // LOGIN → guarda user + token
+  // 🔹 LOGIN
   const login = (userData, receivedToken) => {
+    if (!userData || !receivedToken) return;
+
     setUser(userData);
     setToken(receivedToken);
 
@@ -39,7 +48,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem("token", receivedToken);
   };
 
-  // LOGOUT → limpia todo
+  // 🔹 LOGOUT (limpio y seguro)
   const logout = () => {
     setUser(null);
     setToken(null);
@@ -48,10 +57,25 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, login, logout }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        token,
+        loading,
+        login,
+        logout,
+        isAuthenticated: Boolean(user && token),
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
 };
 
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error("useAuth debe usarse dentro de AuthProvider");
+  }
+  return context;
+};

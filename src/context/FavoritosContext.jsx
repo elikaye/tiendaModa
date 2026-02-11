@@ -7,7 +7,7 @@ import { toast } from "react-toastify";
 const FavoritosContext = createContext();
 export const useFavoritos = () => useContext(FavoritosContext);
 
-// 🔥 Toasters rápidos + anti-duplicados
+// 🔥 Toasters acelerados (900ms) + anti-duplicados
 const fastToast = {
   added: (msg = "Agregado a favoritos ❤️") => {
     if (toast.isActive("fav-add")) return;
@@ -50,7 +50,9 @@ export const FavoritosProvider = ({ children }) => {
 
   const axiosAuth = axios.create({
     baseURL: API_URL,
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+    },
   });
 
   // 🔹 Cargar favoritos al iniciar sesión
@@ -63,10 +65,12 @@ export const FavoritosProvider = ({ children }) => {
 
       try {
         const res = await axiosAuth.get("/api/v1/favoritos", {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         });
 
-        const productos = Array.isArray(res.data.productos)
+        const productos = Array.isArray(res.data?.productos)
           ? res.data.productos
           : [];
 
@@ -81,17 +85,23 @@ export const FavoritosProvider = ({ children }) => {
 
   // ❤️ Agregar favorito
   const agregarFavorito = async (producto) => {
-    if (!token) return fastToast.login();
-    if (favoritos.find((p) => p.id === producto.id)) return;
+    if (!token) {
+      fastToast.login();
+      return;
+    }
 
     try {
       const res = await axiosAuth.post(
         "/api/v1/favoritos",
         { producto },
-        { headers: { Authorization: `Bearer ${token}` } }
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
 
-      setFavoritos(res.data.productos);
+      setFavoritos(res.data.productos || []);
       fastToast.added();
     } catch (err) {
       console.error("❌ Error al agregar favorito:", err);
@@ -104,11 +114,13 @@ export const FavoritosProvider = ({ children }) => {
 
     try {
       const res = await axiosAuth.delete("/api/v1/favoritos", {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
         data: { productoId },
       });
 
-      setFavoritos(res.data.productos);
+      setFavoritos(res.data.productos || []);
       fastToast.removed();
     } catch (err) {
       console.error("❌ Error al eliminar favorito:", err);
@@ -121,7 +133,9 @@ export const FavoritosProvider = ({ children }) => {
 
     try {
       await axiosAuth.delete("/api/v1/favoritos/all", {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
 
       setFavoritos([]);

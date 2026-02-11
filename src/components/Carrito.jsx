@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo } from "react";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
 import { FaTrashAlt } from "react-icons/fa";
@@ -19,32 +19,15 @@ const Carrito = () => {
     syncingIds,
   } = useCart();
 
+  // 🔹 Scroll al top al cargar
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
 
-  // 🔒 SIN SESIÓN
-  if (!user) {
-    return (
-      <div className="min-h-screen pt-12 md:pt-24 pb-20 px-4 text-center bg-gradient-to-br from-pink-100 via-white to-pink-200">
-        <h1 className="text-3xl font-body font-semibold mb-6">Tu carrito</h1>
+  // 🔹 Generar link WhatsApp con useMemo
+  const linkWhatsApp = useMemo(() => {
+    if (!carrito.length) return "#";
 
-        <p className="text-gray-600 mb-6">
-          Para agregar productos y finalizar una compra necesitás iniciar sesión.
-        </p>
-
-        <Link
-          to="/auth"
-          className="inline-block bg-pink-500 text-white px-4 py-2 rounded-full hover:bg-black transition"
-        >
-          Iniciar sesión / Registrarse
-        </Link>
-      </div>
-    );
-  }
-
-  // 🔹 MENSAJE DE WHATSAPP CON LINK
-  const generarLinkWhatsApp = () => {
     const productosTexto = carrito
       .map((p) => {
         const precioUnitario = Number(p.precio || 0).toLocaleString("es-AR");
@@ -76,7 +59,27 @@ Total estimado: $${totalFormateado}
 Quedo a la espera para confirmar stock, modelos y disponibilidad.`;
 
     return `https://wa.me/${numeroTienda}?text=${encodeURIComponent(mensaje)}`;
-  };
+  }, [carrito, total]);
+
+  // 🔒 Si no hay sesión
+  if (!user) {
+    return (
+      <div className="min-h-screen pt-12 md:pt-24 pb-20 px-4 text-center bg-gradient-to-br from-pink-100 via-white to-pink-200">
+        <h1 className="text-3xl font-body font-semibold mb-6">Tu carrito</h1>
+
+        <p className="text-gray-600 mb-6">
+          Para agregar productos y finalizar una compra necesitás iniciar sesión.
+        </p>
+
+        <Link
+          to="/auth"
+          className="inline-block bg-pink-500 text-white px-4 py-2 rounded-full hover:bg-black transition"
+        >
+          Iniciar sesión / Registrarse
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen pt-12 md:pt-24 pb-20 px-4 bg-gradient-to-br from-pink-100 via-white to-pink-200">
@@ -184,7 +187,7 @@ Quedo a la espera para confirmar stock, modelos y disponibilidad.`;
 
           <div className="mt-4 flex justify-center">
             <a
-              href={generarLinkWhatsApp()}
+              href={linkWhatsApp}
               target="_blank"
               rel="noopener noreferrer"
               className="bg-pink-500 text-white text-base font-semibold px-4 py-2 rounded-full shadow hover:bg-black transition w-full max-w-xs text-center"
