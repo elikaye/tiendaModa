@@ -1,46 +1,29 @@
-
 import { Sequelize } from "sequelize";
 import dotenv from "dotenv";
 
 dotenv.config();
 
-const isProduction = process.env.NODE_ENV === "production";
+let sequelize;
 
-const dbName = isProduction
-  ? process.env.DB_NAME_PROD
-  : process.env.DB_NAME;
-
-const dbUser = isProduction
-  ? process.env.DB_USER_PROD
-  : process.env.DB_USER;
-
-const dbPass = isProduction
-  ? process.env.DB_PASSWORD_PROD
-  : process.env.DB_PASSWORD;
-
-const dbHost = isProduction
-  ? process.env.DB_HOST_PROD
-  : process.env.DB_HOST;
-
-const dbPort = isProduction
-  ? Number(process.env.DB_PORT_PROD)
-  : Number(process.env.DB_PORT);
-
-const sequelize = new Sequelize(dbName, dbUser, dbPass, {
-  host: dbHost,
-  dialect: "mysql",
-  port: dbPort,
-  logging: !isProduction,
-  define: {
-    timestamps: true,
-    paranoid: true,
-  },
-  pool: {
-    max: 5,
-    min: 0,
-    acquire: 30000,
-    idle: 10000,
-  },
-});
+if (process.env.DATABASE_URL) {
+  // Railway production o entorno con URL completa
+  sequelize = new Sequelize(process.env.DATABASE_URL, {
+    dialect: "mysql",
+    logging: false,
+  });
+} else {
+  // Entorno local manual
+  sequelize = new Sequelize(
+    process.env.DB_NAME,
+    process.env.DB_USER,
+    process.env.DB_PASSWORD,
+    {
+      host: process.env.DB_HOST,
+      dialect: "mysql",
+      port: process.env.DB_PORT,
+      logging: console.log,
+    }
+  );
+}
 
 export default sequelize;
