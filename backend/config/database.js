@@ -6,13 +6,13 @@ dotenv.config();
 let sequelize;
 
 if (process.env.DATABASE_URL) {
-  // Railway production o entorno con URL completa
+  // Producción
   sequelize = new Sequelize(process.env.DATABASE_URL, {
     dialect: "mysql",
     logging: false,
   });
 } else {
-  // Entorno local manual
+  // Desarrollo local con proxy Railway
   sequelize = new Sequelize(
     process.env.DB_NAME,
     process.env.DB_USER,
@@ -22,6 +22,9 @@ if (process.env.DATABASE_URL) {
       dialect: "mysql",
       port: process.env.DB_PORT,
       logging: console.log,
+      dialectOptions: {
+        connectTimeout: 10000, // 10 segundos para evitar ETIMEDOUT
+      },
     }
   );
 }
