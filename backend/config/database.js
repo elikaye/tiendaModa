@@ -1,32 +1,31 @@
+
 import { Sequelize } from "sequelize";
 import dotenv from "dotenv";
 
 dotenv.config();
 
-let sequelize;
+// Detecta si estamos en producción
+const isProd = process.env.NODE_ENV === "production";
 
-if (process.env.DATABASE_URL) {
-  // Producción
-  sequelize = new Sequelize(process.env.DATABASE_URL, {
-    dialect: "mysql",
-    logging: false,
-  });
-} else {
-  // Desarrollo local con proxy Railway
-  sequelize = new Sequelize(
-    process.env.DB_NAME,
-    process.env.DB_USER,
-    process.env.DB_PASSWORD,
-    {
-      host: process.env.DB_HOST,
+// Configuración de Sequelize
+const sequelize = isProd
+  ? new Sequelize(process.env.DATABASE_URL, {
       dialect: "mysql",
-      port: process.env.DB_PORT,
-      logging: console.log,
-      dialectOptions: {
-        connectTimeout: 10000, // 10 segundos para evitar ETIMEDOUT
-      },
-    }
-  );
-}
+      logging: false, // Desactiva logs en producción
+    })
+  : new Sequelize(
+      process.env.DB_NAME,      // database
+      process.env.DB_USER,      // root
+      process.env.DB_PASSWORD,  // contraseña del proxy
+      {
+        host: process.env.DB_HOST, // tramway.proxy.rlwy.net
+        port: process.env.DB_PORT, // 53155
+        dialect: "mysql",
+        logging: console.log,      // Logs en desarrollo
+        dialectOptions: {
+          connectTimeout: 10000,   // Evita ETIMEDOUT
+        },
+      }
+    );
 
 export default sequelize;
