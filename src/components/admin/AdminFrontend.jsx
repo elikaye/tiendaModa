@@ -13,10 +13,10 @@ const AdminFrontend = () => {
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState(""); 
 
   useEffect(() => {
-    setLocalSettings(settings);
+    setLocalSettings(settings);a
   }, [settings]);
 
   const handleChange = (field, value) => {

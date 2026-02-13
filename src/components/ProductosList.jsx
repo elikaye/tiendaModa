@@ -35,12 +35,14 @@ export default function ProductosList() {
 
   const fetchProductos = async () => {
     try {
+      console.log('API_BASE_URL:', API_BASE_URL);
       // 🔴 ACÁ ESTABA EL PROBLEMA
       const res = await fetch(`${API_BASE_URL}/products?limit=1000`);
       if (!res.ok) throw new Error("Error cargando productos");
-
+      console.log(response)
       const data = await res.json();
       const raw = data.products || [];
+      console.log(data)
 
       const adaptados = raw.map((p) => ({
         ...p,
@@ -65,7 +67,9 @@ export default function ProductosList() {
   };
 
   useEffect(() => {
+       
     fetchProductos();
+       console.log("API_BASE_URL:", API_BASE_URL);
   }, []);
 
   const productosFiltrados = useMemo(() => {
