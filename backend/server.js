@@ -9,7 +9,7 @@ import productRoutes from './routes/productRoutes.js';
 import cartRoutes from './routes/cartRoutes.js';
 import orderRoutes from './routes/orderRoutes.js';
 import favoritoRoutes from './routes/favoritoRoutes.js';
-import frontendSettingsRoutes from './routes/frontendSettingsRoutes.js'; // ✅ NUEVO
+import frontendSettingsRoutes from './routes/frontendSettingsRoutes.js';
 
 dotenv.config();
 const app = express();
@@ -38,7 +38,7 @@ app.use(
   })
 );
 
-app.options('*', cors()); // preflight
+app.options('*', cors());
 
 app.use(express.json());
 
@@ -48,7 +48,7 @@ app.use('/api/v1/products', productRoutes);
 app.use('/api/v1/carrito', cartRoutes);
 app.use('/api/v1/ordenes', orderRoutes);
 app.use('/api/v1/favoritos', favoritoRoutes);
-app.use('/api/v1/frontend-settings', frontendSettingsRoutes); // ✅ NUEVO
+app.use('/api/v1/frontend-settings', frontendSettingsRoutes);
 
 // 🧠 Test del servidor
 app.get('/', (req, res) => res.send('✅ API funcionando 🚀'));
@@ -83,6 +83,11 @@ const PORT = process.env.PORT || 5000;
 try {
   await sequelize.authenticate();
   console.log('✅ Conectado a MySQL con Sequelize');
+
+  // 🔥 ESTO CREA LAS TABLAS EN RAILWAY
+  await sequelize.sync({ alter: true });
+  console.log('✅ Tablas sincronizadas');
+
   app.listen(PORT, () =>
     console.log(`🚀 Servidor corriendo en puerto ${PORT}`)
   );
