@@ -85,7 +85,7 @@ function Destacados() {
       ));
 
   if (error) return <p className="text-center py-10 text-red-600">{error}</p>;
-  if (!productos.length && !loading)
+  if (!loading && !productos.length)
     return <p className="text-center py-10">No hay productos destacados disponibles.</p>;
 
   return (
@@ -102,9 +102,9 @@ function Destacados() {
           autoplay={{ delay: 4000, disableOnInteraction: false }}
           loop={productos.length > 1}
           spaceBetween={20}
-          slidesPerView={1.1} // 👈 base (mobile)
+          slidesPerView={1.1}
           breakpoints={{
-            640: { slidesPerView: 1.3 }, // 👈 mobile más visible la siguiente card
+            640: { slidesPerView: 1.3 },
             768: { slidesPerView: 2 },
             1024: { slidesPerView: 3 },
           }}
@@ -121,8 +121,7 @@ function Destacados() {
                     <Link to={`/producto/${prod.id}`}>
                       <div
                         className={`bg-white rounded-2xl shadow-md transition-all duration-500 overflow-hidden h-full flex flex-col transform
-                          ${isActive ? 'scale-105' : 'scale-95 opacity-70'}
-                        `}
+                          ${isActive ? 'scale-105' : 'scale-95 opacity-70'}`}
                       >
                         <div className="h-40 sm:h-60 flex items-center justify-center overflow-hidden rounded-2xl">
                           <img
@@ -145,12 +144,7 @@ function Destacados() {
                               <button
                                 onClick={(e) => handleComprar(e, prod)}
                                 className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-full text-sm sm:text-sm font-body font-semibold shadow-lg transition
-                                  ${
-                                    enCarrito
-                                      ? 'bg-pink-500 text-white hover:bg-pink-600'
-                                      : 'bg-black text-white hover:bg-pink-600'
-                                  }
-                                `}
+                                  ${enCarrito ? 'bg-pink-500 text-white hover:bg-pink-600' : 'bg-black text-white hover:bg-pink-600'}`}
                               >
                                 <FaShoppingBag size={14} />
                                 {enCarrito ? 'En carrito' : 'Comprar'}

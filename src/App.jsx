@@ -1,4 +1,3 @@
-
 // src/App.jsx
 import React from "react";
 import {
@@ -125,10 +124,8 @@ function App() {
               <Router>
                 <ScrollToTop />
 
-                {/* ✅ WRAPPER CORREGIDO */}
                 <div className="font-sans text-black flex flex-col relative min-h-screen overflow-x-hidden">
-
-                  {/* ✅ FONDO QUE CRECE CON EL CONTENIDO */}
+                  {/* Fondo animado */}
                   <div className="absolute top-0 left-0 w-full h-full -z-10 bg-gradient-to-br from-pink-100 via-white to-pink-200 bg-[length:300%_300%] animate-gradient" />
 
                   <AppContent />
